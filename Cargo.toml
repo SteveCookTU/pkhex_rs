@@ -6,3 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+no_std_io = {git = "https://github.com/zaksabeast/no_std_io.git" }
+rand = "0.8.5"
+lazy_static = "1.4.0"

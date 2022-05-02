@@ -11,13 +11,17 @@ use crate::personal_info_oras::PersonalInfoORAS;
 use crate::personal_info_sm::PersonalInfoSM;
 use crate::personal_info_swsh::PersonalInfoSWSH;
 use crate::personal_info_xy::PersonalInfoXY;
+use crate::tables::{
+    MAX_SPECIES_ID_1, MAX_SPECIES_ID_3, MAX_SPECIES_ID_7_USUM, MAX_SPECIES_ID_8_R2,
+};
 use crate::{
-    form_index, personal_info_b2w2, personal_info_bdsp, personal_info_bw, personal_info_g1,
-    personal_info_g2, personal_info_g3, personal_info_g4, personal_info_la, personal_info_oras,
-    personal_info_sm, personal_info_swsh, personal_info_xy, GameVersion, PersonalInfo,
+    form_index, get_bits, is_valid_type_combination, personal_info_b2w2, personal_info_bdsp,
+    personal_info_bw, personal_info_g1, personal_info_g2, personal_info_g3, personal_info_g4,
+    personal_info_la, personal_info_oras, personal_info_sm, personal_info_swsh, personal_info_xy,
+    BinLinkerAccessor, GameVersion, PersonalInfo,
 };
 use lazy_static::lazy_static;
-use std::ops::Index;
+use std::ops::{Index, IndexMut};
 
 const PERSONAL_LA: &[u8] = include_bytes!("../resources/byte/personal/personal_la");
 const PERSONAL_BDSP: &[u8] = include_bytes!("../resources/byte/personal/personal_bdsp");
@@ -40,13 +44,23 @@ const PERSONAL_C_GS: &[u8] = include_bytes!("../resources/byte/personal/personal
 const PERSONAL_RB: &[u8] = include_bytes!("../resources/byte/personal/personal_rb");
 const PERSONAL_YW: &[u8] = include_bytes!("../resources/byte/personal/personal_y");
 
+const HMTM_G3: &[u8] = include_bytes!("../resources/byte/personal/hmtm_g3.pkl");
+const TUTORS_G3: &[u8] = include_bytes!("../resources/byte/personal/tutors_g3.pkl");
+const TUTORS_G4: &[u8] = include_bytes!("../resources/byte/personal/tutors_g4.pkl");
+
 lazy_static! {
-    pub static ref LA: PersonalTable<PersonalInfoLA> =
-        PersonalTable::new(PERSONAL_LA.to_vec(), GameVersion::PLA);
+    pub static ref LA: PersonalTable<PersonalInfoLA> = {
+        let mut table = PersonalTable::new(PERSONAL_LA.to_vec(), GameVersion::PLA);
+        copy_dexit_genders_la(&mut table);
+        table
+    };
     pub static ref BDSP: PersonalTable<PersonalInfoBDSP> =
         PersonalTable::new(PERSONAL_BDSP.to_vec(), GameVersion::BDSP);
-    pub static ref SWSH: PersonalTable<PersonalInfoSWSH> =
-        PersonalTable::new(PERSONAL_SWSH.to_vec(), GameVersion::SWSH);
+    pub static ref SWSH: PersonalTable<PersonalInfoSWSH> = {
+        let mut table = PersonalTable::new(PERSONAL_SWSH.to_vec(), GameVersion::SWSH);
+        copy_dexit_genders_swsh(&mut table);
+        table
+    };
     pub static ref GG: PersonalTable<PersonalInfoGG> =
         PersonalTable::new(PERSONAL_GG.to_vec(), GameVersion::GG);
     pub static ref USUM: PersonalTable<PersonalInfoSM> =
@@ -67,22 +81,40 @@ lazy_static! {
         PersonalTable::new(PERSONAL_PT.to_vec(), GameVersion::Pt);
     pub static ref DP: PersonalTable<PersonalInfoG4> =
         PersonalTable::new(PERSONAL_DP.to_vec(), GameVersion::DP);
-    pub static ref LG: PersonalTable<PersonalInfoG3> =
-        PersonalTable::new(PERSONAL_LG.to_vec(), GameVersion::LG);
-    pub static ref FR: PersonalTable<PersonalInfoG3> =
-        PersonalTable::new(PERSONAL_FR.to_vec(), GameVersion::FR);
-    pub static ref E: PersonalTable<PersonalInfoG3> =
-        PersonalTable::new(PERSONAL_E.to_vec(), GameVersion::E);
-    pub static ref RS: PersonalTable<PersonalInfoG3> =
-        PersonalTable::new(PERSONAL_RS.to_vec(), GameVersion::RS);
+    pub static ref LG: PersonalTable<PersonalInfoG3> = {
+        let mut table = PersonalTable::new(PERSONAL_LG.to_vec(), GameVersion::LG);
+        populate_gen_3_tutors(&mut table);
+        table
+    };
+    pub static ref FR: PersonalTable<PersonalInfoG3> = {
+        let mut table = PersonalTable::new(PERSONAL_FR.to_vec(), GameVersion::FR);
+        populate_gen_3_tutors(&mut table);
+        table
+    };
+    pub static ref E: PersonalTable<PersonalInfoG3> = {
+        let mut table = PersonalTable::new(PERSONAL_E.to_vec(), GameVersion::E);
+        populate_gen_3_tutors(&mut table);
+        table
+    };
+    pub static ref RS: PersonalTable<PersonalInfoG3> = {
+        let mut table = PersonalTable::new(PERSONAL_RS.to_vec(), GameVersion::RS);
+        populate_gen_3_tutors(&mut table);
+        table
+    };
     pub static ref GS: PersonalTable<PersonalInfoG2> =
         PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::GS);
     pub static ref C: PersonalTable<PersonalInfoG2> =
         PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::C);
-    pub static ref RB: PersonalTable<PersonalInfoG1> =
-        PersonalTable::new(PERSONAL_RB.to_vec(), GameVersion::RB);
-    pub static ref YW: PersonalTable<PersonalInfoG1> =
-        PersonalTable::new(PERSONAL_YW.to_vec(), GameVersion::YW);
+    pub static ref RB: PersonalTable<PersonalInfoG1> = {
+        let mut table = PersonalTable::new(PERSONAL_RB.to_vec(), GameVersion::RB);
+        fix_personal_table_g1(&mut table);
+        table
+    };
+    pub static ref YW: PersonalTable<PersonalInfoG1> = {
+        let mut table = PersonalTable::new(PERSONAL_YW.to_vec(), GameVersion::YW);
+        fix_personal_table_g1(&mut table);
+        table
+    };
 }
 
 pub struct PersonalTable<T: PersonalInfo> {
@@ -96,6 +128,12 @@ impl<T: PersonalInfo> Index<usize> for PersonalTable<T> {
 
     fn index(&self, index: usize) -> &Self::Output {
         &self.table[index]
+    }
+}
+
+impl<T: PersonalInfo> IndexMut<usize> for PersonalTable<T> {
+    fn index_mut(&mut self, index: usize) -> &mut Self::Output {
+        &mut self.table[index]
     }
 }
 
@@ -124,6 +162,11 @@ impl<T: PersonalInfo> PersonalTable<T> {
 
     pub fn get_form_entry(&self, species: usize, form: usize) -> &T {
         &self[self.get_form_index(species, form)]
+    }
+
+    pub fn get_form_entry_mut(&mut self, species: usize, form: usize) -> &mut T {
+        let index = self.get_form_index(species, form);
+        &mut self[index]
     }
 
     pub fn table_length(&self) -> usize {
@@ -196,6 +239,63 @@ impl<T: PersonalInfo> PersonalTable<T> {
             }
         }
         false
+    }
+
+    pub fn is_valid_type_combination(&self, type_1: usize, type_2: usize) -> bool {
+        self.table
+            .iter()
+            .any(|info| is_valid_type_combination(info, type_1, type_2))
+    }
+}
+
+fn fix_personal_table_g1(table: &mut PersonalTable<PersonalInfoG1>) {
+    for i in (0..=MAX_SPECIES_ID_1).rev() {
+        table.table[i].set_gender(GS[i].get_gender())
+    }
+}
+
+fn populate_gen_3_tutors(table: &mut PersonalTable<PersonalInfoG3>) {
+    let machine = BinLinkerAccessor::new(HMTM_G3);
+    let tutors = BinLinkerAccessor::new(TUTORS_G3);
+    for i in (0..=MAX_SPECIES_ID_3).rev() {
+        let entry = &mut table[i];
+        entry.set_tmhm(get_bits(&machine[i]));
+        entry.set_type_tutors(get_bits(&tutors[i]));
+    }
+}
+
+fn populate_gen_4_tutors(table: &mut PersonalTable<PersonalInfoG4>) {
+    let tutors = BinLinkerAccessor::new(TUTORS_G4);
+    for i in 0..tutors.length() {
+        table[i].set_type_tutors(get_bits(&tutors[i]));
+    }
+}
+
+fn copy_dexit_genders_swsh(table: &mut PersonalTable<PersonalInfoSWSH>) {
+    let usum = &USUM.table;
+    for i in 1..=MAX_SPECIES_ID_7_USUM {
+        let ss = &mut table[i];
+        if ss.get_hp() == 0 {
+            ss.set_gender(usum[i].get_gender());
+        }
+    }
+}
+
+fn copy_dexit_genders_la(table: &mut PersonalTable<PersonalInfoLA>) {
+    for i in 1..=MAX_SPECIES_ID_8_R2 {
+        let fc = table[i].get_form_count();
+        for f in 0..fc {
+            let l = table.get_form_entry_mut(i, f);
+            if l.get_hp() != 0 {
+                continue;
+            }
+            let s = SWSH.get_form_entry(i, f);
+            l.set_ability_1(s.get_ability_1());
+            l.set_ability_2(s.get_ability_2());
+            l.set_ability_h(s.get_ability_h());
+            l.set_gender(s.get_gender());
+            l.set_exp_growth(s.get_exp_growth());
+        }
     }
 }
 

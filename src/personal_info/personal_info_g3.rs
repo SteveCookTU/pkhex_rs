@@ -4,6 +4,8 @@ pub const SIZE: usize = 0x1C;
 
 pub struct PersonalInfoG3 {
     pub(super) data: Vec<u8>,
+    tmhm: Vec<bool>,
+    type_tutors: Vec<bool>,
 }
 
 impl PersonalInfoG3 {
@@ -72,7 +74,11 @@ impl PersonalInfoG3 {
 
 impl PersonalInfo for PersonalInfoG3 {
     fn new(data: Vec<u8>) -> Self {
-        Self { data }
+        Self {
+            data,
+            tmhm: vec![],
+            type_tutors: vec![],
+        }
     }
 
     fn get_data(&self) -> &Vec<u8> {
@@ -307,9 +313,13 @@ impl PersonalInfo for PersonalInfoG3 {
         self.data[0x19] = (self.data[0x19] & 0x80) | color as u8;
     }
 
-    fn set_tmhm(&mut self, _: Vec<bool>) {}
+    fn set_tmhm(&mut self, tmhm: Vec<bool>) {
+        self.tmhm = tmhm;
+    }
 
-    fn set_type_tutors(&mut self, _: Vec<bool>) {}
+    fn set_type_tutors(&mut self, type_tutors: Vec<bool>) {
+        self.type_tutors = type_tutors;
+    }
 
     fn set_special_tutors(&mut self, _: Vec<Vec<bool>>) {}
 }

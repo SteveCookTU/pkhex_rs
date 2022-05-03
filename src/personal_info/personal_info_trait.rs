@@ -130,9 +130,9 @@ pub trait PersonalInfo {
     fn set_special_tutors(&mut self, special_tutors: Vec<Vec<bool>>);
 }
 
-const RATIO_MAGIC_GENDERLESS: usize = 255;
-const RATIO_MAGIC_FEMALE: usize = 254;
-const RATIO_MAGIC_MALE: usize = 0;
+pub const RATIO_MAGIC_GENDERLESS: usize = 255;
+pub const RATIO_MAGIC_FEMALE: usize = 254;
+pub const RATIO_MAGIC_MALE: usize = 0;
 
 pub fn get_bits(data: &[u8]) -> Vec<bool> {
     let len = data.len() << 3;

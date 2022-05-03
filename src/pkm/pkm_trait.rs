@@ -1,14 +1,22 @@
+use crate::evolution_legality::get_future_gen_evolutions;
 use crate::hidden_power::DEFAULT_LOW_BITS;
-use crate::pkx::{get_pkm_extensions, GENERATION};
-use crate::tables::locations::{is_none_location, traded_egg_location, GO7, GO8};
-use crate::{
-    date_util, experience, get_debut_generation, get_pp_table, GameValueLimit, GameVersion,
-    Generation, LangNick, LanguageID, NatureT, PersonalInfo, Shiny, SpeciesForm, TrainerId,
+use crate::pkx::{
+    get_gender_from_pid_and_ratio, get_pkm_extensions, get_random_pid, get_unown_form,
+    modify_stats_for_nature, GENERATION,
 };
+use crate::tables::locations::{is_none_location, traded_egg_location, GO7, GO8};
+use crate::tables::{LEGENDS, SUB_LEGENDS};
+use crate::{
+    date_util, experience, get_debut_generation, get_max_species_origin, get_pp_table, rand_util,
+    GameValueLimit, GameVersion, Generation, HyperTrain, LangNick, LanguageID, NatureT,
+    PersonalInfo, Shiny, ShinyEnum, Species, SpeciesForm, TrainerId, RATIO_MAGIC_FEMALE,
+    RATIO_MAGIC_GENDERLESS, RATIO_MAGIC_MALE,
+};
+use rand::{Rng, RngCore};
 use time::{Date, Month, PrimitiveDateTime, Time};
 
 pub trait Pkm<T: PersonalInfo>:
-    SpeciesForm + TrainerId + Generation + Shiny + LangNick + GameValueLimit + NatureT
+    SpeciesForm + TrainerId + Generation + Shiny + LangNick + GameValueLimit + NatureT + Clone
 {
     fn extensions(&self) -> Vec<String> {
         get_pkm_extensions(GENERATION)
@@ -676,51 +684,63 @@ pub trait Pkm<T: PersonalInfo>:
     }
 
     fn get_mark_circle(&self) -> usize {
-        todo!()
+        self.get_markings()[0]
     }
 
     fn set_mark_circle(&mut self, mark: usize) {
-        todo!()
+        let mut marks = self.get_markings();
+        marks[0] = mark;
+        self.set_markings(&marks)
     }
 
     fn get_mark_triangle(&self) -> usize {
-        todo!()
+        self.get_markings()[1]
     }
 
     fn set_mark_triangle(&mut self, mark: usize) {
-        todo!()
+        let mut marks = self.get_markings();
+        marks[1] = mark;
+        self.set_markings(&marks)
     }
 
     fn get_mark_square(&self) -> usize {
-        todo!()
+        self.get_markings()[2]
     }
 
     fn set_mark_square(&mut self, mark: usize) {
-        todo!()
+        let mut marks = self.get_markings();
+        marks[2] = mark;
+        self.set_markings(&marks)
     }
 
     fn get_mark_heart(&self) -> usize {
-        todo!()
+        self.get_markings()[3]
     }
 
     fn set_mark_heart(&mut self, mark: usize) {
-        todo!()
+        let mut marks = self.get_markings();
+        marks[3] = mark;
+        self.set_markings(&marks)
     }
 
     fn get_mark_star(&self) -> usize {
-        todo!()
+        self.get_markings()[4]
     }
 
     fn set_mark_star(&mut self, mark: usize) {
-        todo!()
+        let mut marks = self.get_markings();
+        marks[4] = mark;
+        self.set_markings(&marks)
     }
 
     fn get_mark_diamond(&self) -> usize {
-        todo!()
+        self.get_markings()[5]
     }
 
     fn set_mark_diamond(&mut self, mark: usize) {
-        todo!()
+        let mut marks = self.get_markings();
+        marks[5] = mark;
+        self.set_markings(&marks)
     }
 
     fn iv_total(&self) -> usize {
@@ -839,6 +859,7 @@ pub trait Pkm<T: PersonalInfo>:
     fn set_stats(&mut self, stats: Vec<usize>) {
         if stats.len() == 6 {
             self.set_stat_hp_current(stats[0]);
+            self.set_stat_hp_max(stats[0]);
             self.set_stat_atk(stats[1]);
             self.set_stat_def(stats[2]);
             self.set_stat_spe(stats[3]);
@@ -874,7 +895,7 @@ pub trait Pkm<T: PersonalInfo>:
             + (self.get_move_4() != 0) as usize
     }
 
-    fn set_moves(&mut self, moves: Vec<usize>) {
+    fn set_moves(&mut self, moves: &[usize]) {
         self.set_move_1(if moves.len() > 0 { moves[0] } else { 0 });
         self.set_move_2(if moves.len() > 1 { moves[1] } else { 0 });
         self.set_move_3(if moves.len() > 2 { moves[2] } else { 0 });
@@ -979,6 +1000,276 @@ pub trait Pkm<T: PersonalInfo>:
         self.get_species() <= self.max_species_id()
     }
 
+    fn inhabited_generation(&self, generation: usize, mut species: usize) -> bool {
+        if (species as isize) < 0 {
+            species = self.get_species();
+        }
+
+        let format = self.format();
+        if format == self.generation() {
+            true
+        } else if !self.is_origin_valid() {
+            false
+        } else if species > get_max_species_origin(generation).unwrap_or_default()
+            && get_future_gen_evolutions(generation).contains(&species)
+        {
+            false
+        } else if format == 2 && generation == 1 && !self.korean() {
+            true
+        } else if format == 1 && generation == 2 {
+            //TODO: Check for gen 1 tradeback rule
+            true
+        } else if format < generation {
+            false
+        } else {
+            let gen = self.generation();
+            match gen {
+                1 => format == 1 || self.vc(),
+                2 => format == 2 || self.vc(),
+                3 => self.gen3(),
+                4 => gen >= 3 && gen <= 4,
+                5 => gen >= 3 && gen <= 5,
+                6 => gen >= 3 && gen <= 6,
+                7 => gen >= 3 && gen <= 7 || self.vc(),
+                8 => gen >= 3 && gen <= 7 || self.vc(),
+                _ => false,
+            }
+        }
+    }
+
+    fn has_origin_met_location(&self) -> bool {
+        !(self.format() < 3
+            || self.vc()
+            || (self.generation() <= 4 && self.format() != self.generation()))
+    }
+
+    fn is_gender_valid(&self) -> bool {
+        let gender = self.get_gender();
+        let gv = self.get_personal_info().get_gender();
+        if gv == RATIO_MAGIC_GENDERLESS {
+            gender == 2
+        } else if gv == RATIO_MAGIC_FEMALE {
+            gender == 1
+        } else if gv == RATIO_MAGIC_MALE {
+            gender == 1
+        } else {
+            let gen = self.generation();
+            if !((3..6).contains(&gen)) {
+                gender == (gender & 1)
+            } else {
+                gender == get_gender_from_pid_and_ratio(self.get_pid(), gv)
+            }
+        }
+    }
+
+    fn refresh_checksum(&mut self);
+
+    fn checksum_valid(&self) -> bool;
+
+    fn fix_moves(&mut self) {
+        self.reorder_moves();
+
+        if self.get_move_1() == 0 {
+            self.set_move_1_pp(0);
+            self.set_move_1_pp_ups(0);
+        }
+        if self.get_move_2() == 0 {
+            self.set_move_2_pp(0);
+            self.set_move_2_pp_ups(0);
+        }
+        if self.get_move_3() == 0 {
+            self.set_move_3_pp(0);
+            self.set_move_3_pp_ups(0);
+        }
+        if self.get_move_4() == 0 {
+            self.set_move_4_pp(0);
+            self.set_move_4_pp_ups(0);
+        }
+    }
+
+    fn reorder_moves(&mut self) {
+        if self.get_move_1() == 0 && self.get_move_2() != 0 {
+            self.set_move_1(self.get_move_2());
+            self.set_move_1_pp(self.get_move_2_pp());
+            self.set_move_1_pp_ups(self.get_move_2_pp_ups());
+            self.set_move_2(0);
+        }
+
+        if self.get_move_2() == 0 && self.get_move_3() != 0 {
+            self.set_move_2(self.get_move_3());
+            self.set_move_2_pp(self.get_move_3_pp());
+            self.set_move_2_pp_ups(self.get_move_3_pp_ups());
+            self.set_move_3(0);
+        }
+
+        if self.get_move_3() == 0 && self.get_move_4() != 0 {
+            self.set_move_3(self.get_move_4());
+            self.set_move_3_pp(self.get_move_4_pp());
+            self.set_move_3_pp_ups(self.get_move_4_pp_ups());
+            self.set_move_4(0);
+        }
+    }
+
+    fn refresh_ability(&mut self, n: usize) {
+        self.set_ability_number(1 << n);
+        let abilities = self.get_personal_info().get_abilities();
+        if n < abilities.len() {
+            self.set_ability(abilities[n]);
+        }
+    }
+
+    fn potential_rating(&self) -> usize {
+        let total = self.iv_total();
+        match total {
+            _ if total <= 90 => 0,
+            _ if total <= 120 => 1,
+            _ if total <= 150 => 2,
+            _ => 3,
+        }
+    }
+
+    fn get_stats_personal_info<I: PersonalInfo + ?Sized>(&self, p: &I) -> [u16; 6] {
+        let level = self.get_current_level();
+        let mut stats: [u16; 6] = [
+            if p.get_hp() == 1 {
+                1
+            } else {
+                ((self.get_iv_hp() + (2 * p.get_hp()) + (self.get_ev_hp() / 4) + 100) * level / 100)
+                    + 10
+            } as u16,
+            (((self.get_iv_atk() + (2 * p.get_atk()) + (self.get_ev_atk() / 4)) * level / 100) + 5)
+                as u16,
+            (((self.get_iv_def() + (2 * p.get_def()) + (self.get_ev_def() / 4)) * level / 100) + 5)
+                as u16,
+            (((self.get_iv_spa() + (2 * p.get_spa()) + (self.get_ev_spa() / 4)) * level / 100) + 5)
+                as u16,
+            (((self.get_iv_spd() + (2 * p.get_spd()) + (self.get_ev_spd() / 4)) * level / 100) + 5)
+                as u16,
+            (((self.get_iv_spe() + (2 * p.get_spe()) + (self.get_ev_spe() / 4)) * level / 100) + 5)
+                as u16,
+        ];
+        modify_stats_for_nature(&mut stats, self.get_stat_nature());
+        stats
+    }
+
+    fn get_stats_hyper_train<I: PersonalInfo, P: Pkm<I> + HyperTrain + ?Sized>(
+        &self,
+        p: &I,
+        t: &P,
+    ) -> [u16; 6] {
+        let level = self.get_current_level();
+        let mut stats: [u16; 6] = [
+            if p.get_hp() == 1 {
+                1
+            } else {
+                ((if t.get_ht_hp() { 31 } else { self.get_iv_hp() }
+                    + (2 * p.get_hp())
+                    + (self.get_ev_hp() / 4)
+                    + 100)
+                    * level
+                    / 100)
+                    + 10
+            } as u16,
+            (((if t.get_ht_atk() {
+                31
+            } else {
+                self.get_iv_atk()
+            } + (2 * p.get_atk())
+                + (self.get_ev_atk() / 4))
+                * level
+                / 100)
+                + 5) as u16,
+            (((if t.get_ht_def() {
+                31
+            } else {
+                self.get_iv_def()
+            } + (2 * p.get_def())
+                + (self.get_ev_def() / 4))
+                * level
+                / 100)
+                + 5) as u16,
+            (((if t.get_ht_spa() {
+                31
+            } else {
+                self.get_iv_spa()
+            } + (2 * p.get_spa())
+                + (self.get_ev_spa() / 4))
+                * level
+                / 100)
+                + 5) as u16,
+            (((if t.get_ht_spd() {
+                31
+            } else {
+                self.get_iv_spd()
+            } + (2 * p.get_spd())
+                + (self.get_ev_spd() / 4))
+                * level
+                / 100)
+                + 5) as u16,
+            (((if t.get_ht_spe() {
+                31
+            } else {
+                self.get_iv_spe()
+            } + (2 * p.get_spe())
+                + (self.get_ev_spe() / 4))
+                * level
+                / 100)
+                + 5) as u16,
+        ];
+        modify_stats_for_nature(&mut stats, self.get_stat_nature());
+        stats
+    }
+
+    fn party_stats_present(&self) -> bool {
+        self.get_stat_hp_max() != 0
+    }
+
+    fn reset_party_stats_personal_info(&mut self) {
+        let stats = self.get_stats_personal_info(&self.get_personal_info());
+        self.set_stats(stats.map(|i| i as usize).to_vec());
+        self.set_stat_level(self.get_current_level());
+        self.set_status_condition(0);
+    }
+
+    fn reset_party_stats_hyper_train<P: HyperTrain + Pkm<T> + ?Sized>(&mut self, p: &P) {
+        let stats = self.get_stats_hyper_train(&self.get_personal_info(), p);
+        self.set_stats(stats.map(|i| i as usize).to_vec());
+        self.set_stat_level(self.get_current_level());
+        self.set_status_condition(0);
+    }
+
+    fn heal(&mut self) {
+        self.reset_party_stats_personal_info();
+        self.heal_pp();
+    }
+
+    fn heal_pp(&mut self) {
+        self.set_move_1_pp(self.get_move_pp(self.get_move_1(), self.get_move_1_pp_ups()));
+        self.set_move_2_pp(self.get_move_pp(self.get_move_2(), self.get_move_2_pp_ups()));
+        self.set_move_3_pp(self.get_move_pp(self.get_move_3(), self.get_move_3_pp_ups()));
+        self.set_move_4_pp(self.get_move_pp(self.get_move_4(), self.get_move_4_pp_ups()));
+    }
+
+    fn force_party_data(&mut self) -> bool {
+        if self.party_stats_present() {
+            false
+        } else {
+            self.reset_party_stats_personal_info();
+            false
+        }
+    }
+
+    fn can_hold_item(&self, valid: &[u16]) -> bool {
+        valid.contains(&(self.get_held_item() as u16))
+    }
+
+    fn set_link_trade_egg(&mut self, day: usize, month: usize, year: usize, location: usize) {
+        self.set_met_day(day);
+        self.set_met_month(month);
+        self.set_met_year(year - 2000);
+        self.set_met_location(location);
+    }
+
     fn hp_power(&self) -> usize {
         if self.format() < 6 {
             ((40 * self.hp_bit_val_power()) / 63) + 30
@@ -1006,8 +1297,6 @@ pub trait Pkm<T: PersonalInfo>:
         }
     }
 
-    fn refresh_checksum(&mut self);
-
     fn heal_pp_index(&mut self, index: usize) {
         match index {
             0 => self.set_move_1_pp(self.get_move_pp(self.get_move_1(), self.get_move_1_pp_ups())),
@@ -1030,11 +1319,213 @@ pub trait Pkm<T: PersonalInfo>:
         table[move_num] as usize
     }
 
+    fn set_shiny(&mut self) {
+        let mut rand = rand::thread_rng();
+        self.set_pid(get_random_pid(
+            &mut rand,
+            self.get_species(),
+            self.get_gender(),
+            self.get_version(),
+            self.get_nature(),
+            self.get_form(),
+            self.get_pid(),
+        ));
+        while !self.is_shiny() {
+            self.set_pid(get_random_pid(
+                &mut rand,
+                self.get_species(),
+                self.get_gender(),
+                self.get_version(),
+                self.get_nature(),
+                self.get_form(),
+                self.get_pid(),
+            ));
+        }
+        if self.format() >= 6 && (self.gen3() || self.gen4() || self.gen5()) {
+            self.set_encryption_constant(self.get_pid());
+        }
+    }
+
+    fn set_shiny_sid(&mut self, shiny: ShinyEnum) {
+        if self.is_shiny() && shiny.is_valid(self) {
+            return;
+        }
+
+        let xor = self.get_tid() ^ (self.get_pid() >> 16) ^ (self.get_pid() & 0xFFFF);
+        let bits = match shiny {
+            ShinyEnum::AlwaysSquare => 0,
+            ShinyEnum::AlwaysStar => 1,
+            _ => rand::thread_rng().gen_range(0..8),
+        };
+
+        self.set_sid(xor ^ bits);
+    }
+
+    fn set_pid_gender(&mut self, gender: usize) {
+        let mut rand = rand::thread_rng();
+        self.set_pid(get_random_pid(
+            &mut rand,
+            self.get_species(),
+            gender,
+            self.get_version(),
+            self.get_nature(),
+            self.get_form(),
+            self.get_pid(),
+        ));
+        while self.is_shiny() {
+            self.set_pid(get_random_pid(
+                &mut rand,
+                self.get_species(),
+                gender,
+                self.get_version(),
+                self.get_nature(),
+                self.get_form(),
+                self.get_pid(),
+            ));
+        }
+        if self.format() >= 6 && (self.gen3() || self.gen4() || self.gen5()) {
+            self.set_encryption_constant(self.get_pid());
+        }
+    }
+
+    fn set_pid_nature(&mut self, nature: usize) {
+        let mut rand = rand::thread_rng();
+        self.set_pid(get_random_pid(
+            &mut rand,
+            self.get_species(),
+            self.get_gender(),
+            self.get_version(),
+            nature,
+            self.get_form(),
+            self.get_pid(),
+        ));
+        while self.is_shiny() {
+            self.set_pid(get_random_pid(
+                &mut rand,
+                self.get_species(),
+                self.get_gender(),
+                self.get_version(),
+                nature,
+                self.get_form(),
+                self.get_pid(),
+            ));
+        }
+        if self.format() >= 6 && (self.gen3() || self.gen4() || self.gen5()) {
+            self.set_encryption_constant(self.get_pid());
+        }
+    }
+
+    fn set_pid_unown_3(&mut self, form: usize) {
+        let mut rand = rand::thread_rng();
+        self.set_pid(rand.next_u32() as usize);
+        while get_unown_form(self.get_pid()) != form {
+            self.set_pid(rand.next_u32() as usize);
+        }
+        if self.format() >= 6 && (self.gen3() || self.gen4() || self.gen5()) {
+            self.set_encryption_constant(self.get_pid());
+        }
+    }
+
+    fn set_random_ivs(&mut self, flawless: Option<usize>) -> [usize; 6] {
+        if self.get_version() == GameVersion::GO as usize && flawless.unwrap_or_default() == 6 {
+            return self.set_random_ivs_go(0, 5);
+        }
+        let mut ivs = [0, 0, 0, 0, 0, 0];
+        let mut rand = rand::thread_rng();
+        for iv in ivs.iter_mut() {
+            *iv = rand.gen_range(0..(self.max_iv() + 1));
+        }
+
+        let count = flawless.unwrap_or(self.get_flawless_iv_count());
+        if count != 0 {
+            for i in 0..count {
+                ivs[i] = self.get_max_iv();
+            }
+            let len = ivs.len();
+            rand_util::shuffle(&mut ivs, 0, len, &mut rand);
+        }
+        ivs
+    }
+
+    fn set_random_ivs_go(&mut self, min_iv: usize, max_iv: usize) -> [usize; 6] {
+        let mut ivs = [0, 0, 0, 0, 0, 0];
+        let mut rand = rand::thread_rng();
+        ivs[0] = ((rand.gen_range(min_iv..(max_iv + 1)) << 1) | 1) as usize;
+        ivs[1] = ((rand.gen_range(min_iv..(max_iv + 1)) << 1) | 1) as usize;
+        ivs[4] = ivs[1];
+        ivs[2] = ((rand.gen_range(min_iv..(max_iv + 1)) << 1) | 1) as usize;
+        ivs[5] = ivs[2];
+        ivs[3] = rand.gen_range(0..(max_iv + 1)) as usize;
+        self.set_ivs(ivs.to_vec());
+
+        ivs
+    }
+
+    fn set_random_ivs_from_template(
+        &mut self,
+        template: &[Option<usize>],
+        flawless: Option<usize>,
+    ) -> [usize; 6] {
+        let count = flawless.unwrap_or(self.get_flawless_iv_count());
+        let mut ivs = [0, 0, 0, 0, 0, 0];
+        let mut rand = rand::thread_rng();
+        for i in 0..6 {
+            ivs[i] = *template[i]
+                .as_ref()
+                .unwrap_or(&rand.gen_range(0..(self.get_max_iv() + 1)));
+        }
+        while ivs.iter().filter(|&&z| z == self.get_max_iv()).count() < count {
+            for i in 0..6 {
+                ivs[i] = *template[i]
+                    .as_ref()
+                    .unwrap_or(&rand.gen_range(0..(self.get_max_iv() + 1)));
+            }
+        }
+        self.set_ivs(ivs.to_vec());
+        ivs
+    }
+
+    fn get_flawless_iv_count(&self) -> usize {
+        if self.generation() >= 6
+            && (LEGENDS.contains(&self.get_species()) || SUB_LEGENDS.contains(&self.get_species()))
+        {
+            3
+        } else if self.xy() {
+            if self.get_personal_info().get_egg_group_1() == 15 {
+                3
+            } else if self.get_met_location() == 148 && self.get_met_level() == 30 {
+                2
+            } else {
+                0
+            }
+        } else if self.vc() {
+            if self.get_species() == Species::Mew as usize
+                || self.get_species() == Species::Celebi as usize
+            {
+                5
+            } else {
+                3
+            }
+        } else {
+            0
+        }
+    }
+
     fn has_move(&self, move_num: usize) -> bool {
         self.get_move_1() == move_num
             || self.get_move_2() == move_num
             || self.get_move_3() == move_num
             || self.get_move_4() == move_num
+    }
+
+    fn get_move(&self, index: usize) -> usize {
+        match index {
+            0 => self.get_move_1(),
+            1 => self.get_move_2(),
+            2 => self.get_move_3(),
+            3 => self.get_move_4(),
+            _ => 0,
+        }
     }
 
     fn set_move(&mut self, index: usize, value: usize) {
@@ -1044,6 +1535,53 @@ pub trait Pkm<T: PersonalInfo>:
             2 => self.set_move_3(value),
             3 => self.set_move_4(value),
             _ => {}
+        }
+    }
+
+    fn clear_invalid_moves(&mut self) {
+        let mut invalid = 0;
+        let mut moves = self.get_moves();
+        for move_num in moves.iter_mut() {
+            if *move_num <= self.get_max_move_id() {
+                continue;
+            }
+
+            invalid += 1;
+            *move_num = 0;
+        }
+        if invalid == 0 {
+            return;
+        }
+        if invalid == 4 {
+            moves[0] = 1;
+            self.set_move_1_pp(self.get_move_pp(1, self.get_move_1_pp_ups()));
+        }
+
+        self.set_moves(&moves);
+        self.fix_moves();
+    }
+
+    fn get_ev(&self, index: usize) -> usize {
+        match index {
+            0 => self.get_ev_hp(),
+            1 => self.get_ev_atk(),
+            2 => self.get_ev_def(),
+            3 => self.get_ev_spe(),
+            4 => self.get_ev_spa(),
+            5 => self.get_ev_spd(),
+            _ => 0,
+        }
+    }
+
+    fn get_iv(&self, index: usize) -> usize {
+        match index {
+            0 => self.get_iv_hp(),
+            1 => self.get_iv_atk(),
+            2 => self.get_iv_def(),
+            3 => self.get_iv_spe(),
+            4 => self.get_iv_spa(),
+            5 => self.get_iv_spd(),
+            _ => 0,
         }
     }
 }

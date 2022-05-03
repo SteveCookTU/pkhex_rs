@@ -1,4 +1,5 @@
 pub mod locations;
+mod tables;
 mod tables_1;
 mod tables_2;
 mod tables_3;
@@ -11,6 +12,7 @@ mod tables_8;
 mod tables_8a;
 mod tables_8bs;
 
+pub use tables::*;
 pub use tables_1::*;
 pub use tables_2::*;
 pub use tables_3::*;

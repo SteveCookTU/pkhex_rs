@@ -1,5 +1,6 @@
 mod bin_linker_accessor;
 mod evolutions;
+mod restrictions;
 mod structures;
 pub mod tables;
 
@@ -11,6 +12,7 @@ use crate::tables::{
 use crate::{PersonalInfo, Pkm};
 pub use bin_linker_accessor::*;
 pub use evolutions::*;
+pub use restrictions::*;
 pub use structures::*;
 
 pub fn get_pp_table<I: PersonalInfo, T: Pkm<I> + ?Sized>(_pkm: &T, format: usize) -> &'static [u8] {

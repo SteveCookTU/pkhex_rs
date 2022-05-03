@@ -31,7 +31,7 @@ pub trait Pkm<T: PersonalInfo>:
         self.get_type_name().to_lowercase()
     }
 
-    fn get_personal_info(&self) -> T;
+    fn get_personal_info(&self) -> &T;
 
     fn extra_bytes(&self) -> Vec<u16> {
         vec![]
@@ -43,7 +43,25 @@ pub trait Pkm<T: PersonalInfo>:
 
     fn new_blank() -> Self;
 
-    fn valid(&self) -> bool;
+    fn encrypted_party_data(&self) -> Vec<u8> {
+        self.encrypt()[..self.size_party()].to_vec()
+    }
+
+    fn encrypted_box_data(&self) -> Vec<u8> {
+        self.encrypt()[..self.size_stored()].to_vec()
+    }
+
+    fn decrypted_party_data(&mut self) -> Vec<u8> {
+        self.write()[..self.size_party()].to_vec()
+    }
+
+    fn decrypted_box_data(&mut self) -> Vec<u8> {
+        self.write()[..self.size_stored()].to_vec()
+    }
+
+    fn set_valid(&mut self, valid: bool);
+
+    fn get_valid(&self) -> bool;
 
     fn nickname_trash(&self) -> Vec<u8>;
     fn ot_trash(&self) -> Vec<u8>;
@@ -1128,7 +1146,7 @@ pub trait Pkm<T: PersonalInfo>:
         }
     }
 
-    fn get_stats_personal_info<I: PersonalInfo + ?Sized>(&self, p: &I) -> [u16; 6] {
+    fn get_stats_personal_info<I: PersonalInfo>(&self, p: &I) -> [u16; 6] {
         let level = self.get_current_level();
         let mut stats: [u16; 6] = [
             if p.get_hp() == 1 {
@@ -1152,7 +1170,7 @@ pub trait Pkm<T: PersonalInfo>:
         stats
     }
 
-    fn get_stats_hyper_train<I: PersonalInfo, P: Pkm<I> + HyperTrain + ?Sized>(
+    fn get_stats_hyper_train<I: PersonalInfo, P: HyperTrain>(
         &self,
         p: &I,
         t: &P,
@@ -1225,14 +1243,14 @@ pub trait Pkm<T: PersonalInfo>:
     }
 
     fn reset_party_stats_personal_info(&mut self) {
-        let stats = self.get_stats_personal_info(&self.get_personal_info());
+        let stats = self.get_stats_personal_info(self.get_personal_info());
         self.set_stats(stats.map(|i| i as usize).to_vec());
         self.set_stat_level(self.get_current_level());
         self.set_status_condition(0);
     }
 
-    fn reset_party_stats_hyper_train<P: HyperTrain + Pkm<T> + ?Sized>(&mut self, p: &P) {
-        let stats = self.get_stats_hyper_train(&self.get_personal_info(), p);
+    fn reset_party_stats_hyper_train<P: HyperTrain + Pkm<T>>(&mut self, p: &P) {
+        let stats = self.get_stats_hyper_train(self.get_personal_info(), p);
         self.set_stats(stats.map(|i| i as usize).to_vec());
         self.set_stat_level(self.get_current_level());
         self.set_status_condition(0);

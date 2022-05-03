@@ -1,10 +1,10 @@
 pub trait TrainerId {
     fn get_tid(&self) -> usize;
-    fn set_tid(&mut self) -> usize;
+    fn set_tid(&mut self, tid: usize);
     fn get_sid(&self) -> usize;
-    fn set_sid(&mut self) -> usize;
+    fn set_sid(&mut self, sid: usize);
 
-    fn is_shiny(&self, pid: usize, gen: usize) -> bool {
+    fn is_shiny_xor(&self, pid: usize, gen: usize) -> bool {
         let xor = self.get_sid() ^ self.get_tid() ^ (pid >> 16) ^ pid;
         xor < if gen >= 7 { 16 } else { 18 }
     }

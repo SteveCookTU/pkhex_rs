@@ -1,3 +1,4 @@
+#[derive(PartialEq)]
 #[repr(usize)]
 pub enum Move {
     None,

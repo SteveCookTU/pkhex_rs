@@ -1,3 +1,4 @@
+pub mod locations;
 mod tables_1;
 mod tables_2;
 mod tables_3;

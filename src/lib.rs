@@ -1,10 +1,12 @@
 #![allow(dead_code)]
+mod editing;
 mod game;
 mod legality;
 mod personal_info;
 mod pkm;
 mod util;
 
+pub use editing::*;
 pub use game::*;
 pub use legality::*;
 pub use personal_info::*;

@@ -80,7 +80,7 @@ fn crypt_array(data: &mut Vec<u8>, mut seed: usize, start: usize, end: usize) {
 }
 
 fn crypt(data: &mut [u8], seed: &mut usize) {
-    *seed = (0x41C64E6D * *seed) + 0x00006073;
+    *seed = seed.wrapping_mul(0x41C64E6D).wrapping_add(0x00006073);
     let mut current = u16::from_le_bytes(data[0..2].try_into().unwrap()) as usize;
     current ^= (*seed >> 16) & 0xFFFF;
     let current_bytes = u16::to_le_bytes(current as u16);

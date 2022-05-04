@@ -1,4 +1,12 @@
 pub const MAX_SPECIES_ID_6: usize = 721;
+pub const MAX_MOVE_ID_6_XY: usize = 617;
+pub const MAX_MOVE_ID_6_AO: usize = 621;
+pub const MAX_ITEM_ID_6_XY: usize = 717;
+pub const MAX_ITEM_ID_6_AO: usize = 775;
+pub const MAX_ABILITY_ID_6_XY: usize = 188;
+pub const MAX_ABILITY_ID_6_AO: usize = 191;
+pub const MAX_BALL_ID_6: usize = 0x19;
+pub const MAX_GAME_ID_6: usize = 27;
 
 pub const MOVE_PP_XY: [u8; 622] = [
     00, 35, 25, 10, 15, 20, 20, 15, 15, 15, 35, 30, 05, 10, 20, 30, 35, 35, 20, 15, 20, 20, 25, 20,

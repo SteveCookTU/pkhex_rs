@@ -1,7 +1,17 @@
 use crate::personal_info_oras::PersonalInfoORAS;
 use crate::personal_table::AO;
-use crate::{Affection, ContestStats, ContestStatsMutable, FormArgument, G6Pkm, GameValueLimit, Generation, GeoTrack, GroundTile, GroundTileType, HyperTrain, LangNick, MemoryHT, MemoryOT, NatureT, PersonalInfo, Pkm, RegionOrigin, RibbonSetCommon3, RibbonSetCommon4, RibbonSetCommon6, RibbonSetEvent3, RibbonSetEvent4, SanityChecksum, Shiny, ShinyEnum, SpeciesForm, string_converter_6, SuperTrain, TrainerId, TrainerInfo, TrainerMemories};
 use crate::poke_crypto::{decrypt_if_encrypted_67, SIZE_6PARTY};
+use crate::tables::{
+    MAX_ABILITY_ID_6_AO, MAX_BALL_ID_6, MAX_GAME_ID_6, MAX_ITEM_ID_6_AO, MAX_MOVE_ID_6_AO,
+    MAX_SPECIES_ID_6,
+};
+use crate::{
+    string_converter_6, Affection, ContestStats, ContestStatsMutable, FormArgument, G6Pkm,
+    GameValueLimit, Generation, GeoTrack, GroundTile, GroundTileType, LangNick, MemoryHT, MemoryOT,
+    NatureT, PersonalInfo, Pkm, RegionOrigin, RibbonSetCommon3, RibbonSetCommon4, RibbonSetCommon6,
+    RibbonSetEvent3, RibbonSetEvent4, SanityChecksum, Shiny, SpeciesForm, StringConverterOption,
+    SuperTrain, TrainerId, TrainerInfo, TrainerMemories,
+};
 
 const UNUSED: [u16; 23] = [
     0x36, 0x37, // Unused Ribbons
@@ -333,6 +343,15 @@ impl PK6 {
         self.set_st1((self.get_st1() & !(1 << 7)) | if flag { 1 << 7 } else { 0 });
     }
 
+    pub fn get_super_training_bit_flags(&self) -> u32 {
+        u32::from_le_bytes((&self.data[0x2C..0x30]).try_into().unwrap())
+    }
+
+    pub fn set_super_training_bit_flags(&mut self, flags: u32) {
+        let bytes = flags.to_le_bytes();
+        self.data.splice(0x2C..0x30, bytes);
+    }
+
     fn get_rib_0(&self) -> u8 {
         self.data[0x30]
     }
@@ -429,7 +448,7 @@ impl PK6 {
     }
 
     pub fn set_dist_super_train_1(&mut self, flag: bool) {
-        self.set_dist_byte((self.get_dist_byte() & !1) | if flag { 1} else { 0 });
+        self.set_dist_byte((self.get_dist_byte() & !1) | if flag { 1 } else { 0 });
     }
 
     pub fn get_dist_super_train_2(&self) -> bool {
@@ -488,6 +507,69 @@ impl PK6 {
         self.set_dist_byte((self.get_dist_byte() & !(1 << 7)) | if flag { 1 << 7 } else { 0 });
     }
 
+    fn get_iv32(&self) -> u32 {
+        u32::from_le_bytes((&self.data[0x74..0x78]).try_into().unwrap())
+    }
+
+    fn set_iv32(&mut self, iv32: u32) {
+        let bytes = (iv32 as u32).to_le_bytes();
+        self.data.splice(0x74..0x78, bytes);
+    }
+
+    pub fn is_untraded_event_6(&self) -> bool {
+        self.get_geo_1_country() == 0
+            && self.get_geo_1_region() == 0
+            && self.get_met_location() / 10000 == 4
+            && self.gen6()
+    }
+
+    pub fn fix_memories(&mut self) {
+        if self.get_is_egg() {
+            self.set_geo_1_country(0);
+            self.set_geo_1_region(0);
+            self.set_geo_2_country(0);
+            self.set_geo_2_region(0);
+            self.set_geo_3_country(0);
+            self.set_geo_3_region(0);
+            self.set_geo_4_country(0);
+            self.set_geo_4_region(0);
+            self.set_geo_5_country(0);
+            self.set_geo_5_region(0);
+            self.set_ht_friendship(0);
+            self.set_ht_text_var(0);
+            self.set_ht_memory(0);
+            self.set_ht_intensity(0);
+            self.set_ht_feeling(0);
+            self.set_ot_text_var(0);
+            self.set_ot_memory(0);
+            self.set_ot_intensity(0);
+            self.set_ot_feeling(0);
+            self.set_ot_affection(0);
+            self.set_ht_affection(0);
+
+            let clear = vec![0u8; 26];
+            self.data.splice(0x78..(0x78 + 26), clear);
+            return;
+        }
+
+        if G6Pkm::is_untraded(self) {
+            self.set_ht_friendship(0);
+            self.set_ht_text_var(0);
+            self.set_ht_memory(0);
+            self.set_ht_intensity(0);
+            self.set_ht_feeling(0);
+            self.set_ht_affection(0);
+        }
+
+        if !self.gen6() {
+            self.set_ot_text_var(0);
+            self.set_ot_memory(0);
+            self.set_ot_intensity(0);
+            self.set_ot_feeling(0);
+        }
+
+        self.sanitize_geo_location_data();
+    }
 }
 
 impl RibbonSetCommon3 for PK6 {
@@ -922,109 +1004,109 @@ impl ContestStatsMutable for PK6 {
 
 impl RegionOrigin for PK6 {
     fn get_console_region(&self) -> u8 {
-        todo!()
+        self.data[0xE2]
     }
 
     fn set_console_region(&mut self, console_region: u8) {
-        todo!()
+        self.data[0xE2] = console_region;
     }
 
     fn get_country(&self) -> u8 {
-        todo!()
+        self.data[0xE0]
     }
 
     fn set_country(&mut self, country: u8) {
-        todo!()
+        self.data[0xE0] = country;
     }
 
     fn get_region(&self) -> u8 {
-        todo!()
+        self.data[0xE1]
     }
 
     fn set_region(&mut self, region: u8) {
-        todo!()
+        self.data[0xE1] = region;
     }
 }
 
 impl GeoTrack for PK6 {
     fn get_geo_1_region(&self) -> u8 {
-        todo!()
+        self.data[0x94]
     }
 
     fn set_geo_1_region(&mut self, region: u8) {
-        todo!()
+        self.data[0x94] = region;
     }
 
     fn get_geo_2_region(&self) -> u8 {
-        todo!()
+        self.data[0x96]
     }
 
     fn set_geo_2_region(&mut self, region: u8) {
-        todo!()
+        self.data[0x96] = region;
     }
 
     fn get_geo_3_region(&self) -> u8 {
-        todo!()
+        self.data[0x98]
     }
 
     fn set_geo_3_region(&mut self, region: u8) {
-        todo!()
+        self.data[0x98] = region;
     }
 
     fn get_geo_4_region(&self) -> u8 {
-        todo!()
+        self.data[0x9A]
     }
 
     fn set_geo_4_region(&mut self, region: u8) {
-        todo!()
+        self.data[0x9A] = region;
     }
 
     fn get_geo_5_region(&self) -> u8 {
-        todo!()
+        self.data[0x9C]
     }
 
     fn set_geo_5_region(&mut self, region: u8) {
-        todo!()
+        self.data[0x9C] = region;
     }
 
     fn get_geo_1_country(&self) -> u8 {
-        todo!()
+        self.data[0x95]
     }
 
     fn set_geo_1_country(&mut self, country: u8) {
-        todo!()
+        self.data[0x95] = country;
     }
 
     fn get_geo_2_country(&self) -> u8 {
-        todo!()
+        self.data[0x97]
     }
 
     fn set_geo_2_country(&mut self, country: u8) {
-        todo!()
+        self.data[0x97] = country;
     }
 
     fn get_geo_3_country(&self) -> u8 {
-        todo!()
+        self.data[0x99]
     }
 
     fn set_geo_3_country(&mut self, country: u8) {
-        todo!()
+        self.data[0x99] = country;
     }
 
     fn get_geo_4_country(&self) -> u8 {
-        todo!()
+        self.data[0x9B]
     }
 
     fn set_geo_4_country(&mut self, country: u8) {
-        todo!()
+        self.data[0x9B] = country;
     }
 
     fn get_geo_5_country(&self) -> u8 {
-        todo!()
+        self.data[0x9D]
     }
 
     fn set_geo_5_country(&mut self, country: u8) {
-        todo!()
+        self.data[0x9D] = country;
     }
 }
 
@@ -1039,27 +1121,33 @@ impl SuperTrain for PK6 {
     }
 
     fn get_secret_super_training_unlocked(&self) -> bool {
-        todo!()
+        (self.data[0x72] & 1) == 1
     }
 
     fn set_secret_super_training_unlocked(&mut self, unlocked: bool) {
-        todo!()
+        self.data[0x72] = (self.data[0x72] & !1) | if unlocked { 1 } else { 0 }
     }
 
     fn get_secret_super_training_complete(&self) -> bool {
-        todo!()
+        (self.data[0x72] & 2) == 2
     }
 
     fn set_secret_super_training_complete(&mut self, complete: bool) {
-        todo!()
+        self.data[0x72] = (self.data[0x72] & !2) | if complete { 2 } else { 0 }
     }
 
-    fn get_super_training_medal_count(&self) -> usize {
-        todo!()
-    }
+    fn get_super_training_medal_count(&self, max_count: usize) -> usize {
+        let mut value = self.get_super_training_bit_flags() >> 2;
 
-    fn set_super_training_medal_count(&mut self, count: usize) {
-        todo!()
+        let mut train_count = 0;
+        for _ in 0..max_count {
+            if (value & 1) != 0 {
+                train_count += 1;
+            }
+            value >>= 1;
+        }
+
+        train_count
     }
 }
 
@@ -1074,19 +1162,19 @@ impl FormArgument for PK6 {
     }
 
     fn get_form_argument_remain(&self) -> u8 {
-        todo!()
+        self.data[0xED]
     }
 
     fn set_form_argument_remain(&mut self, remain: u8) {
-        todo!()
+        self.data[0xED] = remain;
     }
 
     fn get_form_argument_elapsed(&self) -> u8 {
-        todo!()
+        self.data[0xEE]
     }
 
     fn set_form_argument_elapsed(&mut self, elapsed: u8) {
-        todo!()
+        self.data[0xEE] = elapsed;
     }
 
     fn get_form_argument_maximum(&self) -> u8 {
@@ -1100,69 +1188,71 @@ impl FormArgument for PK6 {
 
 impl MemoryOT for PK6 {
     fn get_ot_memory(&self) -> u8 {
-        todo!()
+        self.data[0xCD]
     }
 
     fn set_ot_memory(&mut self, memory: u8) {
-        todo!()
+        self.data[0xCD] = memory
     }
 
     fn get_ot_intensity(&self) -> u8 {
-        todo!()
+        self.data[0xCC]
     }
 
-    fn set_ot_intensity(&mut self, memory: u8) {
-        todo!()
+    fn set_ot_intensity(&mut self, intensity: u8) {
+        self.data[0xCC] = intensity;
     }
 
     fn get_ot_feeling(&self) -> u8 {
-        todo!()
+        self.data[0xD0]
     }
 
-    fn set_ot_feeling(&mut self, memory: u8) {
-        todo!()
+    fn set_ot_feeling(&mut self, feeling: u8) {
+        self.data[0xD0] = feeling;
     }
 
     fn get_ot_text_var(&self) -> u16 {
-        todo!()
+        u16::from_le_bytes((&self.data[0xCE..0xD0]).try_into().unwrap())
     }
 
     fn set_ot_text_var(&mut self, var: u16) {
-        todo!()
+        let bytes = var.to_le_bytes();
+        self.data.splice(0xCE..0xD0, bytes);
     }
 }
 
 impl MemoryHT for PK6 {
     fn get_ht_memory(&self) -> u8 {
-        todo!()
+        self.data[0xA5]
     }
 
     fn set_ht_memory(&mut self, memory: u8) {
-        todo!()
+        self.data[0xA5] = memory;
     }
 
     fn get_ht_intensity(&self) -> u8 {
-        todo!()
+        self.data[0xA4]
     }
 
-    fn set_ht_intensity(&mut self, memory: u8) {
-        todo!()
+    fn set_ht_intensity(&mut self, intensity: u8) {
+        self.data[0xA4] = intensity;
     }
 
     fn get_ht_feeling(&self) -> u8 {
-        todo!()
+        self.data[0xA6]
     }
 
-    fn set_ht_feeling(&mut self, memory: u8) {
-        todo!()
+    fn set_ht_feeling(&mut self, feeling: u8) {
+        self.data[0xA6] = feeling;
     }
 
     fn get_ht_text_var(&self) -> u16 {
-        todo!()
+        u16::from_le_bytes((&self.data[0xA8..0xAA]).try_into().unwrap())
     }
 
     fn set_ht_text_var(&mut self, var: u16) {
-        todo!()
+        let bytes = var.to_le_bytes();
+        self.data.splice(0xA8..0xAA, bytes);
     }
 }
 
@@ -1170,29 +1260,29 @@ impl TrainerMemories for PK6 {}
 
 impl Affection for PK6 {
     fn get_ot_affection(&self) -> u8 {
-        todo!()
+        self.data[0xCB]
     }
 
-    fn set_ot_affect(&mut self, affection: u8) {
-        todo!()
+    fn set_ot_affection(&mut self, affection: u8) {
+        self.data[0xCB] = affection;
     }
 
     fn get_ht_affection(&self) -> u8 {
-        todo!()
+        self.data[0xA3]
     }
 
-    fn set_ht_affection(&self, affection: u8) {
-        todo!()
+    fn set_ht_affection(&mut self, affection: u8) {
+        self.data[0xA3] = affection;
     }
 }
 
 impl GroundTile for PK6 {
     fn get_ground_tile(&self) -> GroundTileType {
-        todo!()
+        self.data[0xDE].into()
     }
 
     fn set_ground_tile(&mut self, tile: GroundTileType) {
-        todo!()
+        self.data[0xDE] = tile as u8;
     }
 }
 
@@ -1237,13 +1327,13 @@ impl TrainerId for PK6 {
 
 impl Generation for PK6 {
     fn get_generation(&self) -> usize {
-        todo!()
+        6
     }
 }
 
 impl Shiny for PK6 {
     fn get_is_shiny(&self) -> bool {
-        todo!()
+        Pkm::is_shiny(self)
     }
 }
 
@@ -1253,65 +1343,76 @@ impl LangNick for PK6 {
     }
 
     fn set_nickname(&mut self, nickname: String) {
-        todo!()
+        let mut trash = G6Pkm::nickname_trash(self);
+        string_converter_6::set_string(
+            &mut trash,
+            nickname.chars().collect::<Vec<char>>(),
+            12,
+            StringConverterOption::None,
+        );
+        self.data.splice(0x40..(0x40 + 26), trash);
     }
 
     fn get_is_nicknamed(&self) -> bool {
-        todo!()
+        ((self.get_iv32() >> 31) & 1) == 1
+    }
+
+    fn set_is_nicknamed(&mut self, nicknamed: bool) {
+        self.set_iv32((self.get_iv32() & !0x7FFFFFFF) | if nicknamed { 0x80000000 } else { 0 });
     }
 
     fn get_language(&self) -> usize {
-        todo!()
+        self.data[0xE3] as usize
     }
 
     fn set_language(&mut self, language: usize) {
-        todo!()
+        self.data[0xE3] = language as u8;
     }
 }
 
 impl GameValueLimit for PK6 {
     fn get_max_move_id(&self) -> usize {
-        todo!()
+        Pkm::max_move_id(self)
     }
 
     fn get_max_species_id(&self) -> usize {
-        todo!()
+        Pkm::max_species_id(self)
     }
 
     fn get_max_item_id(&self) -> usize {
-        todo!()
+        Pkm::max_item_id(self)
     }
 
     fn get_max_ability_id(&self) -> usize {
-        todo!()
+        Pkm::max_ability_id(self)
     }
 
     fn get_max_ball_id(&self) -> usize {
-        todo!()
+        Pkm::max_ball_id(self)
     }
 
     fn get_max_game_id(&self) -> usize {
-        todo!()
+        Pkm::max_game_id(self)
     }
 
     fn get_min_game_id(&self) -> usize {
-        todo!()
+        Pkm::min_game_id(self)
     }
 
     fn get_max_iv(&self) -> usize {
-        todo!()
+        G6Pkm::max_iv(self)
     }
 
     fn get_max_ev(&self) -> usize {
-        todo!()
+        G6Pkm::max_ev(self)
     }
 
     fn get_ot_length(&self) -> usize {
-        todo!()
+        G6Pkm::ot_length(self)
     }
 
     fn get_nick_length(&self) -> usize {
-        todo!()
+        G6Pkm::nick_length(self)
     }
 }
 
@@ -1327,15 +1428,15 @@ impl NatureT for PK6 {
 
 impl Pkm<PersonalInfoORAS> for PK6 {
     fn size_party(&self) -> usize {
-        todo!()
+        G6Pkm::size_party(self)
     }
 
     fn size_stored(&self) -> usize {
-        todo!()
+        G6Pkm::size_stored(self)
     }
 
     fn get_type_name(&self) -> String {
-        todo!()
+        "PK6".to_string()
     }
 
     fn get_personal_info(&self) -> &PersonalInfoORAS {
@@ -1347,49 +1448,43 @@ impl Pkm<PersonalInfoORAS> for PK6 {
     }
 
     fn get_data(&self) -> &Vec<u8> {
-        todo!()
+        &self.data
     }
 
     fn new(data: Vec<u8>) -> Self {
-        todo!()
+        Self {
+            data: PK6::decrypt_party(data),
+        }
     }
 
     fn new_blank() -> Self {
         Self {
-            data: vec![0; SIZE_6PARTY]
+            data: vec![0; SIZE_6PARTY],
         }
     }
 
     fn set_valid(&mut self, valid: bool) {
-        todo!()
+        G6Pkm::set_valid(self, valid);
     }
 
     fn get_valid(&self) -> bool {
-        todo!()
+        G6Pkm::get_valid(self)
     }
 
     fn nickname_trash(&self) -> Vec<u8> {
-        todo!()
+        G6Pkm::nickname_trash(self)
     }
 
     fn ot_trash(&self) -> Vec<u8> {
-        todo!()
+        G6Pkm::ot_trash(self)
     }
 
-    fn encrypt(&self) -> Vec<u8> {
-        todo!()
+    fn encrypt(&mut self) -> Vec<u8> {
+        G6Pkm::encrypt(self)
     }
 
     fn format(&self) -> usize {
         6
-    }
-
-    fn get_nickname(&self) -> String {
-        todo!()
-    }
-
-    fn set_nickname(&mut self, nickname: String) {
-        todo!()
     }
 
     fn get_held_item(&self) -> usize {
@@ -1418,27 +1513,19 @@ impl Pkm<PersonalInfoORAS> for PK6 {
     }
 
     fn get_current_friendship(&self) -> usize {
-        todo!()
+        G6Pkm::get_current_friendship(self)
     }
 
     fn set_current_friendship(&mut self, current_friendship: usize) {
-        todo!()
+        G6Pkm::set_current_friendship(self, current_friendship)
     }
 
     fn get_is_egg(&self) -> bool {
-        todo!()
+        ((self.get_iv32() >> 30) & 1) == 1
     }
 
     fn set_is_egg(&mut self, is_egg: bool) {
-        todo!()
-    }
-
-    fn get_is_nicknamed(&self) -> bool {
-        todo!()
-    }
-
-    fn set_is_nicknamed(&mut self, is_nicknamed: bool) {
-        todo!()
+        self.set_iv32((self.get_iv32() & !0x40000000) | if is_egg { 0x40000000 } else { 0 });
     }
 
     fn get_exp(&self) -> usize {
@@ -1451,131 +1538,142 @@ impl Pkm<PersonalInfoORAS> for PK6 {
     }
 
     fn get_ot_name(&self) -> String {
-        todo!()
+        string_converter_6::get_string(G6Pkm::ot_trash(self))
     }
 
     fn set_ot_name(&mut self, ot_name: String) {
-        todo!()
+        let mut trash = G6Pkm::nickname_trash(self);
+        string_converter_6::set_string(
+            &mut trash,
+            ot_name.chars().collect::<Vec<char>>(),
+            12,
+            StringConverterOption::None,
+        );
+        self.data.splice(0xB0..(0xB0 + 26), trash);
     }
 
     fn get_ot_gender(&self) -> usize {
-        todo!()
+        (self.data[0xDD] >> 7) as usize
     }
 
     fn set_ot_gender(&mut self, ot_gender: usize) {
-        todo!()
+        self.data[0xDD] = (self.data[0xDD] & !0x80) | ((ot_gender as u8) << 7);
     }
 
     fn get_ball(&self) -> usize {
-        todo!()
+        self.data[0xDC] as usize
     }
 
     fn set_ball(&mut self, ball: usize) {
-        todo!()
+        self.data[0xDC] = ball as u8;
     }
 
     fn get_met_level(&self) -> usize {
-        todo!()
+        (self.data[0xDD] & !0x80) as usize
     }
 
     fn set_met_level(&mut self, met_level: usize) {
-        todo!()
+        self.data[0xDD] = (self.data[0xDD] & 0x80) | met_level as u8;
     }
 
     fn get_move_1(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0x5A..0x5C]).try_into().unwrap()) as usize
     }
 
     fn set_move_1(&mut self, move_1: usize) {
-        todo!()
+        let bytes = (move_1 as u16).to_le_bytes();
+        self.data.splice(0x5A..0x5C, bytes);
     }
 
     fn get_move_2(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0x5C..0x5E]).try_into().unwrap()) as usize
     }
 
     fn set_move_2(&mut self, move_2: usize) {
-        todo!()
+        let bytes = (move_2 as u16).to_le_bytes();
+        self.data.splice(0x5C..0x5E, bytes);
     }
 
     fn get_move_3(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0x5E..0x60]).try_into().unwrap()) as usize
     }
 
-    fn set_move_3(&mut self, move3: usize) {
-        todo!()
+    fn set_move_3(&mut self, move_3: usize) {
+        let bytes = (move_3 as u16).to_le_bytes();
+        self.data.splice(0x5E..0x60, bytes);
     }
 
     fn get_move_4(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0x60..0x62]).try_into().unwrap()) as usize
     }
 
     fn set_move_4(&mut self, move_4: usize) {
-        todo!()
+        let bytes = (move_4 as u16).to_le_bytes();
+        self.data.splice(0x60..0x62, bytes);
     }
 
     fn get_move_1_pp(&self) -> usize {
-        todo!()
+        self.data[0x62] as usize
     }
 
     fn set_move_1_pp(&mut self, move_1_pp: usize) {
-        todo!()
+        self.data[0x62] = move_1_pp as u8;
     }
 
     fn get_move_2_pp(&self) -> usize {
-        todo!()
+        self.data[0x63] as usize
     }
 
     fn set_move_2_pp(&mut self, move_2_pp: usize) {
-        todo!()
+        self.data[0x63] = move_2_pp as u8;
     }
 
     fn get_move_3_pp(&self) -> usize {
-        todo!()
+        self.data[0x64] as usize
     }
 
     fn set_move_3_pp(&mut self, move_3_pp: usize) {
-        todo!()
+        self.data[0x64] = move_3_pp as u8;
     }
 
     fn get_move_4_pp(&self) -> usize {
-        todo!()
+        self.data[0x65] as usize
     }
 
     fn set_move_4_pp(&mut self, move_4_pp: usize) {
-        todo!()
+        self.data[0x65] = move_4_pp as u8;
     }
 
     fn get_move_1_pp_ups(&self) -> usize {
-        todo!()
+        self.data[0x66] as usize
     }
 
     fn set_move_1_pp_ups(&mut self, move_1_pp_ups: usize) {
-        todo!()
+        self.data[0x66] = move_1_pp_ups as u8;
     }
 
     fn get_move_2_pp_ups(&self) -> usize {
-        todo!()
+        self.data[0x67] as usize
     }
 
     fn set_move_2_pp_ups(&mut self, move_2_pp_ups: usize) {
-        todo!()
+        self.data[0x67] = move_2_pp_ups as u8;
     }
 
     fn get_move_3_pp_ups(&self) -> usize {
-        todo!()
+        self.data[0x68] as usize
     }
 
     fn set_move_3_pp_ups(&mut self, move_3_pp_ups: usize) {
-        todo!()
+        self.data[0x68] = move_3_pp_ups as u8;
     }
 
     fn get_move_4_pp_ups(&self) -> usize {
-        todo!()
+        self.data[0x69] as usize
     }
 
     fn set_move_4_pp_ups(&mut self, move_4_pp_ups: usize) {
-        todo!()
+        self.data[0x69] = move_4_pp_ups as u8;
     }
 
     fn get_ev_hp(&self) -> usize {
@@ -1627,131 +1725,149 @@ impl Pkm<PersonalInfoORAS> for PK6 {
     }
 
     fn get_iv_hp(&self) -> usize {
-        todo!()
+        (self.get_iv32() & 0x1F) as usize
     }
 
     fn set_iv_hp(&mut self, hp: usize) {
-        todo!()
+        self.set_iv32((self.get_iv32() & !0x1F) | if hp > 31 { 31 } else { hp as u32 });
     }
 
     fn get_iv_atk(&self) -> usize {
-        todo!()
+        ((self.get_iv32() >> 5) & 0x1F) as usize
     }
 
     fn set_iv_atk(&mut self, atk: usize) {
-        todo!()
+        self.set_iv32(
+            (self.get_iv32() & !(0x1F << 5)) | (if atk > 31 { 31 } else { atk as u32 } << 5),
+        );
     }
 
     fn get_iv_def(&self) -> usize {
-        todo!()
+        ((self.get_iv32() >> 10) & 0x1F) as usize
     }
 
     fn set_iv_def(&mut self, def: usize) {
-        todo!()
+        self.set_iv32(
+            (self.get_iv32() & !(0x1F << 10)) | (if def > 31 { 31 } else { def as u32 } << 10),
+        );
     }
 
     fn get_iv_spe(&self) -> usize {
-        todo!()
+        ((self.get_iv32() >> 15) & 0x1F) as usize
     }
 
     fn set_iv_spe(&mut self, spe: usize) {
-        todo!()
+        self.set_iv32(
+            (self.get_iv32() & !(0x1F << 15)) | (if spe > 31 { 31 } else { spe as u32 } << 15),
+        );
     }
 
     fn get_iv_spa(&self) -> usize {
-        todo!()
+        ((self.get_iv32() >> 20) & 0x1F) as usize
     }
 
     fn set_iv_spa(&mut self, spa: usize) {
-        todo!()
+        self.set_iv32(
+            (self.get_iv32() & !(0x1F << 20)) | (if spa > 31 { 31 } else { spa as u32 } << 20),
+        );
     }
 
     fn get_iv_spd(&self) -> usize {
-        todo!()
+        ((self.get_iv32() >> 25) & 0x1F) as usize
     }
 
     fn set_iv_spd(&mut self, spd: usize) {
-        todo!()
+        self.set_iv32(
+            (self.get_iv32() & !(0x1F << 25)) | (if spd > 31 { 31 } else { spd as u32 } << 25),
+        );
     }
 
     fn get_status_condition(&self) -> usize {
-        todo!()
+        u32::from_le_bytes((&self.data[0xE8..0xEC]).try_into().unwrap()) as usize
     }
 
     fn set_status_condition(&mut self, status_condition: usize) {
-        todo!()
+        let bytes = (status_condition as u32).to_le_bytes();
+        self.data.splice(0xE8..0xEC, bytes);
     }
 
     fn get_stat_level(&self) -> usize {
-        todo!()
+        self.data[0xEC] as usize
     }
 
     fn set_stat_level(&mut self, level: usize) {
-        todo!()
+        self.data[0xEC] = level as u8;
     }
 
     fn get_stat_hp_max(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xF2..0xF4]).try_into().unwrap()) as usize
     }
 
     fn set_stat_hp_max(&mut self, hp: usize) {
-        todo!()
+        let bytes = (hp as u16).to_le_bytes();
+        self.data.splice(0xF2..0xF4, bytes);
     }
 
     fn get_stat_hp_current(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xF0..0xF2]).try_into().unwrap()) as usize
     }
 
     fn set_stat_hp_current(&mut self, hp: usize) {
-        todo!()
+        let bytes = (hp as u16).to_le_bytes();
+        self.data.splice(0xF0..0xF2, bytes);
     }
 
     fn get_stat_atk(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xF4..0xF6]).try_into().unwrap()) as usize
     }
 
     fn set_stat_atk(&mut self, atk: usize) {
-        todo!()
+        let bytes = (atk as u16).to_le_bytes();
+        self.data.splice(0xF4..0xF6, bytes);
     }
 
     fn get_stat_def(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xF6..0xF8]).try_into().unwrap()) as usize
     }
 
     fn set_stat_def(&mut self, def: usize) {
-        todo!()
+        let bytes = (def as u16).to_le_bytes();
+        self.data.splice(0xF6..0xF8, bytes);
     }
 
     fn get_stat_spe(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xF8..0xFA]).try_into().unwrap()) as usize
     }
 
     fn set_stat_spe(&mut self, spe: usize) {
-        todo!()
+        let bytes = (spe as u16).to_le_bytes();
+        self.data.splice(0xF8..0xFA, bytes);
     }
 
     fn get_stat_spa(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xFA..0xFC]).try_into().unwrap()) as usize
     }
 
     fn set_stat_spa(&mut self, spa: usize) {
-        todo!()
+        let bytes = (spa as u16).to_le_bytes();
+        self.data.splice(0xFA..0xFC, bytes);
     }
 
     fn get_stat_spd(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xFC..0xFE]).try_into().unwrap()) as usize
     }
 
     fn set_stat_spd(&mut self, spd: usize) {
-        todo!()
+        let bytes = (spd as u16).to_le_bytes();
+        self.data.splice(0xFC..0xFE, bytes);
     }
 
     fn get_version(&self) -> usize {
-        todo!()
+        self.data[0xDF] as usize
     }
 
     fn set_version(&mut self, version: usize) {
-        todo!()
+        self.data[0xDF] = version as u8;
     }
 
     fn get_pkrs_strain(&self) -> usize {
@@ -1797,28 +1913,22 @@ impl Pkm<PersonalInfoORAS> for PK6 {
     }
 
     fn get_tsv(&self) -> usize {
-        todo!()
+        G6Pkm::tsv(self)
     }
 
-    fn set_tsv(&mut self, tsv: usize) {
-        todo!()
-    }
+    fn set_tsv(&mut self, _tsv: usize) {}
 
     fn get_psv(&self) -> usize {
-        todo!()
+        G6Pkm::psv(self)
     }
 
-    fn set_psv(&mut self, set_psv: usize) {
-        todo!()
-    }
+    fn set_psv(&mut self, _set_psv: usize) {}
 
     fn get_characteristic(&self) -> usize {
-        todo!()
+        G6Pkm::get_characteristic(self)
     }
 
-    fn set_characteristic(&mut self, characteristic: usize) {
-        todo!()
-    }
+    fn set_characteristic(&mut self, _characteristic: usize) {}
 
     fn get_mark_value(&self) -> usize {
         self.data[0x2A] as usize
@@ -1829,27 +1939,100 @@ impl Pkm<PersonalInfoORAS> for PK6 {
     }
 
     fn get_met_location(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xDA..0xDC]).try_into().unwrap()) as usize
     }
 
     fn set_met_location(&mut self, location: usize) {
-        todo!()
+        let bytes = (location as u16).to_le_bytes();
+        self.data.splice(0xDA..0xDC, bytes);
     }
 
     fn get_egg_location(&self) -> usize {
-        todo!()
+        u16::from_le_bytes((&self.data[0xD8..0xDA]).try_into().unwrap()) as usize
     }
 
     fn set_egg_location(&mut self, location: usize) {
-        todo!()
+        let bytes = (location as u16).to_le_bytes();
+        self.data.splice(0xD8..0xDA, bytes);
     }
 
     fn get_ot_friendship(&self) -> usize {
-        todo!()
+        self.data[0xCA] as usize
     }
 
     fn set_ot_friendship(&mut self, friendship: usize) {
-        todo!()
+        self.data[0xCA] = friendship as u8;
+    }
+
+    fn get_met_year(&self) -> usize {
+        self.data[0xD4] as usize
+    }
+
+    fn set_met_year(&mut self, year: usize) {
+        self.data[0xD4] = year as u8;
+    }
+
+    fn get_met_month(&self) -> usize {
+        self.data[0xD5] as usize
+    }
+
+    fn set_met_month(&mut self, month: usize) {
+        self.data[0xD5] = month as u8;
+    }
+
+    fn get_met_day(&self) -> usize {
+        self.data[0xD6] as usize
+    }
+
+    fn set_met_day(&mut self, day: usize) {
+        self.data[0xD6] = day as u8;
+    }
+
+    fn get_ht_name(&self) -> String {
+        string_converter_6::get_string(G6Pkm::ht_trash(self))
+    }
+
+    fn set_ht_name(&mut self, name: String) {
+        let mut trash = G6Pkm::nickname_trash(self);
+        string_converter_6::set_string(
+            &mut trash,
+            name.chars().collect::<Vec<char>>(),
+            12,
+            StringConverterOption::None,
+        );
+        self.data.splice(0x78..(0x78 + 26), trash);
+    }
+
+    fn get_ht_gender(&self) -> usize {
+        self.data[0x92] as usize
+    }
+
+    fn set_ht_gender(&mut self, gender: usize) {
+        self.data[0x92] = gender as u8
+    }
+
+    fn get_ht_friendship(&self) -> usize {
+        self.data[0xA2] as usize
+    }
+
+    fn set_ht_friendship(&mut self, friendship: usize) {
+        self.data[0xA2] = friendship as u8;
+    }
+
+    fn get_enjoyment(&self) -> u8 {
+        self.data[0xAF]
+    }
+
+    fn set_enjoyment(&mut self, enjoyment: u8) {
+        self.data[0xAF] = enjoyment;
+    }
+
+    fn get_fullness(&self) -> u8 {
+        self.data[0xAE]
+    }
+
+    fn set_fullness(&mut self, fullness: u8) {
+        self.data[0xAE] = fullness;
     }
 
     fn get_ability_number(&self) -> usize {
@@ -1860,60 +2043,120 @@ impl Pkm<PersonalInfoORAS> for PK6 {
         self.data[0x15] = ability_number as u8;
     }
 
+    fn get_egg_year(&self) -> usize {
+        self.data[0xD1] as usize
+    }
+
+    fn set_egg_year(&mut self, year: usize) {
+        self.data[0xD1] = year as u8;
+    }
+
+    fn get_egg_month(&self) -> usize {
+        self.data[0xD2] as usize
+    }
+
+    fn set_egg_month(&mut self, month: usize) {
+        self.data[0xD2] = month as u8;
+    }
+
+    fn get_egg_day(&self) -> usize {
+        self.data[0xD3] as usize
+    }
+
+    fn set_egg_day(&mut self, day: usize) {
+        self.data[0xD3] = day as u8;
+    }
+
+    fn get_relearn_move_1(&self) -> usize {
+        u16::from_le_bytes((&self.data[0x6A..0x6C]).try_into().unwrap()) as usize
+    }
+
+    fn set_relearn_move_1(&mut self, move_1: usize) {
+        let bytes = (move_1 as u16).to_le_bytes();
+        self.data.splice(0x6A..0x6C, bytes);
+    }
+
+    fn get_relearn_move_2(&self) -> usize {
+        u16::from_le_bytes((&self.data[0x6C..0x6E]).try_into().unwrap()) as usize
+    }
+
+    fn set_relearn_move_2(&mut self, move_2: usize) {
+        let bytes = (move_2 as u16).to_le_bytes();
+        self.data.splice(0x6C..0x6E, bytes);
+    }
+
+    fn get_relearn_move_3(&self) -> usize {
+        u16::from_le_bytes((&self.data[0x6E..0x70]).try_into().unwrap()) as usize
+    }
+
+    fn set_relearn_move_3(&mut self, move_3: usize) {
+        let bytes = (move_3 as u16).to_le_bytes();
+        self.data.splice(0x6E..0x70, bytes);
+    }
+
+    fn get_relearn_move_4(&self) -> usize {
+        u16::from_le_bytes((&self.data[0x70..0x72]).try_into().unwrap()) as usize
+    }
+
+    fn set_relearn_move_4(&mut self, move_4: usize) {
+        let bytes = (move_4 as u16).to_le_bytes();
+        self.data.splice(0x70..0x72, bytes);
+    }
+
     fn get_current_handler(&self) -> usize {
-        todo!()
+        self.data[0x93] as usize
     }
 
     fn set_current_handler(&mut self, handler: usize) {
-        todo!()
+        self.data[0x93] = handler as u8;
     }
 
     fn max_move_id(&self) -> usize {
-        todo!()
+        MAX_MOVE_ID_6_AO
     }
 
     fn max_species_id(&self) -> usize {
-        todo!()
+        MAX_SPECIES_ID_6
     }
 
     fn max_item_id(&self) -> usize {
-        todo!()
+        MAX_ITEM_ID_6_AO
     }
 
     fn max_ability_id(&self) -> usize {
-        todo!()
+        MAX_ABILITY_ID_6_AO
     }
 
     fn max_ball_id(&self) -> usize {
-        todo!()
+        MAX_BALL_ID_6
     }
 
     fn max_game_id(&self) -> usize {
-        todo!()
+        MAX_GAME_ID_6
     }
 
     fn max_iv(&self) -> usize {
-        todo!()
+        G6Pkm::max_iv(self)
     }
 
     fn max_ev(&self) -> usize {
-        todo!()
+        G6Pkm::max_ev(self)
     }
 
     fn ot_length(&self) -> usize {
-        todo!()
+        G6Pkm::ot_length(self)
     }
 
     fn nick_length(&self) -> usize {
-        todo!()
+        G6Pkm::nick_length(self)
     }
 
     fn refresh_checksum(&mut self) {
-        todo!()
+        G6Pkm::refresh_checksum(self);
     }
 
     fn checksum_valid(&self) -> bool {
-        todo!()
+        G6Pkm::checksum_valid(self)
     }
 }
 
@@ -1939,10 +2182,41 @@ impl SanityChecksum for PK6 {
 
 impl G6Pkm<PersonalInfoORAS> for PK6 {
     fn trade_ot<T: TrainerInfo + ?Sized>(&mut self, tr: &T) -> bool {
-        todo!()
+        if !(tr.get_ot() == self.get_ot_name()
+            && tr.get_tid() == self.get_tid()
+            && tr.get_sid() == self.get_sid()
+            && tr.get_gender() == self.get_gender())
+        {
+            return false;
+        }
+
+        self.set_current_handler(0);
+        // TODO: RegionOrigin trade geo location
+
+        true
     }
 
     fn trade_ht<T: TrainerInfo + ?Sized>(&mut self, tr: &T) {
-        todo!()
+        if tr.get_ot() != self.get_ht_name()
+            || tr.get_gender() != self.get_ht_gender()
+            || (self.get_geo_1_region() == 0
+                && self.get_geo_1_country() == 0
+                && !self.is_untraded_event_6())
+        {
+            //TODO: RegionOrigin trade geo location
+        }
+
+        if tr.get_ot() != self.get_ht_name() {
+            self.set_ht_friendship(self.get_personal_info().get_base_friendship());
+            self.set_ht_affection(0);
+            self.set_ht_name(tr.get_ot());
+        }
+
+        self.set_current_handler(1);
+        self.set_ht_gender(tr.get_gender());
+
+        if self.get_ht_memory() == 0 {
+            self.set_trade_memory_ht_6(false);
+        }
     }
 }

@@ -21,11 +21,11 @@ pub trait GBPkm<T: PersonalInfo>: Pkm<T> {
         u16::MAX as usize
     }
 
-    fn encrypted_party_data(&self) -> Vec<u8> {
+    fn encrypted_party_data(&mut self) -> Vec<u8> {
         self.encrypt()
     }
 
-    fn encrypted_box_data(&self) -> Vec<u8> {
+    fn encrypted_box_data(&mut self) -> Vec<u8> {
         self.encrypt()
     }
 

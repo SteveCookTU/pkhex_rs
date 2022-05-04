@@ -177,6 +177,5 @@ pub trait SuperTrain {
     fn set_secret_super_training_unlocked(&mut self, unlocked: bool);
     fn get_secret_super_training_complete(&self) -> bool;
     fn set_secret_super_training_complete(&mut self, complete: bool);
-    fn get_super_training_medal_count(&self) -> usize;
-    fn set_super_training_medal_count(&mut self, count: usize);
+    fn get_super_training_medal_count(&self, max_count: usize) -> usize;
 }

@@ -32,6 +32,38 @@ pub enum GroundTileType {
     MaxPt = 24,
 }
 
+impl From<u8> for GroundTileType {
+    fn from(val: u8) -> Self {
+        match val {
+            0 => GroundTileType::None,
+            1 => GroundTileType::Sand,
+            2 => GroundTileType::Grass,
+            3 => GroundTileType::Puddle,
+            4 => GroundTileType::Rock,
+            5 => GroundTileType::Cave,
+            6 => GroundTileType::Snow,
+            7 => GroundTileType::Water,
+            8 => GroundTileType::Ice,
+            9 => GroundTileType::Building,
+            10 => GroundTileType::Marsh,
+            11 => GroundTileType::Bridge,
+            12 => GroundTileType::Elite41,
+            13 => GroundTileType::Elite42,
+            14 => GroundTileType::Elite43,
+            15 => GroundTileType::Elite44,
+            16 => GroundTileType::Elite4M,
+            17 => GroundTileType::DistortionSideways,
+            18 => GroundTileType::BattleTower,
+            19 => GroundTileType::BattleFactory,
+            20 => GroundTileType::BattleArcade,
+            21 => GroundTileType::BattleTower,
+            22 => GroundTileType::BattleHall,
+            23 => GroundTileType::Distortion,
+            _ => GroundTileType::MaxPt,
+        }
+    }
+}
+
 impl GroundTileType {
     pub fn is_obtainable(&self) -> bool {
         ((0b1_1000_0000_0001_0110_1011_0111 >> *self as usize) & 1) == 1

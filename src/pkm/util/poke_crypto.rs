@@ -109,7 +109,9 @@ pub fn encrypt_array_6(pkm: &Vec<u8>) -> Vec<u8> {
 }
 
 pub fn decrypt_if_encrypted_67(pkm: &mut Vec<u8>) {
-    if u16::from_le_bytes(pkm[0xC8..0xCA].try_into().unwrap()) != 0 || u16::from_le_bytes(pkm[0x58..0x5A].try_into().unwrap()) != 0 {
+    if u16::from_le_bytes(pkm[0xC8..0xCA].try_into().unwrap()) != 0
+        || u16::from_le_bytes(pkm[0x58..0x5A].try_into().unwrap()) != 0
+    {
         *pkm = decrypt_array_6(pkm);
     }
 }

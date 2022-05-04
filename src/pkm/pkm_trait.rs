@@ -43,11 +43,11 @@ pub trait Pkm<T: PersonalInfo>:
 
     fn new_blank() -> Self;
 
-    fn encrypted_party_data(&self) -> Vec<u8> {
+    fn encrypted_party_data(&mut self) -> Vec<u8> {
         self.encrypt()[..self.size_party()].to_vec()
     }
 
-    fn encrypted_box_data(&self) -> Vec<u8> {
+    fn encrypted_box_data(&mut self) -> Vec<u8> {
         self.encrypt()[..self.size_stored()].to_vec()
     }
 
@@ -69,16 +69,13 @@ pub trait Pkm<T: PersonalInfo>:
         vec![]
     }
 
-    fn encrypt(&self) -> Vec<u8>;
+    fn encrypt(&mut self) -> Vec<u8>;
     fn format(&self) -> usize;
 
     fn write(&mut self) -> Vec<u8> {
         self.refresh_checksum(); // TODO
         self.get_data().clone()
     }
-
-    fn get_nickname(&self) -> String;
-    fn set_nickname(&mut self, nickname: String);
 
     fn get_held_item(&self) -> usize;
     fn set_held_item(&mut self, held_item: usize);
@@ -102,9 +99,6 @@ pub trait Pkm<T: PersonalInfo>:
 
     fn get_is_egg(&self) -> bool;
     fn set_is_egg(&mut self, is_egg: bool);
-
-    fn get_is_nicknamed(&self) -> bool;
-    fn set_is_nicknamed(&mut self, is_nicknamed: bool);
 
     fn get_exp(&self) -> usize;
     fn set_exp(&mut self, exp: usize);
@@ -1170,11 +1164,7 @@ pub trait Pkm<T: PersonalInfo>:
         stats
     }
 
-    fn get_stats_hyper_train<I: PersonalInfo, P: HyperTrain>(
-        &self,
-        p: &I,
-        t: &P,
-    ) -> [u16; 6] {
+    fn get_stats_hyper_train<I: PersonalInfo, P: HyperTrain>(&self, p: &I, t: &P) -> [u16; 6] {
         let level = self.get_current_level();
         let mut stats: [u16; 6] = [
             if p.get_hp() == 1 {

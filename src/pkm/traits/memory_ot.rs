@@ -2,9 +2,9 @@ pub trait MemoryOT {
     fn get_ot_memory(&self) -> u8;
     fn set_ot_memory(&mut self, memory: u8);
     fn get_ot_intensity(&self) -> u8;
-    fn set_ot_intensity(&mut self, memory: u8);
+    fn set_ot_intensity(&mut self, intensity: u8);
     fn get_ot_feeling(&self) -> u8;
-    fn set_ot_feeling(&mut self, memory: u8);
+    fn set_ot_feeling(&mut self, feeling: u8);
     fn get_ot_text_var(&self) -> u16;
     fn set_ot_text_var(&mut self, var: u16);
 

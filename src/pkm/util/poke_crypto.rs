@@ -67,25 +67,13 @@ pub fn crypt_pkm(data: &mut Vec<u8>, pv: usize, block_size: usize) {
 
 fn crypt_array(data: &mut Vec<u8>, mut seed: usize, start: usize, end: usize) {
     let mut i = start;
-    crypt(&mut data[i..], &mut seed);
-    i += 2;
-    crypt(&mut data[i..], &mut seed);
-    i += 2;
     while i < end {
-        crypt(&mut data[i..], &mut seed);
-        i += 2;
-        crypt(&mut data[i..], &mut seed);
-        i += 2;
+        seed = seed.wrapping_mul(0x41C64E6D).wrapping_add(0x00006073);
+        data[i] ^= (seed >> 16) as u8;
+        i += 1;
+        data[i] ^= (seed >> 24) as u8;
+        i += 1;
     }
-}
-
-fn crypt(data: &mut [u8], seed: &mut usize) {
-    *seed = seed.wrapping_mul(0x41C64E6D).wrapping_add(0x00006073);
-    let mut current = u16::from_le_bytes(data[0..2].try_into().unwrap()) as usize;
-    current ^= (*seed >> 16) & 0xFFFF;
-    let current_bytes = u16::to_le_bytes(current as u16);
-    data[0] = current_bytes[0];
-    data[1] = current_bytes[1];
 }
 
 pub fn decrypt_array_6(ekm: &mut Vec<u8>) -> Vec<u8> {

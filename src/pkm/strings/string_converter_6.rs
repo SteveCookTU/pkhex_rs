@@ -16,7 +16,6 @@ fn load_string(data: Vec<u8>, result: &mut Vec<char>) -> usize {
         if value == TERMINATOR_NULL {
             break;
         }
-		println!("{}", char::from_u32(value as u32).unwrap());
         result[i / 2] = sanitize_char(char::from_u32(value as u32).unwrap());
         i += 2;
     }

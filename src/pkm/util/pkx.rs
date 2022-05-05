@@ -80,10 +80,8 @@ pub fn get_random_pid(
             if abil_bit_val != (pid & 0x1) {
                 continue;
             }
-        } else {
-            if abil_bit_val != (pid & 0x10000) {
-                continue;
-            }
+        } else if abil_bit_val != (pid & 0x10000) {
+            continue;
         }
 
         if single_gender {

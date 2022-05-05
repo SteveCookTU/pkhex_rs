@@ -302,7 +302,7 @@ impl PK8 {
 
     fn set_iv32(&mut self, iv_32: u32) {
         let bytes = iv_32.to_le_bytes();
-        self.data.splice(0x8C..090, bytes);
+        self.data.splice(0x8C..0x90, bytes);
     }
 
     fn get_ht_trainer_id(&self) -> u16 {
@@ -2184,12 +2184,7 @@ impl TechRecord8 for PK8 {
     }
 
     fn get_move_record_flag_any(&self) -> bool {
-        self.data
-            .iter()
-            .skip(0x126)
-            .take(14)
-            .position(|z| *z != 0)
-            .is_some()
+        self.data.iter().skip(0x126).take(14).any(|z| *z != 0)
     }
 }
 
@@ -2364,11 +2359,8 @@ impl DynamaxLevel for PK8 {
 
 impl RibbonIndex for PK8 {
     fn get_ribbon(&self, index: usize) -> Option<bool> {
-        if let Some(byte) = self.get_ribbon_byte(index) {
-            Some(flag_util::get_flag(&self.data, byte, index & 7))
-        } else {
-            None
-        }
+        self.get_ribbon_byte(index)
+            .map(|byte| flag_util::get_flag(&self.data, byte, index & 7))
     }
 
     fn set_ribbon(&mut self, index: usize, flag: bool) {

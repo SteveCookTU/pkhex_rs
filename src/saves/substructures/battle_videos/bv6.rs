@@ -1,7 +1,7 @@
 use crate::personal_info_oras::PersonalInfoORAS;
+use crate::poke_crypto::SIZE_6PARTY;
 use crate::{string_converter_6, BattleVideo, Pkm, PokeGroup, StringConverterOption, PK6};
 use time::{Date, Month, PrimitiveDateTime, Time};
-use crate::poke_crypto::SIZE_6PARTY;
 
 const SIZE: usize = 0x2E60;
 const NPC: &str = "NPC";
@@ -156,7 +156,7 @@ impl BV6 {
 
         for (i, name) in names.iter().enumerate() {
             let mut trash = self.data[0xEC + (0x1A * i)..(0xEC + (0x1A * i) + 0x1A)].to_vec();
-            let tr = if *name == NPC.to_string() {
+            let tr = if &name[..] == NPC {
                 "".to_string()
             } else {
                 name.to_string()
@@ -181,8 +181,8 @@ impl BV6 {
     }
 
     pub fn set_player_teams(&mut self, teams: Vec<Vec<PK6>>) {
-        for t in 0..PLAYER_COUNT {
-            self.set_team(teams[t].clone(), t);
+        for (t, team) in teams.iter().enumerate().take(PLAYER_COUNT) {
+            self.set_team(team.clone(), t);
         }
     }
 
@@ -199,10 +199,11 @@ impl BV6 {
 
     pub fn set_team(&mut self, mut team: Vec<PK6>, t: usize) {
         let start = 0xE18;
-        for p in 0..6 {
+        for (p, team) in team.iter_mut().enumerate().take(6) {
             let mut offset = start + (SIZE_6PARTY * ((t * 6) + p));
             offset += 8 * (((t * 6) + p) / 6);
-            self.data.splice(offset..(offset + SIZE_6PARTY), team[p].encrypted_party_data());
+            self.data
+                .splice(offset..(offset + SIZE_6PARTY), team.encrypted_party_data());
         }
     }
 

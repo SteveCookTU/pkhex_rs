@@ -63,16 +63,17 @@ pub fn shuffle_array(data: &mut Vec<u8>, sv: usize, block_size: usize) -> Vec<u8
     data.clone()
 }
 
-pub fn crypt_pkm(data: &mut Vec<u8>, pv: usize, block_size: usize) {
+pub fn crypt_pkm(data: &mut [u8], pv: usize, block_size: usize) {
     let start = 8;
     let end = (4 * block_size) + start;
     crypt_array(data, pv, start, end);
     if data.len() > end {
-        crypt_array(data, pv, end, data.len());
+        let len = data.len();
+        crypt_array(data, pv, end, len);
     }
 }
 
-fn crypt_array(data: &mut Vec<u8>, mut seed: usize, start: usize, end: usize) {
+fn crypt_array(data: &mut [u8], mut seed: usize, start: usize, end: usize) {
     let mut i = start;
     while i < end {
         seed = seed.wrapping_mul(0x41C64E6D).wrapping_add(0x00006073);
@@ -97,12 +98,12 @@ pub fn decrypt_array_8(mut ekm: Vec<u8>) -> Vec<u8> {
     shuffle_array(&mut ekm, sv, SIZE_8BLOCK)
 }
 
-pub fn encrypt_array_6(pkm: &Vec<u8>) -> Vec<u8> {
+pub fn encrypt_array_6(pkm: &[u8]) -> Vec<u8> {
     let pv = u32::from_le_bytes(pkm[0..4].try_into().unwrap());
     let sv = pv >> 13 & 31;
 
     let mut ekm = shuffle_array(
-        &mut pkm.clone(),
+        &mut pkm.to_owned(),
         BLOCK_POSITION_INVERT[sv as usize] as usize,
         SIZE_6BLOCK,
     );
@@ -110,12 +111,12 @@ pub fn encrypt_array_6(pkm: &Vec<u8>) -> Vec<u8> {
     ekm
 }
 
-pub fn encrypt_array_8(pkm: &Vec<u8>) -> Vec<u8> {
+pub fn encrypt_array_8(pkm: &[u8]) -> Vec<u8> {
     let pv = u32::from_le_bytes(pkm[0..4].try_into().unwrap());
     let sv = pv >> 13 & 31;
 
     let mut ekm = shuffle_array(
-        &mut pkm.clone(),
+        &mut pkm.to_owned(),
         BLOCK_POSITION_INVERT[sv as usize] as usize,
         SIZE_8BLOCK,
     );

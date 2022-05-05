@@ -9,7 +9,7 @@ pub fn get_string(data: Vec<u8>) -> String {
     result.iter().take(len).collect()
 }
 
-fn load_string(data: Vec<u8>, result: &mut Vec<char>) -> usize {
+fn load_string(data: Vec<u8>, result: &mut [char]) -> usize {
     let mut i = 0;
     while i < data.len() {
         let value = u16::from_le_bytes((&data[i..(i + 2)]).try_into().unwrap());

@@ -629,9 +629,7 @@ pub trait Pkm<T: PersonalInfo>:
             4
         } else if self.gen3() {
             3
-        } else if self.gen2() {
-            self.format()
-        } else if self.gen1() {
+        } else if self.gen2() || self.gen1() {
             self.format()
         } else if self.vc1() {
             1
@@ -773,15 +771,20 @@ pub trait Pkm<T: PersonalInfo>:
         let mut ctr = 0;
         if self.get_iv_hp() == max {
             ctr += 1;
-        } else if self.get_iv_atk() == max {
+        }
+        if self.get_iv_atk() == max {
             ctr += 1;
-        } else if self.get_iv_def() == max {
+        }
+        if self.get_iv_def() == max {
             ctr += 1;
-        } else if self.get_iv_spe() == max {
+        }
+        if self.get_iv_spe() == max {
             ctr += 1;
-        } else if self.get_iv_spa() == max {
+        }
+        if self.get_iv_spa() == max {
             ctr += 1;
-        } else if self.get_iv_spd() == max {
+        }
+        if self.get_iv_spd() == max {
             ctr += 1;
         }
         ctr
@@ -894,7 +897,7 @@ pub trait Pkm<T: PersonalInfo>:
     }
 
     fn set_moves(&mut self, moves: &[usize]) {
-        self.set_move_1(if moves.len() > 0 { moves[0] } else { 0 });
+        self.set_move_1(if !moves.is_empty() { moves[0] } else { 0 });
         self.set_move_2(if moves.len() > 1 { moves[1] } else { 0 });
         self.set_move_3(if moves.len() > 2 { moves[2] } else { 0 });
         self.set_move_4(if moves.len() > 3 { moves[3] } else { 0 });
@@ -910,7 +913,7 @@ pub trait Pkm<T: PersonalInfo>:
     }
 
     fn set_relearn_moves(&mut self, moves: Vec<usize>) {
-        self.set_relearn_move_1(if moves.len() > 0 { moves[0] } else { 0 });
+        self.set_relearn_move_1(if !moves.is_empty() { moves[0] } else { 0 });
         self.set_relearn_move_2(if moves.len() > 1 { moves[1] } else { 0 });
         self.set_relearn_move_3(if moves.len() > 2 { moves[2] } else { 0 });
         self.set_relearn_move_4(if moves.len() > 3 { moves[3] } else { 0 });
@@ -962,7 +965,7 @@ pub trait Pkm<T: PersonalInfo>:
             arr[hp_type] as usize
         };
 
-        self.set_iv_hp((self.get_iv_hp() & !1) + ((bits >> 0) & 1));
+        self.set_iv_hp((self.get_iv_hp() & !1) + (bits & 1));
         self.set_iv_atk((self.get_iv_atk() & !1) + ((bits >> 1) & 1));
         self.set_iv_def((self.get_iv_def() & !1) + ((bits >> 2) & 1));
         self.set_iv_spe((self.get_iv_spe() & !1) + ((bits >> 3) & 1));
@@ -1006,15 +1009,14 @@ pub trait Pkm<T: PersonalInfo>:
         let format = self.format();
         if format == self.generation() {
             true
-        } else if !self.is_origin_valid() {
-            false
-        } else if species > get_max_species_origin(generation).unwrap_or_default()
-            && get_future_gen_evolutions(generation).contains(&species)
+        } else if !self.is_origin_valid()
+            || (species > get_max_species_origin(generation).unwrap_or_default()
+                && get_future_gen_evolutions(generation).contains(&species))
         {
             false
-        } else if format == 2 && generation == 1 && !self.korean() {
-            true
-        } else if format == 1 && generation == 2 {
+        } else if (format == 2 && generation == 1 && !self.korean())
+            || (format == 1 && generation == 2)
+        {
             //TODO: Check for gen 1 tradeback rule
             true
         } else if format < generation {
@@ -1025,11 +1027,11 @@ pub trait Pkm<T: PersonalInfo>:
                 1 => format == 1 || self.vc(),
                 2 => format == 2 || self.vc(),
                 3 => self.gen3(),
-                4 => gen >= 3 && gen <= 4,
-                5 => gen >= 3 && gen <= 5,
-                6 => gen >= 3 && gen <= 6,
-                7 => gen >= 3 && gen <= 7 || self.vc(),
-                8 => gen >= 3 && gen <= 7 || self.vc(),
+                4 => (3..=4).contains(&gen),
+                5 => (3..=5).contains(&gen),
+                6 => (3..=6).contains(&gen),
+                7 => (3..=7).contains(&gen) || self.vc(),
+                8 => (3..=8).contains(&gen) || self.vc(),
                 _ => false,
             }
         }
@@ -1049,7 +1051,7 @@ pub trait Pkm<T: PersonalInfo>:
         } else if gv == RATIO_MAGIC_FEMALE {
             gender == 1
         } else if gv == RATIO_MAGIC_MALE {
-            gender == 1
+            gender == 0
         } else {
             let gen = self.generation();
             if !((3..6).contains(&gen)) {
@@ -1430,10 +1432,10 @@ pub trait Pkm<T: PersonalInfo>:
             *iv = rand.gen_range(0..(self.get_max_iv() + 1));
         }
 
-        let count = flawless.unwrap_or(self.get_flawless_iv_count());
+        let count = flawless.unwrap_or_else(|| self.get_flawless_iv_count());
         if count != 0 {
-            for i in 0..count {
-                ivs[i] = self.get_max_iv();
+            for i in ivs.iter_mut().take(count) {
+                *i = self.get_max_iv();
             }
             let len = ivs.len();
             rand_util::shuffle(&mut ivs, 0, len, &mut rand);
@@ -1460,7 +1462,7 @@ pub trait Pkm<T: PersonalInfo>:
         template: &[Option<usize>],
         flawless: Option<usize>,
     ) -> [usize; 6] {
-        let count = flawless.unwrap_or(self.get_flawless_iv_count());
+        let count = flawless.unwrap_or_else(|| self.get_flawless_iv_count());
         let mut ivs = [0, 0, 0, 0, 0, 0];
         let mut rand = rand::thread_rng();
         for i in 0..6 {

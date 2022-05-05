@@ -42,22 +42,16 @@ pub trait TrainerInfo: TrainerId {
     fn is_from_trainer<I: PersonalInfo, P: Pkm<I> + ?Sized>(&self, pk: &P) -> bool {
         if self.get_game() == GameVersion::Any as usize {
             true
-        } else if self.get_tid() != pk.get_tid() {
-            false
-        } else if self.get_ot() != pk.get_ot_name() {
-            false
-        } else if pk.format() <= 2 {
-            false
-        } else if self.get_sid() != pk.get_sid() {
-            false
-        } else if pk.format() == 3 {
-            false
-        } else if self.get_gender() != pk.get_ot_gender() {
-            false
-        } else if self.get_game() != pk.get_version() {
+        } else if self.get_tid() != pk.get_tid()
+            || self.get_ot() != pk.get_ot_name()
+            || pk.format() <= 2
+            || self.get_sid() != pk.get_sid()
+            || pk.format() == 3
+            || self.get_gender() != pk.get_ot_gender()
+        {
             false
         } else {
-            true
+            self.get_game() == pk.get_version()
         }
     }
 }

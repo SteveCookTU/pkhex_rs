@@ -23,12 +23,10 @@ impl ShinyEnum {
     }
 
     pub fn is_shiny(&self) -> bool {
-        match self {
-            ShinyEnum::Always => true,
-            ShinyEnum::AlwaysStar => true,
-            ShinyEnum::AlwaysSquare => true,
-            _ => false,
-        }
+        matches!(
+            self,
+            ShinyEnum::Always | ShinyEnum::AlwaysStar | ShinyEnum::AlwaysSquare
+        )
     }
 
     pub fn get_type<I: PersonalInfo, T: Pkm<I>>(pkm: &T) -> ShinyEnum {

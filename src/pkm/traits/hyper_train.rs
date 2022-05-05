@@ -60,7 +60,7 @@ pub trait HyperTrain {
             pkm.set_hyper_train_flags(0);
             return;
         }
-        let ivs = ivs.unwrap_or(pkm.get_ivs());
+        let ivs = ivs.unwrap_or_else(|| pkm.get_ivs());
 
         pkm.set_ht_hp(ivs[0] != 31);
         pkm.set_ht_atk(ivs[1] != 31 && ivs[1] > 2);

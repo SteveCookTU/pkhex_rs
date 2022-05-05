@@ -20,7 +20,7 @@ pub fn unsanitize_char(cr: char, full_width: bool) -> char {
     }
 }
 
-pub fn get_is_full_width_string(str: &Vec<char>) -> bool {
+pub fn get_is_full_width_string(str: &[char]) -> bool {
     for c in str.iter() {
         let shifted = (*c as u16) >> 12;
         if shifted == 0 || shifted == 0xE {

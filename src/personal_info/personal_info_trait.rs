@@ -1,5 +1,7 @@
 pub trait PersonalInfo {
-    fn new(data: Vec<u8>) -> Self;
+    fn new(data: Vec<u8>) -> Self
+    where
+        Self: Sized;
 
     fn get_data(&self) -> &Vec<u8>;
 

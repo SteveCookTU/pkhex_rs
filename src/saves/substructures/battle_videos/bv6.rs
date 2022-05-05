@@ -12,7 +12,7 @@ pub struct BV6 {
 }
 
 impl BV6 {
-    fn new(data: Vec<u8>) -> Self {
+    pub fn new(data: Vec<u8>) -> Self {
         Self { data }
     }
 

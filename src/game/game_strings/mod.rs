@@ -1,5 +1,5 @@
-use lazy_static::lazy_static;
 use crate::resource_util::load_string_list;
+use lazy_static::lazy_static;
 pub mod game_language;
 
 const ABILITIES_EN_RAW: &str = include_str!("../../resources/text/other/en/abilities_en.txt");

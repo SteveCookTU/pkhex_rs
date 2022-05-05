@@ -27,6 +27,14 @@ pub const SIZE_6PARTY: usize = 0x104;
 pub const SIZE_6STORED: usize = 0xE8;
 pub const SIZE_6BLOCK: usize = 56;
 
+pub const SIZE_8STORED: usize = 8 + (4 * SIZE_8BLOCK); // 0x148
+pub const SIZE_8PARTY: usize = SIZE_8STORED + 0x10; // 0x158
+pub const SIZE_8BLOCK: usize = 80; // 0x50
+
+pub const SIZE_8ASTORED: usize = 8 + (4 * SIZE_8ABLOCK); // 0x168
+pub const SIZE_8APARTY: usize = SIZE_8ASTORED + 0x10; // 0x178
+pub const SIZE_8ABLOCK: usize = 88; // 0x58
+
 const BLOCK_POSITION: [u8; 128] = [
     0, 1, 2, 3, 0, 1, 3, 2, 0, 2, 1, 3, 0, 3, 1, 2, 0, 2, 3, 1, 0, 3, 2, 1, 1, 0, 2, 3, 1, 0, 3, 2,
     2, 0, 1, 3, 3, 0, 1, 2, 2, 0, 3, 1, 3, 0, 2, 1, 1, 2, 0, 3, 1, 3, 0, 2, 2, 1, 0, 3, 3, 1, 0, 2,
@@ -82,6 +90,13 @@ pub fn decrypt_array_6(mut ekm: Vec<u8>) -> Vec<u8> {
     shuffle_array(&mut ekm, sv, SIZE_6BLOCK)
 }
 
+pub fn decrypt_array_8(mut ekm: Vec<u8>) -> Vec<u8> {
+    let seed = u32::from_le_bytes(ekm[0..4].try_into().unwrap()) as usize;
+    let sv = seed >> 13 & 31;
+    crypt_pkm(&mut ekm, seed, SIZE_8BLOCK);
+    shuffle_array(&mut ekm, sv, SIZE_8BLOCK)
+}
+
 pub fn encrypt_array_6(pkm: &Vec<u8>) -> Vec<u8> {
     let pv = u32::from_le_bytes(pkm[0..4].try_into().unwrap());
     let sv = pv >> 13 & 31;
@@ -95,9 +110,30 @@ pub fn encrypt_array_6(pkm: &Vec<u8>) -> Vec<u8> {
     ekm
 }
 
+pub fn encrypt_array_8(pkm: &Vec<u8>) -> Vec<u8> {
+    let pv = u32::from_le_bytes(pkm[0..4].try_into().unwrap());
+    let sv = pv >> 13 & 31;
+
+    let mut ekm = shuffle_array(
+        &mut pkm.clone(),
+        BLOCK_POSITION_INVERT[sv as usize] as usize,
+        SIZE_8BLOCK,
+    );
+    crypt_pkm(&mut ekm, pv as usize, SIZE_8BLOCK);
+    ekm
+}
+
 pub fn decrypt_if_encrypted_67(pkm: &mut Vec<u8>) {
     if u16::from_le_bytes(pkm[0xC8..0xCA].try_into().unwrap()) != 0
         || u16::from_le_bytes(pkm[0x58..0x5A].try_into().unwrap()) != 0
+    {
+        *pkm = decrypt_array_6(pkm.clone());
+    }
+}
+
+pub fn decrypt_if_encrypted_8(pkm: &mut Vec<u8>) {
+    if u16::from_le_bytes(pkm[0x70..0x72].try_into().unwrap()) != 0
+        || u16::from_le_bytes(pkm[0x110..0x112].try_into().unwrap()) != 0
     {
         *pkm = decrypt_array_6(pkm.clone());
     }

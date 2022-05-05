@@ -408,20 +408,6 @@ pub trait Pkm<T: PersonalInfo>:
     fn get_current_handler(&self) -> usize;
     fn set_current_handler(&mut self, handler: usize);
 
-    fn max_move_id(&self) -> usize;
-    fn max_species_id(&self) -> usize;
-    fn max_item_id(&self) -> usize;
-    fn max_ability_id(&self) -> usize;
-    fn max_ball_id(&self) -> usize;
-    fn max_game_id(&self) -> usize;
-    fn min_game_id(&self) -> usize {
-        0
-    }
-    fn max_iv(&self) -> usize;
-    fn max_ev(&self) -> usize;
-    fn ot_length(&self) -> usize;
-    fn nick_length(&self) -> usize;
-
     fn get_spec_form(&self) -> usize {
         self.get_species() + (self.get_form() << 11)
     }
@@ -783,7 +769,7 @@ pub trait Pkm<T: PersonalInfo>:
     }
 
     fn flawless_iv_count(&self) -> usize {
-        let max = self.max_iv();
+        let max = self.get_max_iv();
         let mut ctr = 0;
         if self.get_iv_hp() == max {
             ctr += 1;
@@ -1009,7 +995,7 @@ pub trait Pkm<T: PersonalInfo>:
     }
 
     fn is_origin_valid(&self) -> bool {
-        self.get_species() <= self.max_species_id()
+        self.get_species() <= self.get_max_species_id()
     }
 
     fn inhabited_generation(&self, generation: usize, mut species: usize) -> bool {
@@ -1441,7 +1427,7 @@ pub trait Pkm<T: PersonalInfo>:
         let mut ivs = [0, 0, 0, 0, 0, 0];
         let mut rand = rand::thread_rng();
         for iv in ivs.iter_mut() {
-            *iv = rand.gen_range(0..(self.max_iv() + 1));
+            *iv = rand.gen_range(0..(self.get_max_iv() + 1));
         }
 
         let count = flawless.unwrap_or(self.get_flawless_iv_count());

@@ -1,6 +1,6 @@
 pub fn get_flag(arr: &[u8], offset: usize, mut bit_index: usize) -> bool {
     bit_index &= 7;
-    (arr[offset] >> bit_index & 1) != 0
+    ((arr[offset] >> bit_index) & 1) != 0
 }
 
 pub fn set_flag(arr: &mut [u8], offset: usize, mut bit_index: usize, value: bool) {

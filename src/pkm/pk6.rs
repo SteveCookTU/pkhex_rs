@@ -416,24 +416,6 @@ impl PK6 {
         self.set_rib_5((self.get_rib_5() & !(1 << 7)) | if flag { 1 << 7 } else { 0 });
     }
 
-    pub fn get_ribbon_count_memory_contest(&self) -> u8 {
-        self.data[0x38]
-    }
-
-    pub fn set_ribbon_count_memory_contest(&mut self, count: u8) {
-        self.data[0x38] = count;
-        self.set_ribbon_memory_contest(count != 0);
-    }
-
-    pub fn get_ribbon_count_memory_battle(&self) -> u8 {
-        self.data[0x39]
-    }
-
-    pub fn set_ribbon_count_memory_battle(&mut self, count: u8) {
-        self.data[0x39] = count;
-        self.set_ribbon_memory_battle(count != 0);
-    }
-
     fn get_dist_byte(&self) -> u16 {
         u16::from_le_bytes((&self.data[0x3A..0x3C]).try_into().unwrap())
     }
@@ -569,6 +551,22 @@ impl PK6 {
         }
 
         self.sanitize_geo_location_data();
+    }
+
+    pub fn get_has_contest_memory_ribbon(&self) -> bool {
+        (self.get_rib_4() & (1 << 5)) == (1 << 5)
+    }
+
+    pub fn set_has_contest_memory_ribbon(&mut self, flag: bool) {
+        self.set_rib_4((self.get_rib_4() & !(1 << 5)) | if flag { 1 << 5 } else { 0 });
+    }
+
+    pub fn get_has_battle_memory_ribbon(&self) -> bool {
+        (self.get_rib_4() & (1 << 6)) == (1 << 6)
+    }
+
+    pub fn set_has_battle_memory_ribbon(&mut self, flag: bool) {
+        self.set_rib_4((self.get_rib_4() & !(1 << 6)) | if flag { 1 << 6 } else { 0 });
     }
 }
 
@@ -933,20 +931,22 @@ impl RibbonSetCommon6 for PK6 {
         self.set_rib_5((self.get_rib_5() & !(1 << 5)) | if flag { 1 << 5 } else { 0 });
     }
 
-    fn get_ribbon_memory_contest(&self) -> bool {
-        (self.get_rib_4() & (1 << 5)) == (1 << 5)
+    fn get_ribbon_count_memory_contest(&self) -> usize {
+        self.data[0x38] as usize
     }
 
-    fn set_ribbon_memory_contest(&mut self, flag: bool) {
-        self.set_rib_4((self.get_rib_4() & !(1 << 5)) | if flag { 1 << 5 } else { 0 });
+    fn set_ribbon_count_memory_contest(&mut self, count: usize) {
+        self.data[0x38] = count as u8;
+        self.set_has_contest_memory_ribbon(count != 0);
     }
 
-    fn get_ribbon_memory_battle(&self) -> bool {
-        (self.get_rib_4() & (1 << 6)) == (1 << 6)
+    fn get_ribbon_count_memory_battle(&self) -> usize {
+        self.data[0x39] as usize
     }
 
-    fn set_ribbon_memory_battle(&mut self, flag: bool) {
-        self.set_rib_4((self.get_rib_4() & !(1 << 6)) | if flag { 1 << 6 } else { 0 });
+    fn set_ribbon_count_memory_battle(&mut self, count: usize) {
+        self.data[0x39] = count as u8;
+        self.set_has_battle_memory_ribbon(count != 0);
     }
 }
 
@@ -1372,31 +1372,31 @@ impl LangNick for PK6 {
 
 impl GameValueLimit for PK6 {
     fn get_max_move_id(&self) -> usize {
-        Pkm::max_move_id(self)
+        MAX_MOVE_ID_6_AO
     }
 
     fn get_max_species_id(&self) -> usize {
-        Pkm::max_species_id(self)
+        MAX_SPECIES_ID_6
     }
 
     fn get_max_item_id(&self) -> usize {
-        Pkm::max_item_id(self)
+        MAX_ITEM_ID_6_AO
     }
 
     fn get_max_ability_id(&self) -> usize {
-        Pkm::max_ability_id(self)
+        MAX_ABILITY_ID_6_AO
     }
 
     fn get_max_ball_id(&self) -> usize {
-        Pkm::max_ball_id(self)
+        MAX_BALL_ID_6
     }
 
     fn get_max_game_id(&self) -> usize {
-        Pkm::max_game_id(self)
+        MAX_GAME_ID_6
     }
 
     fn get_min_game_id(&self) -> usize {
-        Pkm::min_game_id(self)
+        0
     }
 
     fn get_max_iv(&self) -> usize {
@@ -2109,46 +2109,6 @@ impl Pkm<PersonalInfoORAS> for PK6 {
 
     fn set_current_handler(&mut self, handler: usize) {
         self.data[0x93] = handler as u8;
-    }
-
-    fn max_move_id(&self) -> usize {
-        MAX_MOVE_ID_6_AO
-    }
-
-    fn max_species_id(&self) -> usize {
-        MAX_SPECIES_ID_6
-    }
-
-    fn max_item_id(&self) -> usize {
-        MAX_ITEM_ID_6_AO
-    }
-
-    fn max_ability_id(&self) -> usize {
-        MAX_ABILITY_ID_6_AO
-    }
-
-    fn max_ball_id(&self) -> usize {
-        MAX_BALL_ID_6
-    }
-
-    fn max_game_id(&self) -> usize {
-        MAX_GAME_ID_6
-    }
-
-    fn max_iv(&self) -> usize {
-        G6Pkm::max_iv(self)
-    }
-
-    fn max_ev(&self) -> usize {
-        G6Pkm::max_ev(self)
-    }
-
-    fn ot_length(&self) -> usize {
-        G6Pkm::ot_length(self)
-    }
-
-    fn nick_length(&self) -> usize {
-        G6Pkm::nick_length(self)
     }
 
     fn refresh_checksum(&mut self) {

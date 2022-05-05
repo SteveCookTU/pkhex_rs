@@ -45,10 +45,10 @@ pub trait RibbonSetCommon6 {
     fn set_ribbon_master_cleverness(&mut self, flag: bool);
     fn get_ribbon_master_toughness(&self) -> bool;
     fn set_ribbon_master_toughness(&mut self, flag: bool);
-    fn get_ribbon_memory_contest(&self) -> bool;
-    fn set_ribbon_memory_contest(&mut self, flag: bool);
-    fn get_ribbon_memory_battle(&self) -> bool;
-    fn set_ribbon_memory_battle(&mut self, flag: bool);
+    fn get_ribbon_count_memory_contest(&self) -> usize;
+    fn set_ribbon_count_memory_contest(&mut self, value: usize);
+    fn get_ribbon_count_memory_battle(&self) -> usize;
+    fn set_ribbon_count_memory_battle(&mut self, value: usize);
 
     fn ribbon_bits(&self) -> [bool; 11] {
         [

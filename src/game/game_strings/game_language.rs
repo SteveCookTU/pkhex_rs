@@ -5,7 +5,7 @@ pub const fn default_language_index() -> usize {
     1
 }
 
-pub const fn language_to_char(lang: usize) -> &'static str{
+pub const fn language_to_char(lang: usize) -> &'static str {
     if lang > LANGUAGE_CODES.len() {
         DEFAULT_LANGUAGE
     } else {
@@ -25,7 +25,17 @@ pub fn get_language_index(lang: &str) -> usize {
     }
 }
 
-const P_TRANSP: [&str; 9] = ["ポケシフター", "Poké Transfer", "Poké Fret", "Pokétrasporto", "Poképorter", "Pokétransfer", "포케시프터", "宝可传送", "寶可傳送"];
+const P_TRANSP: [&str; 9] = [
+    "ポケシフター",
+    "Poké Transfer",
+    "Poké Fret",
+    "Pokétrasporto",
+    "Poképorter",
+    "Pokétransfer",
+    "포케시프터",
+    "宝可传送",
+    "寶可傳送",
+];
 
 pub const fn get_transporter_name(mut index: usize) -> &'static str {
     if index >= P_TRANSP.len() {
@@ -46,5 +56,5 @@ pub enum ProgramLanguage {
     German,
     Spanish,
     Korean,
-    Chinese
+    Chinese,
 }

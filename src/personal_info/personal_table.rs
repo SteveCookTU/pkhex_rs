@@ -42,7 +42,7 @@ const PERSONAL_E: &[u8] = include_bytes!("../resources/byte/personal/personal_e"
 const PERSONAL_RS: &[u8] = include_bytes!("../resources/byte/personal/personal_rs");
 const PERSONAL_C_GS: &[u8] = include_bytes!("../resources/byte/personal/personal_c");
 const PERSONAL_RB: &[u8] = include_bytes!("../resources/byte/personal/personal_rb");
-const PERSONAL_YW: &[u8] = include_bytes!("../resources/byte/personal/personal_y");
+const PERSONAL_Y: &[u8] = include_bytes!("../resources/byte/personal/personal_y");
 
 const HMTM_G3: &[u8] = include_bytes!("../resources/byte/personal/hmtm_g3.pkl");
 const TUTORS_G3: &[u8] = include_bytes!("../resources/byte/personal/tutors_g3.pkl");
@@ -110,8 +110,8 @@ lazy_static! {
         fix_personal_table_g1(&mut table);
         table
     };
-    pub static ref YW: PersonalTable<PersonalInfoG1> = {
-        let mut table = PersonalTable::new(PERSONAL_YW.to_vec(), GameVersion::YW);
+    pub static ref Y: PersonalTable<PersonalInfoG1> = {
+        let mut table = PersonalTable::new(PERSONAL_Y.to_vec(), GameVersion::YW);
         fix_personal_table_g1(&mut table);
         table
     };

@@ -1,4 +1,6 @@
 pub mod string_converter;
+pub mod string_converter_12;
+pub mod string_converter_2_kor;
 pub mod string_converter_6;
 pub mod string_converter_8;
 mod string_converter_option;

@@ -8,15 +8,7 @@ use crate::tables::{
     MAX_ABILITY_ID_8, MAX_BALL_ID_8, MAX_GAME_ID_8, MAX_ITEM_ID_8, MAX_MOVE_ID_8, MAX_SPECIES_ID_8,
     TMHM_SWSH,
 };
-use crate::{
-    flag_util, personal_info_swsh, string_converter_8, BattleVersion, ContestStats,
-    ContestStatsMutable, DynamaxLevel, Favorite, FormArgument, GameValueLimit, Generation,
-    Gigantamax, HandlerLanguage, HomeTrack, HyperTrain, LangNick, MemoryHT, MemoryOT, NatureT,
-    PersonalInfo, Pkm, RibbonIndex, RibbonSetAffixed, RibbonSetCommon3, RibbonSetCommon4,
-    RibbonSetCommon6, RibbonSetCommon7, RibbonSetCommon8, RibbonSetEvent3, RibbonSetEvent4,
-    RibbonSetMark8, SanityChecksum, ScaledSize, Shiny, Sociability, SpeciesForm,
-    StringConverterOption, TechRecord8, TrainerId, TrainerInfo, TrainerMemories, G8PKM,
-};
+use crate::{flag_util, personal_info_swsh, string_converter_8, BattleVersion, ContestStats, ContestStatsMutable, DynamaxLevel, Favorite, FormArgument, GameValueLimit, Generation, Gigantamax, HandlerLanguage, HomeTrack, HyperTrain, LangNick, MemoryHT, MemoryOT, NatureT, PersonalInfo, Pkm, RibbonIndex, RibbonSetAffixed, RibbonSetCommon3, RibbonSetCommon4, RibbonSetCommon6, RibbonSetCommon7, RibbonSetCommon8, RibbonSetEvent3, RibbonSetEvent4, RibbonSetMark8, SanityChecksum, ScaledSize, Shiny, Sociability, SpeciesForm, StringConverterOption, TechRecord8, TrainerId, TrainerInfo, TrainerMemories, G8PKM, PKMType};
 
 const UNUSED: [u16; 77] = [
     0x17, 0x1A, 0x1B, 0x23, 0x33, 0x3E, 0x3F, 0x4C, 0x4D, 0x4E, 0x4F, 0x52, 0x53, 0x54, 0x55, 0x56,
@@ -402,6 +394,10 @@ impl PK8 {
 }
 
 impl Pkm<PersonalInfoSWSH> for PK8 {
+    fn get_contest_stats(&self) -> Option<Box<&dyn ContestStats>> {
+        Some(Box::new(self))
+    }
+
     fn size_party(&self) -> usize {
         SIZE_8PARTY
     }
@@ -410,8 +406,8 @@ impl Pkm<PersonalInfoSWSH> for PK8 {
         SIZE_8STORED
     }
 
-    fn get_type_name(&self) -> String {
-        "PK8".to_string()
+    fn get_type(&self) -> PKMType {
+        PKMType::PK8
     }
 
     fn get_personal_info(&self) -> &PersonalInfoSWSH {

@@ -5,13 +5,7 @@ use crate::tables::{
     MAX_ABILITY_ID_6_AO, MAX_BALL_ID_6, MAX_GAME_ID_6, MAX_ITEM_ID_6_AO, MAX_MOVE_ID_6_AO,
     MAX_SPECIES_ID_6,
 };
-use crate::{
-    string_converter_6, Affection, ContestStats, ContestStatsMutable, FormArgument, G6Pkm,
-    GameValueLimit, Generation, GeoTrack, GroundTile, GroundTileType, LangNick, MemoryHT, MemoryOT,
-    NatureT, PersonalInfo, Pkm, RegionOrigin, RibbonSetCommon3, RibbonSetCommon4, RibbonSetCommon6,
-    RibbonSetEvent3, RibbonSetEvent4, SanityChecksum, Shiny, SpeciesForm, StringConverterOption,
-    SuperTrain, TrainerId, TrainerInfo, TrainerMemories,
-};
+use crate::{string_converter_6, Affection, ContestStats, ContestStatsMutable, FormArgument, G6Pkm, GameValueLimit, Generation, GeoTrack, GroundTile, GroundTileType, LangNick, MemoryHT, MemoryOT, NatureT, PersonalInfo, Pkm, RegionOrigin, RibbonSetCommon3, RibbonSetCommon4, RibbonSetCommon6, RibbonSetEvent3, RibbonSetEvent4, SanityChecksum, Shiny, SpeciesForm, StringConverterOption, SuperTrain, TrainerId, TrainerInfo, TrainerMemories, PKMType};
 
 const UNUSED: [u16; 23] = [
     0x36, 0x37, // Unused Ribbons
@@ -1427,6 +1421,10 @@ impl NatureT for PK6 {
 }
 
 impl Pkm<PersonalInfoORAS> for PK6 {
+    fn get_contest_stats(&self) -> Option<Box<&dyn ContestStats>> {
+        Some(Box::new(self))
+    }
+
     fn size_party(&self) -> usize {
         G6Pkm::size_party(self)
     }
@@ -1435,8 +1433,8 @@ impl Pkm<PersonalInfoORAS> for PK6 {
         G6Pkm::size_stored(self)
     }
 
-    fn get_type_name(&self) -> String {
-        "PK6".to_string()
+    fn get_type(&self) -> PKMType {
+        PKMType::PK6
     }
 
     fn get_personal_info(&self) -> &PersonalInfoORAS {

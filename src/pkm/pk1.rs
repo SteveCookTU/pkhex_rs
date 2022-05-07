@@ -2,7 +2,7 @@ use crate::personal_info_g1::PersonalInfoG1;
 use crate::personal_table::Y;
 use crate::poke_crypto::{SIZE_1PARTY, SIZE_1STORED};
 use crate::string_converter_12::G1_TERMINATOR_CODE;
-use crate::{personal_info, species_converter, species_name, string_converter_12, string_converter_2_kor, GBPkm, GBPkml, GameValueLimit, GameVersion, Generation, HyperTrain, LangNick, LanguageID, NatureT, PersonalInfo, Pkm, PokeList, PokeList1, Shiny, ShinyEnum, SpeciesForm, StringConverterOption, TrainerId, PK6, Species};
+use crate::{personal_info, species_converter, species_name, string_converter_12, string_converter_2_kor, GBPkm, GBPkml, GameValueLimit, GameVersion, Generation, HyperTrain, LangNick, LanguageID, NatureT, PersonalInfo, Pkm, PokeList, PokeList1, Shiny, ShinyEnum, SpeciesForm, StringConverterOption, TrainerId, PK6, Species, PKMType, ContestStats};
 use time::PrimitiveDateTime;
 use crate::tables::HELD_ITEMS_GSC;
 
@@ -155,6 +155,7 @@ impl GBPkm<PersonalInfoG1> for PK1 {
 }
 
 impl Pkm<PersonalInfoG1> for PK1 {
+
     fn size_party(&self) -> usize {
         SIZE_1PARTY
     }
@@ -163,8 +164,8 @@ impl Pkm<PersonalInfoG1> for PK1 {
         SIZE_1STORED
     }
 
-    fn get_type_name(&self) -> String {
-        "PK1".to_string()
+    fn get_type(&self) -> PKMType {
+        PKMType::PK1
     }
 
     fn get_personal_info(&self) -> &PersonalInfoG1 {
@@ -275,10 +276,6 @@ impl Pkm<PersonalInfoG1> for PK1 {
 
     fn set_exp(&mut self, exp: usize) {
         todo!()
-    }
-
-    fn korean(&self) -> bool {
-        false
     }
 
     fn get_ot_name(&self) -> String {
@@ -671,12 +668,16 @@ impl Pkm<PersonalInfoG1> for PK1 {
         todo!()
     }
 
+    fn set_ot_friendship(&mut self, friendship: usize) {
+        todo!()
+    }
+
     fn japanese(&self) -> bool {
         self.raw_ot.len() == PK1::STRING_LENGTH_JAPANESE
     }
 
-    fn set_ot_friendship(&mut self, friendship: usize) {
-        todo!()
+    fn korean(&self) -> bool {
+        false
     }
 
     fn get_current_handler(&self) -> usize {

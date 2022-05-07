@@ -17,11 +17,11 @@ pub trait ContestStats {
             || self.get_cnt_sheen() != 0
     }
 
-    fn is_contest_below<T: ContestStats>(&self, initial: &T) -> bool {
+    fn is_contest_below(&self, initial: &dyn ContestStats) -> bool {
         !self.is_contest_above_or_equal(initial)
     }
 
-    fn is_contest_above_or_equal<T: ContestStats>(&self, initial: &T) -> bool {
+    fn is_contest_above_or_equal(&self, initial: &dyn ContestStats) -> bool {
         !(self.get_cnt_cool() < initial.get_cnt_cool()
             || self.get_cnt_beauty() < initial.get_cnt_beauty()
             || self.get_cnt_cute() < initial.get_cnt_cute()
@@ -30,7 +30,7 @@ pub trait ContestStats {
             || self.get_cnt_sheen() < initial.get_cnt_sheen())
     }
 
-    fn is_contest_equal<T: ContestStats>(&self, initial: &T) -> bool {
+    fn is_contest_equal(&self, initial: &dyn ContestStats) -> bool {
         !(self.get_cnt_cool() != initial.get_cnt_cool()
             || self.get_cnt_beauty() != initial.get_cnt_beauty()
             || self.get_cnt_cute() != initial.get_cnt_cute()
@@ -39,7 +39,7 @@ pub trait ContestStats {
             || self.get_cnt_sheen() != initial.get_cnt_sheen())
     }
 
-    fn copy_contest_stats_to<T: ContestStatsMutable>(&self, dest: &mut T) {
+    fn copy_contest_stats_to(&self, dest: &mut dyn ContestStatsMutable) {
         dest.set_cnt_cool(self.get_cnt_cool());
         dest.set_cnt_beauty(self.get_cnt_beauty());
         dest.set_cnt_cute(self.get_cnt_cute());

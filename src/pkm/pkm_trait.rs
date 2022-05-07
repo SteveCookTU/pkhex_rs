@@ -6,18 +6,17 @@ use crate::pkx::{
 };
 use crate::tables::locations::{is_none_location, traded_egg_location, GO7, GO8};
 use crate::tables::{LEGENDS, SUB_LEGENDS};
-use crate::{
-    date_util, experience, get_debut_generation, get_max_species_origin, get_pp_table, rand_util,
-    GameValueLimit, GameVersion, Generation, HyperTrain, LangNick, LanguageID, NatureT,
-    PersonalInfo, Shiny, ShinyEnum, Species, SpeciesForm, TrainerId, RATIO_MAGIC_FEMALE,
-    RATIO_MAGIC_GENDERLESS, RATIO_MAGIC_MALE,
-};
+use crate::{date_util, experience, get_debut_generation, get_max_species_origin, get_pp_table, rand_util, GameValueLimit, GameVersion, Generation, HyperTrain, LangNick, LanguageID, NatureT, PersonalInfo, Shiny, ShinyEnum, Species, SpeciesForm, TrainerId, RATIO_MAGIC_FEMALE, RATIO_MAGIC_GENDERLESS, RATIO_MAGIC_MALE, PKMType, ContestStats};
 use rand::{Rng, RngCore};
 use time::{Date, Month, PrimitiveDateTime, Time};
 
 pub trait Pkm<T: PersonalInfo>:
     SpeciesForm + TrainerId + Generation + Shiny + LangNick + GameValueLimit + NatureT + Clone
 {
+    fn get_contest_stats(&self) -> Option<Box<&dyn ContestStats>> {
+        None
+    }
+
     fn extensions(&self) -> Vec<String> {
         get_pkm_extensions(GENERATION)
     }
@@ -25,10 +24,10 @@ pub trait Pkm<T: PersonalInfo>:
     fn size_party(&self) -> usize;
     fn size_stored(&self) -> usize;
 
-    fn get_type_name(&self) -> String;
+    fn get_type(&self) -> PKMType;
 
     fn extension(&self) -> String {
-        self.get_type_name().to_lowercase()
+        self.get_type().to_string().to_lowercase()
     }
 
     fn get_personal_info(&self) -> &T;

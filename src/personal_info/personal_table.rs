@@ -225,7 +225,7 @@ impl<T: PersonalInfo> PersonalTable<T> {
     }
 
     pub fn is_species_in_game(&self, species: usize) -> bool {
-        if species > self.max_species_id {
+        if species >= self.max_species_id {
             return false;
         }
         let form0 = &self[species];

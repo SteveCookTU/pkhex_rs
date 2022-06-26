@@ -128,6 +128,72 @@ pub trait PersonalInfo: Sized {
         vec![]
     }
     fn set_special_tutors(&mut self, special_tutors: Vec<Vec<bool>>);
+
+    fn form_index(&self, species: usize, form: usize) -> usize {
+        if !self.has_form(form) {
+            species
+        } else {
+            self.get_form_stats_index() + form - 1
+        }
+    }
+
+    fn has_form(&self, form: usize) -> bool {
+        !(form == 0 || self.get_form_stats_index() == 0 || form >= self.get_form_count())
+    }
+
+    fn is_dual_gender(&self) -> bool {
+        self.get_gender() - 1 < 253
+    }
+
+    fn genderless(&self) -> bool {
+        self.get_gender() == RATIO_MAGIC_GENDERLESS
+    }
+
+    fn only_female(&self) -> bool {
+        self.get_gender() == RATIO_MAGIC_FEMALE
+    }
+
+    fn only_male(&self) -> bool {
+        self.get_gender() == RATIO_MAGIC_MALE
+    }
+
+    fn has_forms(&self) -> bool {
+        self.get_form_count() > 1
+    }
+
+    fn bst(&self) -> usize {
+        self.get_hp()
+            + self.get_atk()
+            + self.get_def()
+            + self.get_spe()
+            + self.get_spa()
+            + self.get_spd()
+    }
+
+    fn is_form_within_range(&self, form: usize) -> bool {
+        if form == 0 {
+            true
+        } else {
+            form < self.get_form_count()
+        }
+    }
+
+    fn is_valid_type_combination(&self, type_1: usize, type_2: usize) -> bool {
+        self.get_type_1() == type_1 && self.get_type_2() == type_2
+    }
+
+    fn is_type_single(&self, type_1: usize) -> bool {
+        self.get_type_1() == type_1 || self.get_type_2() == type_1
+    }
+
+    fn is_type_full(&self, type_1: usize, type_2: usize) -> bool {
+        (self.get_type_1() == type_1 && self.get_type_2() == type_2)
+            || (self.get_type_1() == type_2 || self.get_type_2() == type_1)
+    }
+
+    fn is_egg_group(&self, group: usize) -> bool {
+        self.get_egg_group_1() == group || self.get_egg_group_2() == group
+    }
 }
 
 pub const RATIO_MAGIC_GENDERLESS: usize = 255;
@@ -149,72 +215,6 @@ pub fn set_bits(data: &mut [u8], bits: &[bool]) {
     }
 }
 
-pub fn form_index<T: PersonalInfo>(info: &T, species: usize, form: usize) -> usize {
-    if !has_form(info, form) {
-        species
-    } else {
-        info.get_form_stats_index() + form - 1
-    }
-}
-
-pub fn has_form<T: PersonalInfo>(info: &T, form: usize) -> bool {
-    !(form == 0 || info.get_form_stats_index() == 0 || form >= info.get_form_count())
-}
-
 pub fn is_single_gender(gt: usize) -> bool {
     gt > 253
-}
-
-pub fn is_dual_gender<T: PersonalInfo>(info: &T) -> bool {
-    info.get_gender() - 1 < 253
-}
-
-pub fn genderless<T: PersonalInfo>(info: &T) -> bool {
-    info.get_gender() == RATIO_MAGIC_GENDERLESS
-}
-
-pub fn only_female<T: PersonalInfo>(info: &T) -> bool {
-    info.get_gender() == RATIO_MAGIC_FEMALE
-}
-
-pub fn only_male<T: PersonalInfo>(info: &T) -> bool {
-    info.get_gender() == RATIO_MAGIC_MALE
-}
-
-pub fn has_forms<T: PersonalInfo>(info: &T) -> bool {
-    info.get_form_count() > 1
-}
-
-pub fn bst<T: PersonalInfo>(info: &T) -> usize {
-    info.get_hp()
-        + info.get_atk()
-        + info.get_def()
-        + info.get_spe()
-        + info.get_spa()
-        + info.get_spd()
-}
-
-pub fn is_form_within_range<T: PersonalInfo>(info: &T, form: usize) -> bool {
-    if form == 0 {
-        true
-    } else {
-        form < info.get_form_count()
-    }
-}
-
-pub fn is_valid_type_combination<T: PersonalInfo>(info: &T, type_1: usize, type_2: usize) -> bool {
-    info.get_type_1() == type_1 && info.get_type_2() == type_2
-}
-
-pub fn is_type_single<T: PersonalInfo>(info: &T, type_1: usize) -> bool {
-    info.get_type_1() == type_1 || info.get_type_2() == type_1
-}
-
-pub fn is_type_full<T: PersonalInfo>(info: &T, type_1: usize, type_2: usize) -> bool {
-    (info.get_type_1() == type_1 && info.get_type_2() == type_2)
-        || (info.get_type_1() == type_2 || info.get_type_2() == type_1)
-}
-
-pub fn is_egg_group<T: PersonalInfo>(info: &T, group: usize) -> bool {
-    info.get_egg_group_1() == group || info.get_egg_group_2() == group
 }

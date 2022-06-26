@@ -15,7 +15,7 @@ use crate::tables::{
     MAX_SPECIES_ID_1, MAX_SPECIES_ID_3, MAX_SPECIES_ID_7_USUM, MAX_SPECIES_ID_8_R2,
 };
 use crate::{
-    form_index, get_bits, is_valid_type_combination, personal_info_b2w2, personal_info_bdsp,
+    get_bits, personal_info_b2w2, personal_info_bdsp,
     personal_info_bw, personal_info_g1, personal_info_g2, personal_info_g3, personal_info_g4,
     personal_info_la, personal_info_oras, personal_info_sm, personal_info_swsh, personal_info_xy,
     BinLinkerAccessor, GameVersion, PersonalInfo,
@@ -154,7 +154,7 @@ impl<T: PersonalInfo> PersonalTable<T> {
 
     pub fn get_form_index(&self, species: usize, form: usize) -> usize {
         if species <= self.max_species_id {
-            form_index(&self[species], species, form)
+            self[species].form_index(species, form)
         } else {
             0
         }
@@ -244,7 +244,7 @@ impl<T: PersonalInfo> PersonalTable<T> {
     pub fn is_valid_type_combination(&self, type_1: usize, type_2: usize) -> bool {
         self.table
             .iter()
-            .any(|info| is_valid_type_combination(info, type_1, type_2))
+            .any(|info| info.is_valid_type_combination(type_1, type_2))
     }
 }
 

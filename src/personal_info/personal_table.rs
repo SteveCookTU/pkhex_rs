@@ -1,3 +1,4 @@
+use crate::game::GameVersion;
 use crate::personal_info_b2w2::PersonalInfoB2W2;
 use crate::personal_info_bdsp::PersonalInfoBDSP;
 use crate::personal_info_bw::PersonalInfoBW;
@@ -15,10 +16,9 @@ use crate::tables::{
     MAX_SPECIES_ID_1, MAX_SPECIES_ID_3, MAX_SPECIES_ID_7_USUM, MAX_SPECIES_ID_8_R2,
 };
 use crate::{
-    get_bits, personal_info_b2w2, personal_info_bdsp,
-    personal_info_bw, personal_info_g1, personal_info_g2, personal_info_g3, personal_info_g4,
-    personal_info_la, personal_info_oras, personal_info_sm, personal_info_swsh, personal_info_xy,
-    BinLinkerAccessor, GameVersion, PersonalInfo,
+    get_bits, personal_info_b2w2, personal_info_bdsp, personal_info_bw, personal_info_g1,
+    personal_info_g2, personal_info_g3, personal_info_g4, personal_info_la, personal_info_oras,
+    personal_info_sm, personal_info_swsh, personal_info_xy, BinLinkerAccessor, PersonalInfo,
 };
 use lazy_static::lazy_static;
 use std::ops::{Index, IndexMut};

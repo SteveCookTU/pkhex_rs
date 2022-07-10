@@ -1,11 +1,12 @@
-use no_std_io::{EndianWrite, EndianRead, StreamContainer, StreamReader, StreamWriter, Cursor};
-use crate::{flag_util, personal_info_swsh, personal_table, PersonalInfo, poke_crypto, string_converter_8, StringConverterOption, tables};
-use crate::personal_info_swsh::PersonalInfoSWSH;
+use no_std_io::{Cursor, StreamContainer, StreamReader, StreamWriter, EndianRead, EndianWrite};
+use crate::{flag_util, personal_table, poke_crypto, string_converter_8, StringConverterOption};
+use crate::personal_info_bdsp::PersonalInfoBDSP;
 use crate::pkm::ribbons::marks_g8::MarkG8;
 use crate::pkm::ribbons::ribbons_g8::RibbonG8;
 
+
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
-pub struct PK8 {
+pub struct PB8 {
     pub ec: u32,
     pub sanity: u16,
     pub checksum: u16,
@@ -50,7 +51,8 @@ pub struct PK8 {
     #[no_std_io(pad_before = 4)]
     pub height_scalar: u8,
     pub weight_scalar: u8,
-    #[no_std_io(pad_before = 6)]
+    dpr_illegal_flag: u8,
+    #[no_std_io(pad_before = 5)]
     pub nickname_trash: [u8; 26],
     pub move_1: u16,
     pub move_2: u16,
@@ -126,20 +128,19 @@ pub struct PK8 {
     pub stat_spe: u16,
     pub stat_spa: u16,
     pub stat_spd: u16,
-    pub dynamax_type: u16,
 }
 
-impl From<Vec<u8>> for PK8 {
+impl From<Vec<u8>> for PB8 {
     fn from(mut data: Vec<u8>) -> Self {
         poke_crypto::decrypt_if_encrypted_8(&mut data);
         data.resize(poke_crypto::SIZE_8PARTY, 0);
         let mut reader = StreamContainer::new(data);
-        reader.default_read_stream_le::<PK8>()
+        reader.default_read_stream_le::<PB8>()
     }
 }
 
-impl From<PK8> for Vec<u8> {
-    fn from(pkm: PK8) -> Self {
+impl From<PB8> for Vec<u8> {
+    fn from(pkm: PB8) -> Self {
         let data = vec![0u8; poke_crypto::SIZE_8PARTY];
         let mut writer = StreamContainer::new(data);
         writer.checked_write_stream_le(&pkm);
@@ -147,20 +148,13 @@ impl From<PK8> for Vec<u8> {
     }
 }
 
-impl PK8 {
-    pub const SIZE_PARTY: usize = poke_crypto::SIZE_8PARTY;
-    pub const SIZE_STORED: usize = poke_crypto::SIZE_8STORED;
-    pub const MAX_IV: u8 = 31;
-    pub const MAX_EV: u8 = 252;
-    pub const OT_LENGTH: usize = 12;
-    pub const NICK_LENGTH: usize = 12;
-
-    pub const MAX_MOVE_ID: usize = tables::MAX_MOVE_ID_8;
-    pub const MAX_SPECIES_ID: usize = tables::MAX_SPECIES_ID_8;
-    pub const MAX_ABILITY_ID: usize = tables::MAX_ABILITY_ID_8;
-    pub const MAX_ITEM_ID: usize = tables::MAX_ITEM_ID_8;
-    pub const MAX_BALL_ID: usize = tables::MAX_BALL_ID_8;
-    pub const MAX_GAME_ID: usize = tables::MAX_GAME_ID_8;
+impl PB8 {
+    const SIZE_PARTY: usize = poke_crypto::SIZE_8PARTY;
+    const SIZE_STORED: usize = poke_crypto::SIZE_8STORED;
+    const MAX_IV: u8 = 31;
+    const MAX_EV: u8 = 252;
+    const OT_LENGTH: usize = 12;
+    const NICK_LENGTH: usize = 12;
 
     pub fn new() -> Self {
         Self {
@@ -169,16 +163,8 @@ impl PK8 {
         }
     }
 
-    pub fn get_personal_info(&self) -> &'static PersonalInfoSWSH {
-        personal_table::SWSH.get_form_entry(self.species as usize, self.form as usize)
-    }
-
-    pub fn tech_record_permit_flags(&self) -> Vec<bool> {
-        self.get_personal_info().get_tmhm().split_off(personal_info_swsh::TM_COUNT)
-    }
-
-    pub fn tech_record_permit_indexes(&self) -> &'static [usize] {
-        &tables::TMHM_SWSH[personal_info_swsh::TM_COUNT..]
+    pub fn get_personal_info(&self) -> &'static PersonalInfoBDSP {
+        personal_table::BDSP.get_form_entry(self.species as usize, self.form as usize)
     }
 
     fn calculate_checksum(&self) -> u16 {
@@ -699,37 +685,37 @@ impl PK8 {
     pub fn clear_move_record_flags(&mut self) {
         self.move_record_flags = [0; 14];
     }
-
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::pkm::pk8::PK8;
+    use crate::pkm::pb8::PB8;
 
-    const SWSH_PK8: &[u8] = include_bytes!("../resources/tests/swsh.pk8");
+    const BDSP_PB8: &[u8] = include_bytes!("../resources/tests/bdsp.pb8");
 
     #[test]
     fn should_read() {
-        let bytes = SWSH_PK8.to_vec();
-        let pkm: PK8 = bytes.into();
-        assert_eq!(pkm.pid, 0x80B88937);
-        assert_eq!(pkm.exp, 0);
-        assert_eq!(pkm.height_scalar, 104);
+        let bytes = BDSP_PB8.to_vec();
+        let pkm: PB8 = bytes.into();
+        assert_eq!(pkm.pid, 0xCA68C597);
+        assert_eq!(pkm.exp, 125971);
+        assert_eq!(pkm.height_scalar, 77);
         assert_eq!(pkm.get_ot_name(), "PKHeX".to_string());
     }
 
     #[test]
     fn should_read_and_write() {
-        let bytes = SWSH_PK8.to_vec();
-        let pkm: PK8 = bytes.clone().into();
+        let bytes = BDSP_PB8.to_vec();
+        let pkm: PB8 = bytes.clone().into();
         let output: Vec<u8> = pkm.into();
         assert_eq!(bytes, output.to_vec())
     }
 
     #[test]
+
     fn should_calc_checksum() {
-        let bytes = SWSH_PK8.to_vec();
-        let pkm: PK8 = bytes.clone().into();
+        let bytes = BDSP_PB8.to_vec();
+        let pkm: PB8 = bytes.clone().into();
         assert_eq!(pkm.checksum, pkm.calculate_checksum());
     }
 }

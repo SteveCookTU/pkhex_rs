@@ -1,4 +1,4 @@
-use crate::Species;
+use crate::game::Species;
 
 pub const LEGENDS: [usize; 46] = [
     Species::Mewtwo as usize,

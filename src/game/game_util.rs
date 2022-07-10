@@ -1,4 +1,5 @@
-use crate::{tables, GameVersion};
+use crate::game::GameVersion;
+use crate::tables;
 
 impl GameVersion {
     pub fn get_max_species_id(&self) -> usize {

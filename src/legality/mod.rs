@@ -1,7 +1,4 @@
 mod bin_linker_accessor;
-mod evolutions;
-mod restrictions;
-mod structures;
 pub mod tables;
 
 use crate::tables::{
@@ -9,16 +6,7 @@ use crate::tables::{
     MAX_SPECIES_ID_6, MAX_SPECIES_ID_7B, MAX_SPECIES_ID_8A, MOVE_PP_BW, MOVE_PP_DP, MOVE_PP_GSC,
     MOVE_PP_RBY, MOVE_PP_RS, MOVE_PP_SM, MOVE_PP_SWSH, MOVE_PP_XY,
 };
-use crate::{PersonalInfo, Pkm};
 pub use bin_linker_accessor::*;
-pub use evolutions::*;
-pub use restrictions::*;
-pub use structures::*;
-
-pub fn get_pp_table<I: PersonalInfo, T: Pkm<I> + ?Sized>(_pkm: &T, format: usize) -> &'static [u8] {
-    // TODO: Add PB7 and PA8 cases
-    get_pp_table_from_format(format)
-}
 
 pub fn get_pp_table_from_format(format: usize) -> &'static [u8] {
     match format {

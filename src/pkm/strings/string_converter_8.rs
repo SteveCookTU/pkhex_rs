@@ -3,13 +3,13 @@ use crate::StringConverterOption;
 
 const TERMINATOR_NULL: u16 = 0;
 
-pub fn get_string(data: Vec<u8>) -> String {
+pub fn get_string(data: &[u8]) -> String {
     let mut result = vec![char::default(); data.len()];
     let len = load_string(data, &mut result);
     result.iter().take(len).collect()
 }
 
-fn load_string(data: Vec<u8>, result: &mut [char]) -> usize {
+fn load_string(data: &[u8], result: &mut [char]) -> usize {
     let mut i = 0;
     while i < data.len() {
         let value = u16::from_le_bytes((&data[i..(i + 2)]).try_into().unwrap());
@@ -23,7 +23,7 @@ fn load_string(data: Vec<u8>, result: &mut [char]) -> usize {
 }
 
 pub fn set_string(
-    dest_buffer: &mut Vec<u8>,
+    dest_buffer: &mut [u8],
     mut value: Vec<char>,
     max_length: usize,
     option: StringConverterOption,
@@ -33,7 +33,9 @@ pub fn set_string(
     }
 
     if option == StringConverterOption::ClearZero {
-        *dest_buffer = dest_buffer.iter().map(|_| 0).collect::<Vec<u8>>();
+        for b in dest_buffer.iter_mut() {
+            *b = 0;
+        }
     }
 
     let is_full_width = get_is_full_width_string(&value);
@@ -42,14 +44,17 @@ pub fn set_string(
         if !is_full_width {
             c = unsanitize_char(c, false);
         }
-
-        dest_buffer.splice((i * 2)..(i * 2 + 2), (c as u16).to_le_bytes());
+        let bytes = (c as u16).to_le_bytes();
+        dest_buffer[i * 2] = bytes[0];
+        dest_buffer[i * 2 + 1] = bytes[1];
     }
 
     let count = value.len();
     if count == dest_buffer.len() {
         return count;
     }
-    dest_buffer.splice(count..(count + 2), TERMINATOR_NULL.to_le_bytes());
+    let null_bytes = TERMINATOR_NULL.to_le_bytes();
+    dest_buffer[count] = null_bytes[0];
+    dest_buffer[count + 1] = null_bytes[1];
     count + 2
 }

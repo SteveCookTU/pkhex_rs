@@ -24,7 +24,11 @@ pub const FARAWAY_4: usize = 3002;
 pub const GO7: usize = 50;
 pub const GO8: usize = 30012;
 
-pub const DEFAULT_8B_NONE: isize = -1;
+pub const HOME_SHSP: usize = 59998; // SP traded to (SW)SH
+pub const HOME_SWBD: usize = 59999; // BD traded to SW(SH)
+pub const HOME_SWLA: usize = 60000; // PLA traded to SW(SH)
+pub const HOME_SWSHBDSP_EGG: usize = 65534; // -2 = 8bNone-1..
+pub const DEFAULT_8B_NONE: usize = 65535;
 
 pub fn traded_egg_location(generation: usize, ver: GameVersion) -> usize {
     match generation {

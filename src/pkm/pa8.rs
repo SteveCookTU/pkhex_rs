@@ -1,5 +1,5 @@
-use no_std_io::{EndianWrite, EndianRead, StreamContainer, StreamReader, StreamWriter, Cursor};
 use crate::{poke_crypto, string_converter_8};
+use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
 pub struct PA8 {

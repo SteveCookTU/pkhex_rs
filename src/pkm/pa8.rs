@@ -1,7 +1,10 @@
 use crate::personal_info_la::PersonalInfoLA;
 use crate::pkm::ribbons::marks_g8::MarkG8;
 use crate::pkm::ribbons::ribbons_g8::RibbonG8;
-use crate::{experience, flag_util, personal_table, PersonalInfo, poke_crypto, string_converter_8, StringConverterOption};
+use crate::{
+    experience, flag_util, personal_table, poke_crypto, string_converter_8, PersonalInfo,
+    StringConverterOption,
+};
 use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
 
 const GANBARU_MULTIPLIER: [u8; 11] = [0, 2, 3, 4, 7, 8, 9, 14, 15, 16, 25];
@@ -752,12 +755,78 @@ impl PA8 {
         let level = self.get_current_level();
         let nature = self.stat_nature as usize;
 
-        stats[0] = self.get_ganbaru_stat(p.get_hp(), if self.get_ht_hp() { 31 } else { self.get_iv_hp() }, self.gv_hp, level).wrapping_add(PA8::get_stat_hp(p.get_hp(), level)) as u16;
-        stats[1] = self.get_ganbaru_stat(p.get_atk(), if self.get_ht_atk() { 31 } else { self.get_iv_atk() }, self.gv_atk, level).wrapping_add(PA8::get_stat(p.get_atk(), level, nature, 0)) as u16;
-        stats[2] = self.get_ganbaru_stat(p.get_def(), if self.get_ht_def() { 31 } else { self.get_iv_def() }, self.gv_def, level).wrapping_add(PA8::get_stat(p.get_def(), level, nature, 1)) as u16;
-        stats[3] = self.get_ganbaru_stat(p.get_spe(), if self.get_ht_spe() { 31 } else { self.get_iv_spe() }, self.gv_spe, level).wrapping_add(PA8::get_stat(p.get_spe(), level, nature, 4)) as u16;
-        stats[4] = self.get_ganbaru_stat(p.get_spa(), if self.get_ht_spa() { 31 } else { self.get_iv_spa() }, self.gv_spa, level).wrapping_add(PA8::get_stat(p.get_spa(), level, nature, 2)) as u16;
-        stats[5] = self.get_ganbaru_stat(p.get_spd(), if self.get_ht_spd() { 31 } else { self.get_iv_spd() }, self.gv_spd, level).wrapping_add(PA8::get_stat(p.get_spd(), level, nature, 3)) as u16;
+        stats[0] = self
+            .get_ganbaru_stat(
+                p.get_hp(),
+                if self.get_ht_hp() {
+                    31
+                } else {
+                    self.get_iv_hp()
+                },
+                self.gv_hp,
+                level,
+            )
+            .wrapping_add(PA8::get_stat_hp(p.get_hp(), level)) as u16;
+        stats[1] = self
+            .get_ganbaru_stat(
+                p.get_atk(),
+                if self.get_ht_atk() {
+                    31
+                } else {
+                    self.get_iv_atk()
+                },
+                self.gv_atk,
+                level,
+            )
+            .wrapping_add(PA8::get_stat(p.get_atk(), level, nature, 0)) as u16;
+        stats[2] = self
+            .get_ganbaru_stat(
+                p.get_def(),
+                if self.get_ht_def() {
+                    31
+                } else {
+                    self.get_iv_def()
+                },
+                self.gv_def,
+                level,
+            )
+            .wrapping_add(PA8::get_stat(p.get_def(), level, nature, 1)) as u16;
+        stats[3] = self
+            .get_ganbaru_stat(
+                p.get_spe(),
+                if self.get_ht_spe() {
+                    31
+                } else {
+                    self.get_iv_spe()
+                },
+                self.gv_spe,
+                level,
+            )
+            .wrapping_add(PA8::get_stat(p.get_spe(), level, nature, 4)) as u16;
+        stats[4] = self
+            .get_ganbaru_stat(
+                p.get_spa(),
+                if self.get_ht_spa() {
+                    31
+                } else {
+                    self.get_iv_spa()
+                },
+                self.gv_spa,
+                level,
+            )
+            .wrapping_add(PA8::get_stat(p.get_spa(), level, nature, 2)) as u16;
+        stats[5] = self
+            .get_ganbaru_stat(
+                p.get_spd(),
+                if self.get_ht_spd() {
+                    31
+                } else {
+                    self.get_iv_spd()
+                },
+                self.gv_spd,
+                level,
+            )
+            .wrapping_add(PA8::get_stat(p.get_spd(), level, nature, 3)) as u16;
     }
 
     pub fn get_ganbaru_stat(&self, base_stat: usize, iv: u8, gv: u8, level: usize) -> usize {
@@ -772,7 +841,7 @@ impl PA8 {
             _ if iv >= 31 => 3,
             _ if iv >= 26 => 2,
             _ if iv >= 20 => 1,
-            _ => 0
+            _ => 0,
         }
     }
 
@@ -807,29 +876,29 @@ impl PA8 {
 
     const NATURE_AMP_TABLE: [i8; 125] = [
         0, 0, 0, 0, 0, // Hardy
-        1,-1, 0, 0, 0, // Lonely
-        1, 0, 0, 0,-1, // Brave
-        1, 0,-1, 0, 0, // Adamant
-        1, 0, 0,-1, 0, // Naughty
+        1, -1, 0, 0, 0, // Lonely
+        1, 0, 0, 0, -1, // Brave
+        1, 0, -1, 0, 0, // Adamant
+        1, 0, 0, -1, 0, // Naughty
         -1, 1, 0, 0, 0, // Bold
         0, 0, 0, 0, 0, // Docile
-        0, 1, 0, 0,-1, // Relaxed
-        0, 1,-1, 0, 0, // Impish
-        0, 1, 0,-1, 0, // Lax
+        0, 1, 0, 0, -1, // Relaxed
+        0, 1, -1, 0, 0, // Impish
+        0, 1, 0, -1, 0, // Lax
         -1, 0, 0, 0, 1, // Timid
-        0,-1, 0, 0, 1, // Hasty
+        0, -1, 0, 0, 1, // Hasty
         0, 0, 0, 0, 0, // Serious
-        0, 0,-1, 0, 1, // Jolly
-        0, 0, 0,-1, 1, // Naive
+        0, 0, -1, 0, 1, // Jolly
+        0, 0, 0, -1, 1, // Naive
         -1, 0, 1, 0, 0, // Modest
-        0,-1, 1, 0, 0, // Mild
-        0, 0, 1, 0,-1, // Quiet
+        0, -1, 1, 0, 0, // Mild
+        0, 0, 1, 0, -1, // Quiet
         0, 0, 0, 0, 0, // Bashful
-        0, 0, 1,-1, 0, // Rash
+        0, 0, 1, -1, 0, // Rash
         -1, 0, 0, 1, 0, // Calm
-        0,-1, 0, 1, 0, // Gentle
-        0, 0, 0, 1,-1, // Sassy
-        0, 0,-1, 1, 0, // Careful
+        0, -1, 0, 1, 0, // Gentle
+        0, 0, 0, 1, -1, // Sassy
+        0, 0, -1, 1, 0, // Careful
         0, 0, 0, 0, 0, // Quirky
     ];
 

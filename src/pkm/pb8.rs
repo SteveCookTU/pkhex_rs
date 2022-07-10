@@ -1,9 +1,9 @@
 use crate::personal_info_bdsp::PersonalInfoBDSP;
 use crate::pkm::ribbons::marks_g8::MarkG8;
 use crate::pkm::ribbons::ribbons_g8::RibbonG8;
+use crate::tables::locations;
 use crate::{flag_util, personal_table, poke_crypto, string_converter_8, StringConverterOption};
 use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
-use crate::tables::locations;
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
 pub struct PB8 {

@@ -248,7 +248,7 @@ impl PA8 {
         let mut pkm = *self;
         pkm.refresh_checksum();
         let bytes: Vec<u8> = pkm.into();
-        poke_crypto::encrypt_array_8(&bytes)
+        poke_crypto::encrypt_array_8a(&bytes)
     }
 
     pub fn fix_relearn(&mut self) {

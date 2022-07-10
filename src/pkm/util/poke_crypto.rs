@@ -131,6 +131,19 @@ pub fn encrypt_array_8(pkm: &[u8]) -> Vec<u8> {
     ekm
 }
 
+pub fn encrypt_array_8a(pkm: &[u8]) -> Vec<u8> {
+    let pv = u32::from_le_bytes(pkm[0..4].try_into().unwrap());
+    let sv = pv >> 13 & 31;
+
+    let mut ekm = shuffle_array(
+        &mut pkm.to_owned(),
+        BLOCK_POSITION_INVERT[sv as usize] as usize,
+        SIZE_8ABLOCK,
+    );
+    crypt_pkm(&mut ekm, pv as usize, SIZE_8ABLOCK);
+    ekm
+}
+
 pub fn decrypt_if_encrypted_67(pkm: &mut Vec<u8>) {
     if u16::from_le_bytes(pkm[0xC8..0xCA].try_into().unwrap()) != 0
         || u16::from_le_bytes(pkm[0x58..0x5A].try_into().unwrap()) != 0

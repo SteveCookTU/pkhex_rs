@@ -3,6 +3,7 @@ use crate::pkm::ribbons::marks_g8::MarkG8;
 use crate::pkm::ribbons::ribbons_g8::RibbonG8;
 use crate::{flag_util, personal_table, poke_crypto, string_converter_8, StringConverterOption};
 use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
+use crate::tables::locations;
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
 pub struct PB8 {
@@ -158,6 +159,8 @@ impl PB8 {
     pub fn new() -> Self {
         Self {
             affixed_ribbon: -1,
+            egg_location: locations::DEFAULT_8B_NONE as u16,
+            met_location: locations::DEFAULT_8B_NONE as u16,
             ..Default::default()
         }
     }

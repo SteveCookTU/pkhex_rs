@@ -735,7 +735,6 @@ mod tests {
     }
 
     #[test]
-
     fn should_calc_checksum() {
         let bytes = BDSP_PB8.to_vec();
         let pkm: PB8 = bytes.clone().into();

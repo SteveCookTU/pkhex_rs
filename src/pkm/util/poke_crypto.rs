@@ -98,6 +98,13 @@ pub fn decrypt_array_8(mut ekm: Vec<u8>) -> Vec<u8> {
     shuffle_array(&mut ekm, sv, SIZE_8BLOCK)
 }
 
+pub fn decrypt_array_8a(mut ekm: Vec<u8>) -> Vec<u8> {
+    let seed = u32::from_le_bytes(ekm[0..4].try_into().unwrap()) as usize;
+    let sv = seed >> 13 & 31;
+    crypt_pkm(&mut ekm, seed, SIZE_8ABLOCK);
+    shuffle_array(&mut ekm, sv, SIZE_8ABLOCK)
+}
+
 pub fn encrypt_array_6(pkm: &[u8]) -> Vec<u8> {
     let pv = u32::from_le_bytes(pkm[0..4].try_into().unwrap());
     let sv = pv >> 13 & 31;
@@ -136,6 +143,14 @@ pub fn decrypt_if_encrypted_8(pkm: &mut Vec<u8>) {
     if u16::from_le_bytes(pkm[0x70..0x72].try_into().unwrap()) != 0
         || u16::from_le_bytes(pkm[0x110..0x112].try_into().unwrap()) != 0
     {
-        *pkm = decrypt_array_6(pkm.clone());
+        *pkm = decrypt_array_8(pkm.clone());
+    }
+}
+
+pub fn decrypt_if_encrypted_8a(pkm: &mut Vec<u8>) {
+    if u16::from_le_bytes(pkm[0x78..0x7A].try_into().unwrap()) != 0
+        || u16::from_le_bytes(pkm[0x128..0x12A].try_into().unwrap()) != 0
+    {
+        *pkm = decrypt_array_8a(pkm.clone());
     }
 }

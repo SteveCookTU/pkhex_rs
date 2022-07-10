@@ -1,8 +1,11 @@
-use no_std_io::{EndianWrite, EndianRead, StreamContainer, StreamReader, StreamWriter, Cursor};
-use crate::{flag_util, personal_info_swsh, personal_table, PersonalInfo, poke_crypto, string_converter_8, StringConverterOption, tables};
 use crate::personal_info_swsh::PersonalInfoSWSH;
 use crate::pkm::ribbons::marks_g8::MarkG8;
 use crate::pkm::ribbons::ribbons_g8::RibbonG8;
+use crate::{
+    flag_util, personal_info_swsh, personal_table, poke_crypto, string_converter_8, tables,
+    PersonalInfo, StringConverterOption,
+};
+use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
 pub struct PK8 {
@@ -174,7 +177,9 @@ impl PK8 {
     }
 
     pub fn tech_record_permit_flags(&self) -> Vec<bool> {
-        self.get_personal_info().get_tmhm().split_off(personal_info_swsh::TM_COUNT)
+        self.get_personal_info()
+            .get_tmhm()
+            .split_off(personal_info_swsh::TM_COUNT)
     }
 
     pub fn tech_record_permit_indexes(&self) -> &'static [usize] {
@@ -254,7 +259,7 @@ impl PK8 {
                 3 => self.get_iv_spe(),
                 4 => self.get_iv_spa(),
                 5 => self.get_iv_spd(),
-                _ => 0
+                _ => 0,
             };
             if iv == max_iv {
                 break;
@@ -360,7 +365,7 @@ impl PK8 {
             0 => self.ribbon_0,
             1 => self.ribbon_1,
             2 => self.ribbon_2,
-            _ => self.ribbon_3
+            _ => self.ribbon_3,
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
@@ -374,7 +379,7 @@ impl PK8 {
             0 => &mut self.ribbon_0,
             1 => &mut self.ribbon_1,
             2 => &mut self.ribbon_2,
-            _ => &mut self.ribbon_3
+            _ => &mut self.ribbon_3,
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
@@ -441,7 +446,7 @@ impl PK8 {
             0 => self.ribbon_0,
             1 => self.ribbon_1,
             2 => self.ribbon_2,
-            _ => self.ribbon_3
+            _ => self.ribbon_3,
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
@@ -455,7 +460,7 @@ impl PK8 {
             0 => &mut self.ribbon_0,
             1 => &mut self.ribbon_1,
             2 => &mut self.ribbon_2,
-            _ => &mut self.ribbon_3
+            _ => &mut self.ribbon_3,
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
@@ -481,7 +486,12 @@ impl PK8 {
     }
 
     pub fn set_nickname(&mut self, value: String) {
-        string_converter_8::set_string(&mut self.nickname_trash, value.chars().collect(), 12, StringConverterOption::None);
+        string_converter_8::set_string(
+            &mut self.nickname_trash,
+            value.chars().collect(),
+            12,
+            StringConverterOption::None,
+        );
     }
 
     pub fn get_iv_hp(&self) -> u8 {
@@ -505,7 +515,8 @@ impl PK8 {
     }
 
     pub fn set_iv_def(&mut self, value: u8) {
-        self.iv32 = (self.iv32 & !(0x1F << 10)) | (if value > 31 { 31 } else { value as u32 } << 10);
+        self.iv32 =
+            (self.iv32 & !(0x1F << 10)) | (if value > 31 { 31 } else { value as u32 } << 10);
     }
 
     pub fn get_iv_spe(&self) -> u8 {
@@ -513,7 +524,8 @@ impl PK8 {
     }
 
     pub fn set_iv_spe(&mut self, value: u8) {
-        self.iv32 = (self.iv32 & !(0x1F << 15)) | (if value > 31 { 31 } else { value as u32 } << 15);
+        self.iv32 =
+            (self.iv32 & !(0x1F << 15)) | (if value > 31 { 31 } else { value as u32 } << 15);
     }
 
     pub fn get_iv_spa(&self) -> u8 {
@@ -521,7 +533,8 @@ impl PK8 {
     }
 
     pub fn set_iv_spa(&mut self, value: u8) {
-        self.iv32 = (self.iv32 & !(0x1F << 20)) | (if value > 31 { 31 } else { value as u32 } << 20);
+        self.iv32 =
+            (self.iv32 & !(0x1F << 20)) | (if value > 31 { 31 } else { value as u32 } << 20);
     }
 
     pub fn get_iv_spd(&self) -> u8 {
@@ -529,7 +542,8 @@ impl PK8 {
     }
 
     pub fn set_iv_spd(&mut self, value: u8) {
-        self.iv32 = (self.iv32 & !(0x1F << 25)) | (if value > 31 { 31 } else { value as u32 } << 25);
+        self.iv32 =
+            (self.iv32 & !(0x1F << 25)) | (if value > 31 { 31 } else { value as u32 } << 25);
     }
 
     pub fn get_is_egg(&self) -> bool {
@@ -553,7 +567,12 @@ impl PK8 {
     }
 
     pub fn set_ht_name(&mut self, value: String) {
-        string_converter_8::set_string(&mut self.ht_trash, value.chars().collect(), 12, StringConverterOption::None);
+        string_converter_8::set_string(
+            &mut self.ht_trash,
+            value.chars().collect(),
+            12,
+            StringConverterOption::None,
+        );
     }
 
     pub fn get_poke_job_flag(&self, index: usize) -> bool {
@@ -609,7 +628,12 @@ impl PK8 {
     }
 
     pub fn set_ot_name(&mut self, value: String) {
-        string_converter_8::set_string(&mut self.ot_trash, value.chars().collect(), 12, StringConverterOption::None);
+        string_converter_8::set_string(
+            &mut self.ot_trash,
+            value.chars().collect(),
+            12,
+            StringConverterOption::None,
+        );
     }
 
     pub fn get_met_level(&self) -> u8 {
@@ -641,7 +665,8 @@ impl PK8 {
     }
 
     pub fn set_ht_atk(&mut self, value: bool) {
-        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 1)) | (if value { 1 } else { 0 } << 1);
+        self.hyper_train_flags =
+            (self.hyper_train_flags & !(1 << 1)) | (if value { 1 } else { 0 } << 1);
     }
 
     pub fn get_ht_def(&self) -> bool {
@@ -649,7 +674,8 @@ impl PK8 {
     }
 
     pub fn set_ht_def(&mut self, value: bool) {
-        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 2)) | (if value { 1 } else { 0 } << 2);
+        self.hyper_train_flags =
+            (self.hyper_train_flags & !(1 << 2)) | (if value { 1 } else { 0 } << 2);
     }
 
     pub fn get_ht_spa(&self) -> bool {
@@ -657,7 +683,8 @@ impl PK8 {
     }
 
     pub fn set_ht_spa(&mut self, value: bool) {
-        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 3)) | (if value { 1 } else { 0 } << 3);
+        self.hyper_train_flags =
+            (self.hyper_train_flags & !(1 << 3)) | (if value { 1 } else { 0 } << 3);
     }
 
     pub fn get_ht_spd(&self) -> bool {
@@ -665,7 +692,8 @@ impl PK8 {
     }
 
     pub fn set_ht_spd(&mut self, value: bool) {
-        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 4)) | (if value { 1 } else { 0 } << 4);
+        self.hyper_train_flags =
+            (self.hyper_train_flags & !(1 << 4)) | (if value { 1 } else { 0 } << 4);
     }
 
     pub fn get_ht_spe(&self) -> bool {
@@ -673,7 +701,8 @@ impl PK8 {
     }
 
     pub fn set_ht_spe(&mut self, value: bool) {
-        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 5)) | (if value { 1 } else { 0 } << 5);
+        self.hyper_train_flags =
+            (self.hyper_train_flags & !(1 << 5)) | (if value { 1 } else { 0 } << 5);
     }
 
     pub fn get_move_record_flag(&self, index: usize) -> bool {
@@ -699,7 +728,6 @@ impl PK8 {
     pub fn clear_move_record_flags(&mut self) {
         self.move_record_flags = [0; 14];
     }
-
 }
 
 #[cfg(test)]

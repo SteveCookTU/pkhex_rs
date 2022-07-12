@@ -1,7 +1,7 @@
-use crate::string_converter::{get_is_full_width_string, sanitize_char, unsanitize_char};
+use crate::string_converter::{sanitize_char, unsanitize_char};
 use crate::StringConverterOption;
 
-const TERMINATOR_NULL: u16 = 0;
+const TERMINATOR_FFFF: u16 = 0xFFFF;
 
 pub fn get_string(data: &[u8]) -> String {
     let mut result = vec![char::default(); data.len()];
@@ -9,11 +9,11 @@ pub fn get_string(data: &[u8]) -> String {
     result.iter().take(len).collect()
 }
 
-fn load_string(data: &[u8], result: &mut [char]) -> usize {
+pub fn load_string(data: &[u8], result: &mut [char]) -> usize {
     let mut i = 0;
     while i < data.len() {
         let value = u16::from_le_bytes((&data[i..(i + 2)]).try_into().unwrap());
-        if value == TERMINATOR_NULL {
+        if value == TERMINATOR_FFFF {
             break;
         }
         result[i / 2] = sanitize_char(char::from_u32(value as u32).unwrap());
@@ -32,19 +32,22 @@ pub fn set_string(
         value = value[..max_length].to_vec();
     }
 
-    if option == StringConverterOption::ClearZero {
-        for b in dest_buffer.iter_mut() {
-            *b = 0;
+    match option {
+        StringConverterOption::ClearZero => {
+            for b in dest_buffer.iter_mut() {
+                *b = 0;
+            }
         }
-    }
-
-    let is_full_width = get_is_full_width_string(&value);
+        StringConverterOption::ClearFF => {
+            for b in dest_buffer.iter_mut() {
+                *b = 0xFF;
+            }
+        }
+        _ => {}
+    };
 
     for (i, mut c) in value.clone().into_iter().enumerate() {
-        if !is_full_width {
-            c = unsanitize_char(c, false);
-        }
-
+        c = unsanitize_char(c, false);
         let bytes = (c as u16).to_le_bytes();
         dest_buffer[i * 2] = bytes[0];
         dest_buffer[i * 2 + 1] = bytes[1];
@@ -54,7 +57,7 @@ pub fn set_string(
     if count == dest_buffer.len() {
         return count;
     }
-    let null_bytes = TERMINATOR_NULL.to_le_bytes();
+    let null_bytes = TERMINATOR_FFFF.to_le_bytes();
     dest_buffer[count] = null_bytes[0];
     dest_buffer[count + 1] = null_bytes[1];
     count + 2

@@ -1,6 +1,5 @@
 use crate::personal_info_la::PersonalInfoLA;
-use crate::pkm::ribbons::marks_g8::MarkG8;
-use crate::pkm::ribbons::ribbons_g8::RibbonG8;
+use crate::ribbons::{MarkG8, RibbonG8};
 use crate::{
     experience, flag_util, personal_table, poke_crypto, string_converter_8, PersonalInfo,
     StringConverterOption,
@@ -173,7 +172,7 @@ impl PA8 {
         let data: Vec<u8> = (*self).into();
         let mut reader = StreamContainer::new(data);
         reader.set_index(8);
-        while reader.get_index() < poke_crypto::SIZE_8STORED {
+        while reader.get_index() < poke_crypto::SIZE_8ASTORED {
             chk = chk.wrapping_add(reader.default_read_stream_le::<u16>())
         }
         chk

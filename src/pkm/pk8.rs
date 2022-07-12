@@ -1,6 +1,5 @@
 use crate::personal_info_swsh::PersonalInfoSWSH;
-use crate::pkm::ribbons::marks_g8::MarkG8;
-use crate::pkm::ribbons::ribbons_g8::RibbonG8;
+use crate::ribbons::{MarkG8, RibbonG8};
 use crate::{
     flag_util, personal_info_swsh, personal_table, poke_crypto, string_converter_8, tables,
     PersonalInfo, StringConverterOption,

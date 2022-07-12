@@ -1,5 +1,14 @@
 pub const MAX_SPECIES_ID_7: usize = 802;
+pub const MAX_MOVE_ID_7: usize = 719;
+pub const MAX_ITEM_ID_7: usize = 920;
+pub const MAX_ABILITY_ID_7: usize = 232;
+pub const MAX_BALL_ID_7: usize = 0x1A;
+pub const MAX_GAME_ID_7: usize = 41;
+
 pub const MAX_SPECIES_ID_7_USUM: usize = 807;
+pub const MAX_MOVE_ID_7_USUM: usize = 728;
+pub const MAX_ITEM_ID_7_USUM: usize = 959;
+pub const MAX_ABILITY_ID_7_USUM: usize = 233;
 
 pub const MOVE_PP_SM: [u8; 729] = [
     00, 35, 25, 10, 15, 20, 20, 15, 15, 15, 35, 30, 05, 10, 20, 30, 35, 35, 20, 15, 20, 20, 25, 20,

@@ -1,5 +1,5 @@
 use crate::string_converter::{get_is_full_width_string, sanitize_char, unsanitize_char};
-use crate::StringConverterOption;
+use crate::{string_converter_7zh, StringConverterOption};
 
 const TERMINATOR_NULL: u16 = 0;
 
@@ -19,6 +19,7 @@ fn load_string(data: &[u8], result: &mut [char]) -> usize {
         result[i / 2] = sanitize_char(char::from_u32(value as u32).unwrap());
         i += 2;
     }
+    string_converter_7zh::remap_chinese_glyphs_bin_to_string(&mut result[..(i / 2)]);
     i / 2
 }
 
@@ -26,7 +27,9 @@ pub fn set_string(
     dest_buffer: &mut [u8],
     mut value: Vec<char>,
     max_length: usize,
+    language: usize,
     option: StringConverterOption,
+    chinese: bool,
 ) -> usize {
     if value.len() > max_length {
         value = value[..max_length].to_vec();
@@ -38,11 +41,16 @@ pub fn set_string(
         }
     }
 
+    let trad = string_converter_7zh::is_traditional(&value, language);
     let is_full_width = get_is_full_width_string(&value);
 
     for (i, mut c) in value.clone().into_iter().enumerate() {
         if !is_full_width {
             c = unsanitize_char(c, false);
+        }
+
+        if chinese {
+            c = string_converter_7zh::convert_string_to_bin_g7_zh(c, trad);
         }
 
         let bytes = (c as u16).to_le_bytes();

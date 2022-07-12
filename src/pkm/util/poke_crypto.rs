@@ -73,6 +73,16 @@ pub fn crypt_pkm(data: &mut [u8], pv: usize, block_size: usize) {
     }
 }
 
+pub fn crypt_pkm_45(data: &mut [u8], pv: usize, chk: usize, block_size: usize) {
+    let start = 8;
+    let end = (4 * block_size) + start;
+    crypt_array(data, chk, start, end);
+    if data.len() > end {
+        let len = data.len();
+        crypt_array(data, pv, end, len);
+    }
+}
+
 fn crypt_array(data: &mut [u8], mut seed: usize, start: usize, end: usize) {
     let mut i = start;
     while i < end {
@@ -82,6 +92,14 @@ fn crypt_array(data: &mut [u8], mut seed: usize, start: usize, end: usize) {
         data[i] ^= (seed >> 24) as u8;
         i += 1;
     }
+}
+
+pub fn decrypt_array_45(mut ekm: Vec<u8>) -> Vec<u8> {
+    let seed = u32::from_le_bytes(ekm[0..4].try_into().unwrap()) as usize;
+    let chk = u16::from_le_bytes(ekm[6..8].try_into().unwrap()) as usize;
+    let sv = seed >> 13 & 31;
+    crypt_pkm_45(&mut ekm, seed, chk, SIZE_4BLOCK);
+    shuffle_array(&mut ekm, sv, SIZE_4BLOCK)
 }
 
 pub fn decrypt_array_6(mut ekm: Vec<u8>) -> Vec<u8> {
@@ -103,6 +121,21 @@ pub fn decrypt_array_8a(mut ekm: Vec<u8>) -> Vec<u8> {
     let sv = seed >> 13 & 31;
     crypt_pkm(&mut ekm, seed, SIZE_8ABLOCK);
     shuffle_array(&mut ekm, sv, SIZE_8ABLOCK)
+}
+
+pub fn encrypt_array_45(pkm: &[u8]) -> Vec<u8> {
+    let seed = u32::from_le_bytes(pkm[0..4].try_into().unwrap()) as usize;
+    let chk = u16::from_le_bytes(pkm[6..8].try_into().unwrap()) as usize;
+    let sv = seed >> 13 & 31;
+
+    let mut ekm = shuffle_array(
+        &mut pkm.to_owned(),
+        BLOCK_POSITION_INVERT[sv as usize] as usize,
+        SIZE_6BLOCK,
+    );
+
+    crypt_pkm_45(&mut ekm, seed, chk, SIZE_4BLOCK);
+    ekm
 }
 
 pub fn encrypt_array_6(pkm: &[u8]) -> Vec<u8> {
@@ -142,6 +175,13 @@ pub fn encrypt_array_8a(pkm: &[u8]) -> Vec<u8> {
     );
     crypt_pkm(&mut ekm, pv as usize, SIZE_8ABLOCK);
     ekm
+}
+
+pub fn decrypt_if_encrypted_45(pkm: &mut Vec<u8>) {
+    if u16::from_le_bytes(pkm[0xC8..0xCA].try_into().unwrap()) != 0
+    {
+        *pkm = decrypt_array_45(pkm.clone());
+    }
 }
 
 pub fn decrypt_if_encrypted_67(pkm: &mut Vec<u8>) {

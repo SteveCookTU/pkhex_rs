@@ -1,11 +1,10 @@
-use crate::personal_info_bdsp::PersonalInfoBDSP;
-use crate::ribbons::{MarkG8, RibbonG8};
-use crate::tables::locations;
-use crate::{flag_util, personal_table, poke_crypto, string_converter_8, StringConverterOption};
 use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
+use crate::personal_info_sm::PersonalInfoSM;
+use crate::{flag_util, personal_table, poke_crypto, string_converter_7, StringConverterOption, tables};
+use crate::ribbons::RibbonG7;
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
-pub struct PB8 {
+pub struct PK7 {
     pub ec: u32,
     pub sanity: u16,
     pub checksum: u16,
@@ -14,17 +13,12 @@ pub struct PB8 {
     pub tid: u16,
     pub sid: u16,
     pub exp: u32,
-    pub ability: u16,
+    pub ability: u8,
     ability_bits: u8,
-    #[no_std_io(pad_before = 1)]
     pub mark_value: u16,
-    #[no_std_io(pad_before = 2)]
     pub pid: u32,
     pub nature: u8,
-    pub stat_nature: u8,
-    pub encounter_flags: u8,
-    #[no_std_io(pad_before = 1)]
-    pub form: u16,
+    encounter_flags: u8,
     pub ev_hp: u8,
     pub ev_atk: u8,
     pub ev_def: u8,
@@ -37,22 +31,16 @@ pub struct PB8 {
     pub cnt_smart: u8,
     pub cnt_tough: u8,
     pub cnt_sheen: u8,
+    pub resort_event_status: u8,
     pkrs: u8,
-    #[no_std_io(pad_before = 1)]
+    pub super_train_bit_flags: u32,
     ribbon_0: u32,
     ribbon_1: u32,
     ribbon_count_memory_contest: u8,
     ribbon_count_memory_battle: u8,
-    #[no_std_io(pad_before = 2)]
-    ribbon_2: u32,
-    ribbon_3: u32,
-    pub sociability: u32,
-    #[no_std_io(pad_before = 4)]
-    pub height_scalar: u8,
-    pub weight_scalar: u8,
-    dpr_illegal_flag: u8,
-    #[no_std_io(pad_before = 5)]
-    pub nickname_trash: [u8; 26],
+    dist_byte: u16,
+    pub form_argument: u32,
+    nickname_trash: [u8; 26],
     pub move_1: u16,
     pub move_2: u16,
     pub move_3: u16,
@@ -69,41 +57,40 @@ pub struct PB8 {
     pub relearn_move_2: u16,
     pub relearn_move_3: u16,
     pub relearn_move_4: u16,
-    pub stat_hp_current: u16,
-    iv32: u32,
-    pub dynamax_level: u8,
-    #[no_std_io(pad_before = 3)]
-    pub status_condition: i32,
-    pub palma: i32,
-    #[no_std_io(pad_before = 12)]
-    pub ht_trash: [u8; 26],
-    pub ht_gender: u8,
-    pub ht_language: u8,
-    pub current_handler: u8,
+    super_train_progress_bits: u8,
     #[no_std_io(pad_before = 1)]
-    pub ht_trainer_id: u16,
+    iv32: u32,
+    ht_trash: [u8; 26],
+    pub ht_gender: u8,
+    pub current_handler: u8,
+    pub geo_1_region: u8,
+    pub geo_1_country: u8,
+    pub geo_2_region: u8,
+    pub geo_2_country: u8,
+    pub geo_3_region: u8,
+    pub geo_3_country: u8,
+    pub geo_4_region: u8,
+    pub geo_4_country: u8,
+    pub geo_5_region: u8,
+    pub geo_5_country: u8,
+    #[no_std_io(pad_before = 4)]
     pub ht_friendship: u8,
+    pub ht_affection: u8,
     pub ht_intensity: u8,
     pub ht_memory: u8,
     pub ht_feeling: u8,
+    #[no_std_io(pad_before = 1)]
     pub ht_text_var: u16,
-    poke_job_flags: [u8; 14],
+    #[no_std_io(pad_before = 4)]
     pub fullness: u8,
     pub enjoyment: u8,
-    pub version: u8,
-    pub battle_version: u8,
-    #[no_std_io(pad_before = 2)]
-    pub language: u8,
-    #[no_std_io(pad_before = 1)]
-    pub form_argument: u32,
-    pub affixed_ribbon: i8,
-    #[no_std_io(pad_before = 15)]
-    pub ot_trash: [u8; 26],
+    ot_trash: [u8; 26],
     pub ot_friendship: u8,
+    pub ot_affection: u8,
+    pub ot_intensity: u8,
     pub ot_memory: u8,
-    #[no_std_io(pad_before = 1)]
     pub ot_text_var: u16,
-    pub ot_feeling: u16,
+    pub ot_feeling: u8,
     pub egg_year: u8,
     pub egg_month: u8,
     pub egg_day: u8,
@@ -116,11 +103,18 @@ pub struct PB8 {
     pub ball: u8,
     met_flags: u8,
     pub hyper_train_flags: u8,
-    move_record_flags: [u8; 14],
-    pub tracker: u64,
-    #[no_std_io(pad_before = 11)]
+    pub version: u8,
+    pub country: u8,
+    pub region: u8,
+    pub console_region: u8,
+    pub language: u8,
+    #[no_std_io(pad_before = 4)]
+    pub status_condition: u32,
     pub stat_level: u8,
+    pub dirt_type: u8,
+    pub dirt_location: u8,
     #[no_std_io(pad_before = 1)]
+    pub stat_hp_current: u16,
     pub stat_hp_max: u16,
     pub stat_atk: u16,
     pub stat_def: u16,
@@ -129,54 +123,66 @@ pub struct PB8 {
     pub stat_spd: u16,
 }
 
-impl From<Vec<u8>> for PB8 {
+impl From<Vec<u8>> for PK7 {
     fn from(mut data: Vec<u8>) -> Self {
-        poke_crypto::decrypt_if_encrypted_8(&mut data);
-        data.resize(poke_crypto::SIZE_8PARTY, 0);
+        poke_crypto::decrypt_if_encrypted_67(&mut data);
+        data.resize(poke_crypto::SIZE_6PARTY, 0);
         let mut reader = StreamContainer::new(data);
-        reader.default_read_stream_le::<PB8>()
+        reader.default_read_stream_le::<PK7>()
     }
 }
 
-impl From<PB8> for Vec<u8> {
-    fn from(pkm: PB8) -> Self {
-        let data = vec![0u8; poke_crypto::SIZE_8PARTY];
+impl From<PK7> for Vec<u8> {
+    fn from(pkm: PK7) -> Self {
+        let data = vec![0u8; poke_crypto::SIZE_6PARTY];
         let mut writer = StreamContainer::new(data);
         writer.checked_write_stream_le(&pkm);
         writer.into_raw()
     }
 }
 
-impl PB8 {
-    const SIZE_PARTY: usize = poke_crypto::SIZE_8PARTY;
-    const SIZE_STORED: usize = poke_crypto::SIZE_8STORED;
-    const MAX_IV: u8 = 31;
-    const MAX_EV: u8 = 252;
-    const OT_LENGTH: usize = 12;
-    const NICK_LENGTH: usize = 12;
+impl PK7 {
+    pub const SIZE_PARTY: usize = poke_crypto::SIZE_6PARTY;
+    pub const SIZE_STORED: usize = poke_crypto::SIZE_6STORED;
+
+    pub const MAX_IV: u8 = 31;
+    pub const MAX_EV: u8 = 252;
+    pub const OT_LENGTH: usize = 12;
+    pub const NICK_LENGTH: usize = 12;
+
+    pub const MAX_MOVE_ID: usize = tables::MAX_MOVE_ID_7_USUM;
+    pub const MAX_SPECIES_ID: usize = tables::MAX_SPECIES_ID_7_USUM;
+    pub const MAX_ABILITY_ID: usize = tables::MAX_ABILITY_ID_7_USUM;
+    pub const MAX_ITEM_ID: usize = tables::MAX_ITEM_ID_7_USUM;
+    pub const MAX_BALL_ID: usize = tables::MAX_BALL_ID_7;
+    pub const MAX_GAME_ID: usize = tables::MAX_GAME_ID_7;
+
+    pub fn get_personal_info(&self) -> &'static PersonalInfoSM {
+        personal_table::USUM.get_form_entry(self.species as usize, self.get_form() as usize)
+    }
 
     pub fn new() -> Self {
-        Self {
-            affixed_ribbon: -1,
-            egg_location: locations::DEFAULT_8B_NONE as u16,
-            met_location: locations::DEFAULT_8B_NONE as u16,
-            ..Default::default()
-        }
+        Default::default()
     }
 
-    pub fn get_personal_info(&self) -> &'static PersonalInfoBDSP {
-        personal_table::BDSP.get_form_entry(self.species as usize, self.form as usize)
+    pub fn refresh_checksum(&mut self) {
+        self.checksum = self.calculate_checksum();
     }
 
-    fn calculate_checksum(&self) -> u16 {
-        let mut chk = 0u16;
-        let data: Vec<u8> = (*self).into();
-        let mut reader = StreamContainer::new(data);
-        reader.set_index(8);
-        while reader.get_index() < poke_crypto::SIZE_8STORED {
-            chk = chk.wrapping_add(reader.default_read_stream_le::<u16>())
+    pub fn checksum_valid(&self) -> bool {
+        self.checksum == self.calculate_checksum()
+    }
+
+    pub fn get_is_valid(&self) -> bool {
+        self.sanity == 0 && self.checksum_valid()
+    }
+
+    pub fn set_is_valid(&mut self, value: bool) {
+        if !value {
+            return;
         }
-        chk
+        self.sanity = 0;
+        self.refresh_checksum();
     }
 
     pub fn get_current_friendship(&self) -> u8 {
@@ -193,27 +199,6 @@ impl PB8 {
         } else {
             self.ht_friendship = value;
         }
-    }
-
-    pub fn checksum_valid(&self) -> bool {
-        self.calculate_checksum() == self.checksum
-    }
-
-    pub fn refresh_checksum(&mut self) {
-        self.checksum = self.calculate_checksum();
-    }
-
-    pub fn get_valid(&self) -> bool {
-        self.sanity == 0 && self.checksum_valid()
-    }
-
-    pub fn set_is_valid(&mut self, value: bool) {
-        if !value {
-            return;
-        }
-
-        self.sanity = 0;
-        self.refresh_checksum();
     }
 
     pub fn psv(&self) -> u32 {
@@ -254,7 +239,7 @@ impl PB8 {
         let mut pkm = *self;
         pkm.refresh_checksum();
         let bytes: Vec<u8> = pkm.into();
-        poke_crypto::encrypt_array_8(&bytes)
+        poke_crypto::encrypt_array_6(&bytes)
     }
 
     pub fn fix_relearn(&mut self) {
@@ -277,28 +262,15 @@ impl PB8 {
         }
     }
 
-    pub fn get_ability_num(&self) -> u8 {
-        self.ability_bits & 7
-    }
-
-    pub fn set_ability_num(&mut self, value: u8) {
-        self.ability_bits = (self.ability_bits & !7) | (value & 7);
-    }
-
-    pub fn get_favorite(&self) -> bool {
-        (self.ability_bits & 8) != 0
-    }
-
-    pub fn set_favorite(&mut self, value: bool) {
-        self.ability_bits = (self.ability_bits & !8) | (if value { 1 } else { 0 } << 3);
-    }
-
-    pub fn get_can_gigantamax(&self) -> bool {
-        (self.ability_bits & 16) != 0
-    }
-
-    pub fn set_can_gigantamax(&mut self, value: bool) {
-        self.ability_bits = (self.ability_bits & !16) | if value { 16 } else { 0 };
+    fn calculate_checksum(&self) -> u16 {
+        let mut chk = 0u16;
+        let data: Vec<u8> = (*self).into();
+        let mut reader = StreamContainer::new(data);
+        reader.set_index(8);
+        while reader.get_index() < poke_crypto::SIZE_6STORED {
+            chk = chk.wrapping_add(reader.default_read_stream_le::<u16>())
+        }
+        chk
     }
 
     pub fn get_fateful_encounter(&self) -> bool {
@@ -309,20 +281,20 @@ impl PB8 {
         self.encounter_flags = (self.encounter_flags & !1) | if value { 1 } else { 0 };
     }
 
-    pub fn get_flag_2(&self) -> bool {
-        (self.encounter_flags & 2) == 2
-    }
-
-    pub fn set_flag_2(&mut self, value: bool) {
-        self.encounter_flags = (self.encounter_flags & !2) | if value { 2 } else { 0 };
-    }
-
     pub fn get_gender(&self) -> u8 {
-        (self.encounter_flags >> 2) & 3
+        (self.encounter_flags >> 1) & 3
     }
 
     pub fn set_gender(&mut self, value: u8) {
-        self.encounter_flags = (self.encounter_flags & 0xF3) | (value << 2);
+        self.encounter_flags = (self.encounter_flags & !0x6) | (value << 1);
+    }
+
+    pub fn get_form(&self) -> u8 {
+        self.encounter_flags >> 3
+    }
+
+    pub fn set_form(&mut self, value: u8) {
+        self.encounter_flags = (self.encounter_flags & 0x7) | (value << 3);
     }
 
     pub fn get_pkrs_days(&self) -> u8 {
@@ -341,13 +313,11 @@ impl PB8 {
         self.pkrs = (self.pkrs & 0xF) | (value << 4);
     }
 
-    pub fn get_ribbon(&self, ribbon: RibbonG8) -> bool {
+    pub fn get_ribbon(&self, ribbon: RibbonG7) -> bool {
         let location = ribbon as u32;
         let ribbon_bits = match location >> 8 {
             0 => self.ribbon_0,
-            1 => self.ribbon_1,
-            2 => self.ribbon_2,
-            _ => self.ribbon_3,
+            _ => self.ribbon_1,
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
@@ -355,13 +325,11 @@ impl PB8 {
         flag_util::get_flag_from_u8(flags, index as usize)
     }
 
-    pub fn set_ribbon(&mut self, ribbon: RibbonG8, value: bool) {
+    pub fn set_ribbon(&mut self, ribbon: RibbonG7, value: bool) {
         let location = ribbon as u32;
         let ribbon_bits = match location >> 8 {
             0 => &mut self.ribbon_0,
-            1 => &mut self.ribbon_1,
-            2 => &mut self.ribbon_2,
-            _ => &mut self.ribbon_3,
+            _ => &mut self.ribbon_1,
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
@@ -422,58 +390,45 @@ impl PB8 {
         self.set_has_battle_memory_ribbon(value != 0);
     }
 
-    pub fn get_mark(&self, mark: MarkG8) -> bool {
-        let location = mark as u32;
-        let ribbon_bits = match location >> 8 {
-            0 => self.ribbon_0,
-            1 => self.ribbon_1,
-            2 => self.ribbon_2,
-            _ => self.ribbon_3,
-        };
-        let section = (location >> 4) & 0xF;
-        let index = location & 0xF;
-        let flags = (ribbon_bits >> (section * 4)) as u8;
-        flag_util::get_flag_from_u8(flags, index as usize)
+    pub fn get_form_argument_maximum(&self) -> u8 {
+        self.form_argument as u8
     }
 
-    pub fn set_mark(&mut self, mark: MarkG8, value: bool) {
-        let location = mark as u32;
-        let ribbon_bits = match location >> 8 {
-            0 => &mut self.ribbon_0,
-            1 => &mut self.ribbon_1,
-            2 => &mut self.ribbon_2,
-            _ => &mut self.ribbon_3,
-        };
-        let section = (location >> 4) & 0xF;
-        let index = location & 0xF;
-        let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
-        *ribbon_bits = new_value;
-    }
-
-    pub fn has_mark(&self) -> bool {
-        if ((self.ribbon_1 >> 8) & 0xFFE0) != 0 {
-            return true;
-        }
-
-        if self.ribbon_3 != 0 {
-            return true;
-        }
-
-        self.ribbon_3 & 3 != 0
+    pub fn set_form_argument_maximum(&mut self, value: u8) {
+        self.form_argument = value as u32 & 0xFF
     }
 
     pub fn get_nickname(&self) -> String {
-        string_converter_8::get_string(&self.nickname_trash)
+        string_converter_7::get_string(&self.nickname_trash)
     }
 
     pub fn set_nickname(&mut self, value: String) {
-        string_converter_8::set_string(
+        string_converter_7::set_string(
             &mut self.nickname_trash,
             value.chars().collect(),
             12,
+            0,
             StringConverterOption::None,
+            false,
         );
+    }
+
+    pub fn get_secret_super_training_unlocked(&self) -> bool {
+        (self.super_train_progress_bits & 1) == 1
+    }
+
+    pub fn set_secret_super_training_unlocked(&mut self, value: bool) {
+        self.super_train_progress_bits =
+            (self.super_train_progress_bits & !1) | if value { 1 } else { 0 };
+    }
+
+    pub fn get_secret_super_training_complete(&self) -> bool {
+        (self.super_train_progress_bits & 2) == 2
+    }
+
+    pub fn set_secret_super_training_complete(&mut self, value: bool) {
+        self.super_train_progress_bits =
+            (self.super_train_progress_bits & !2) | if value { 2 } else { 0 };
     }
 
     pub fn get_iv_hp(&self) -> u8 {
@@ -545,76 +500,32 @@ impl PB8 {
     }
 
     pub fn get_ht_name(&self) -> String {
-        string_converter_8::get_string(&self.ht_trash)
+        string_converter_7::get_string(&self.ht_trash)
     }
 
     pub fn set_ht_name(&mut self, value: String) {
-        string_converter_8::set_string(
+        string_converter_7::set_string(
             &mut self.ht_trash,
             value.chars().collect(),
             12,
+            0,
             StringConverterOption::None,
+            false,
         );
     }
 
-    pub fn get_poke_job_flag(&self, index: usize) -> bool {
-        if index > 112 {
-            return false;
-        }
-        let ofs = index >> 3;
-        flag_util::get_flag(&self.poke_job_flags, ofs, index & 7)
-    }
-
-    pub fn set_poke_job_flag(&mut self, index: usize, value: bool) {
-        if index > 112 {
-            return;
-        }
-        let ofs = index >> 3;
-        flag_util::set_flag(&mut self.poke_job_flags, ofs, index & 7, value);
-    }
-
-    pub fn get_poke_job_flag_any(&self) -> bool {
-        self.poke_job_flags.iter().any(|i| *i != 0)
-    }
-
-    pub fn clear_poke_job_flags(&mut self) {
-        self.poke_job_flags = [0; 14];
-    }
-
-    pub fn get_form_argument_remain(&self) -> u8 {
-        self.form_argument as u8
-    }
-
-    pub fn set_form_argument_remain(&mut self, value: u8) {
-        self.form_argument = (self.form_argument & !0xFF) | value as u32;
-    }
-
-    pub fn get_form_argument_elapsed(&self) -> u8 {
-        (self.form_argument >> 8) as u8
-    }
-
-    pub fn set_form_argument_elapsed(&mut self, value: u8) {
-        self.form_argument = (self.form_argument & !0xFF00) | ((value as u32) << 8);
-    }
-
-    pub fn get_form_argument_maximum(&self) -> u8 {
-        (self.form_argument >> 16) as u8
-    }
-
-    pub fn set_form_argument_maximum(&mut self, value: u8) {
-        self.form_argument = (self.form_argument & !0xFF0000) | ((value as u32) << 16);
-    }
-
     pub fn get_ot_name(&self) -> String {
-        string_converter_8::get_string(&self.ot_trash)
+        string_converter_7::get_string(&self.ot_trash)
     }
 
     pub fn set_ot_name(&mut self, value: String) {
-        string_converter_8::set_string(
+        string_converter_7::set_string(
             &mut self.ot_trash,
             value.chars().collect(),
             12,
+            0,
             StringConverterOption::None,
+            false,
         );
     }
 
@@ -635,111 +546,97 @@ impl PB8 {
     }
 
     pub fn get_ht_hp(&self) -> bool {
-        (self.hyper_train_flags & 1) == 1
+        flag_util::get_flag_from_u8(self.hyper_train_flags, 0)
     }
 
     pub fn set_ht_hp(&mut self, value: bool) {
-        self.hyper_train_flags = (self.hyper_train_flags & !1) | if value { 1 } else { 0 };
+        flag_util::set_flag_in_u8(&mut self.hyper_train_flags, 0, value);
     }
 
     pub fn get_ht_atk(&self) -> bool {
-        ((self.hyper_train_flags >> 1) & 1) == 1
+        flag_util::get_flag_from_u8(self.hyper_train_flags, 1)
     }
 
     pub fn set_ht_atk(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 1)) | (if value { 1 } else { 0 } << 1);
+        flag_util::set_flag_in_u8(&mut self.hyper_train_flags, 1, value);
     }
 
     pub fn get_ht_def(&self) -> bool {
-        ((self.hyper_train_flags >> 2) & 1) == 1
+        flag_util::get_flag_from_u8(self.hyper_train_flags, 2)
     }
 
     pub fn set_ht_def(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 2)) | (if value { 1 } else { 0 } << 2);
+        flag_util::set_flag_in_u8(&mut self.hyper_train_flags, 2, value);
     }
 
     pub fn get_ht_spa(&self) -> bool {
-        ((self.hyper_train_flags >> 3) & 1) == 1
+        flag_util::get_flag_from_u8(self.hyper_train_flags, 3)
     }
 
     pub fn set_ht_spa(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 3)) | (if value { 1 } else { 0 } << 3);
+        flag_util::set_flag_in_u8(&mut self.hyper_train_flags, 3, value);
     }
 
     pub fn get_ht_spd(&self) -> bool {
-        ((self.hyper_train_flags >> 4) & 1) == 1
+        flag_util::get_flag_from_u8(self.hyper_train_flags, 4)
     }
 
     pub fn set_ht_spd(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 4)) | (if value { 1 } else { 0 } << 4);
+        flag_util::set_flag_in_u8(&mut self.hyper_train_flags, 4, value);
     }
 
     pub fn get_ht_spe(&self) -> bool {
-        ((self.hyper_train_flags >> 5) & 1) == 1
+        flag_util::get_flag_from_u8(self.hyper_train_flags, 5)
     }
 
     pub fn set_ht_spe(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 5)) | (if value { 1 } else { 0 } << 5);
+        flag_util::set_flag_in_u8(&mut self.hyper_train_flags, 5, value);
     }
 
-    pub fn get_move_record_flag(&self, index: usize) -> bool {
-        if index > 112 {
-            return false;
+    pub fn super_training_medal_count(&self, max_count: usize) -> usize {
+        let mut value = self.super_train_bit_flags >> 2;
+        let mut train_count = 0;
+        for _ in 0..max_count {
+            if (value & 1) != 0 {
+                train_count += 1;
+            }
+            value >>= 1;
         }
-        let ofs = index >> 3;
-        flag_util::get_flag(&self.move_record_flags, ofs, index & 7)
-    }
-
-    pub fn set_move_record_flag(&mut self, index: usize, value: bool) {
-        if index > 112 {
-            return;
-        }
-        let ofs = index >> 3;
-        flag_util::set_flag(&mut self.move_record_flags, ofs, index & 7, value);
-    }
-
-    pub fn get_move_record_flag_any(&self) -> bool {
-        self.move_record_flags.iter().any(|i| *i != 0)
-    }
-
-    pub fn clear_move_record_flags(&mut self) {
-        self.move_record_flags = [0; 14];
+        train_count
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::pkm::pb8::PB8;
+    use crate::pkm::pk7::PK7;
 
-    const BDSP_PB8: &[u8] = include_bytes!("../resources/tests/bdsp.pb8");
+    const USUM_PK7: &[u8] = include_bytes!("../resources/tests/usum.pk7");
 
     #[test]
     fn should_read() {
-        let bytes = BDSP_PB8.to_vec();
-        let pkm: PB8 = bytes.into();
-        assert_eq!(pkm.pid, 0xCA68C597);
-        assert_eq!(pkm.exp, 125971);
-        assert_eq!(pkm.height_scalar, 77);
+        let bytes = USUM_PK7.to_vec();
+        let pkm: PK7 = bytes.into();
+        assert_eq!(pkm.pid, 0x4E536510);
+        assert_eq!(pkm.exp, 1331);
+        assert_eq!(pkm.get_nickname(), "Eevee".to_string());
+        assert_eq!(pkm.ball, 4);
         assert_eq!(pkm.get_ot_name(), "PKHeX".to_string());
     }
 
     #[test]
     fn should_read_and_write() {
-        let bytes = BDSP_PB8.to_vec();
-        let pkm: PB8 = bytes.clone().into();
+        let bytes = USUM_PK7.to_vec();
+        let pkm: PK7 = bytes.clone().into();
         let output: Vec<u8> = pkm.into();
+        println!("{:0>2X?}", bytes);
+        println!("{:0>2X?}", output);
         assert_eq!(bytes, output.to_vec())
     }
 
     #[test]
     fn should_calc_checksum() {
-        let bytes = BDSP_PB8.to_vec();
-        let pkm: PB8 = bytes.clone().into();
+        let bytes = USUM_PK7.to_vec();
+        let pkm: PK7 = bytes.clone().into();
         assert_eq!(pkm.checksum, pkm.calculate_checksum());
     }
 }

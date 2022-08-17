@@ -130,7 +130,7 @@ impl Default for BV6 {
             upload_hour: 0,
             upload_minute: 0,
             upload_second: 0,
-            upload_flags: 0
+            upload_flags: 0,
         }
     }
 }
@@ -220,33 +220,81 @@ impl BV6 {
     }
 
     pub fn set_player_teams(&mut self, mut value: [[PK6; 6]; 4]) {
-        self.player_1_p_1 = (&value[0][0].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_1_p_2 = (&value[0][1].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_1_p_3 = (&value[0][2].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_1_p_4 = (&value[0][3].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_1_p_5 = (&value[0][4].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_1_p_6 = (&value[0][5].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
+        self.player_1_p_1 = (&value[0][0].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_1_p_2 = (&value[0][1].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_1_p_3 = (&value[0][2].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_1_p_4 = (&value[0][3].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_1_p_5 = (&value[0][4].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_1_p_6 = (&value[0][5].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
 
-        self.player_2_p_1 = (&value[1][0].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_2_p_2 = (&value[1][1].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_2_p_3 = (&value[1][2].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_2_p_4 = (&value[1][3].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_2_p_5 = (&value[1][4].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_2_p_6 = (&value[1][5].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
+        self.player_2_p_1 = (&value[1][0].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_2_p_2 = (&value[1][1].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_2_p_3 = (&value[1][2].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_2_p_4 = (&value[1][3].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_2_p_5 = (&value[1][4].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_2_p_6 = (&value[1][5].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
 
-        self.player_3_p_1 = (&value[2][0].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_3_p_2 = (&value[2][1].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_3_p_3 = (&value[2][2].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_3_p_4 = (&value[2][3].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_3_p_5 = (&value[2][4].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_3_p_6 = (&value[2][5].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
+        self.player_3_p_1 = (&value[2][0].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_3_p_2 = (&value[2][1].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_3_p_3 = (&value[2][2].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_3_p_4 = (&value[2][3].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_3_p_5 = (&value[2][4].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_3_p_6 = (&value[2][5].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
 
-        self.player_4_p_1 = (&value[0][0].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_4_p_2 = (&value[0][1].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_4_p_3 = (&value[0][2].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_4_p_4 = (&value[0][3].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_4_p_5 = (&value[0][4].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-        self.player_4_p_6 = (&value[0][5].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
+        self.player_4_p_1 = (&value[0][0].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_4_p_2 = (&value[0][1].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_4_p_3 = (&value[0][2].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_4_p_4 = (&value[0][3].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_4_p_5 = (&value[0][4].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
+        self.player_4_p_6 = (&value[0][5].encrypt())[..poke_crypto::SIZE_6PARTY]
+            .try_into()
+            .unwrap();
     }
 
     pub fn get_team(&self, index: usize) -> [PK6; 6] {
@@ -290,43 +338,91 @@ impl BV6 {
                 Default::default(),
                 Default::default(),
                 Default::default(),
-            ]
+            ],
         }
     }
 
     pub fn set_team(&mut self, index: usize, mut value: [PK6; 6]) {
         match index {
             0 => {
-                self.player_1_p_1 = (&value[0].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_1_p_2 = (&value[1].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_1_p_3 = (&value[2].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_1_p_4 = (&value[3].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_1_p_5 = (&value[4].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_1_p_6 = (&value[5].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
+                self.player_1_p_1 = (&value[0].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_1_p_2 = (&value[1].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_1_p_3 = (&value[2].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_1_p_4 = (&value[3].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_1_p_5 = (&value[4].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_1_p_6 = (&value[5].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
             }
             1 => {
-                self.player_2_p_1 = (&value[0].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_2_p_2 = (&value[1].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_2_p_3 = (&value[2].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_2_p_4 = (&value[3].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_2_p_5 = (&value[4].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_2_p_6 = (&value[5].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
+                self.player_2_p_1 = (&value[0].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_2_p_2 = (&value[1].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_2_p_3 = (&value[2].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_2_p_4 = (&value[3].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_2_p_5 = (&value[4].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_2_p_6 = (&value[5].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
             }
             2 => {
-                self.player_3_p_1 = (&value[0].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_3_p_2 = (&value[1].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_3_p_3 = (&value[2].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_3_p_4 = (&value[3].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_3_p_5 = (&value[4].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_3_p_6 = (&value[5].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
+                self.player_3_p_1 = (&value[0].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_3_p_2 = (&value[1].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_3_p_3 = (&value[2].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_3_p_4 = (&value[3].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_3_p_5 = (&value[4].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_3_p_6 = (&value[5].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
             }
             3 => {
-                self.player_4_p_1 = (&value[0].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_4_p_2 = (&value[1].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_4_p_3 = (&value[2].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_4_p_4 = (&value[3].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_4_p_5 = (&value[4].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
-                self.player_4_p_6 = (&value[5].encrypt())[..poke_crypto::SIZE_6PARTY].try_into().unwrap();
+                self.player_4_p_1 = (&value[0].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_4_p_2 = (&value[1].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_4_p_3 = (&value[2].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_4_p_4 = (&value[3].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_4_p_5 = (&value[4].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
+                self.player_4_p_6 = (&value[5].encrypt())[..poke_crypto::SIZE_6PARTY]
+                    .try_into()
+                    .unwrap();
             }
             _ => {}
         }

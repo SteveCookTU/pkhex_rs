@@ -1,6 +1,8 @@
 use crate::personal_info_oras::PersonalInfoORAS;
 use crate::ribbons::RibbonG6;
-use crate::{flag_util, personal_table, poke_crypto, string_converter_6, StringConverterOption, tables};
+use crate::{
+    flag_util, personal_table, poke_crypto, string_converter_6, tables, StringConverterOption,
+};
 use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]

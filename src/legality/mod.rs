@@ -1,4 +1,5 @@
 mod bin_linker_accessor;
+pub mod learnset;
 pub mod tables;
 
 use crate::tables::{

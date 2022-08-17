@@ -1,7 +1,9 @@
-use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
 use crate::personal_info_sm::PersonalInfoSM;
-use crate::{flag_util, personal_table, poke_crypto, string_converter_7, StringConverterOption, tables};
 use crate::ribbons::RibbonG7;
+use crate::{
+    flag_util, personal_table, poke_crypto, string_converter_7, tables, StringConverterOption,
+};
+use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
 pub struct PK7 {

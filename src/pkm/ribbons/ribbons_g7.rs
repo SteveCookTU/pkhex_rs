@@ -46,5 +46,5 @@ pub enum RibbonG7 {
     ChampionAlola,
     BattleRoyale,
     BattleTreeGreat = 0x120,
-    BattleTreeMaster
+    BattleTreeMaster,
 }

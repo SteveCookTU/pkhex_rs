@@ -1,12 +1,12 @@
 mod pa8;
 mod pb8;
+mod pk5;
 mod pk6;
+mod pk7;
 mod pk8;
 pub mod ribbons;
 mod strings;
 mod util;
-mod pk7;
-mod pk5;
 
 pub use pa8::*;
 pub use pb8::*;

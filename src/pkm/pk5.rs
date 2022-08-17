@@ -1,7 +1,7 @@
-use no_std_io::{EndianWrite, EndianRead, StreamContainer, Cursor, StreamReader, StreamWriter};
 use crate::personal_info_b2w2::PersonalInfoB2W2;
-use crate::{flag_util, personal_table, poke_crypto, string_converter_5, StringConverterOption};
 use crate::ribbons::RibbonG5;
+use crate::{flag_util, personal_table, poke_crypto, string_converter_5, StringConverterOption};
+use no_std_io::{Cursor, EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
 
 #[derive(Copy, Clone, EndianRead, EndianWrite)]
 pub struct PK5 {
@@ -155,7 +155,7 @@ impl Default for PK5 {
             stat_spa: 0,
             stat_spd: 0,
             held_mail: [0; 0x38],
-            junk_data: 0
+            junk_data: 0,
         }
     }
 }
@@ -179,7 +179,6 @@ impl From<PK5> for Vec<u8> {
 }
 
 impl PK5 {
-
     pub const MAX_IV: u8 = 31;
     pub const MAX_EV: u8 = 252;
 
@@ -344,7 +343,12 @@ impl PK5 {
     }
 
     pub fn set_nickname(&mut self, value: String) {
-        string_converter_5::set_string(&mut self.nickname_trash, value.chars().collect(), 10, StringConverterOption::None);
+        string_converter_5::set_string(
+            &mut self.nickname_trash,
+            value.chars().collect(),
+            10,
+            StringConverterOption::None,
+        );
     }
 
     pub fn get_ot_name(&self) -> String {
@@ -352,7 +356,12 @@ impl PK5 {
     }
 
     pub fn set_ot_name(&mut self, value: String) {
-        string_converter_5::set_string(&mut self.ot_trash, value.chars().collect(), 7, StringConverterOption::None);
+        string_converter_5::set_string(
+            &mut self.ot_trash,
+            value.chars().collect(),
+            7,
+            StringConverterOption::None,
+        );
     }
 
     pub fn get_pkrs_days(&self) -> u8 {

@@ -10,7 +10,7 @@ impl BinLinkerAccessor {
     }
 
     pub fn length(&self) -> usize {
-        self.data.len()
+        u16::from_le_bytes(self.data[2..4].try_into().unwrap()) as usize
     }
 
     pub fn identifier(&self) -> String {

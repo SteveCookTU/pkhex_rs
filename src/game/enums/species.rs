@@ -1,4 +1,4 @@
-#[derive(PartialEq)]
+#[derive(PartialEq, Ord, PartialOrd, Eq, Copy, Clone)]
 #[repr(u16)]
 pub enum Species {
     None,

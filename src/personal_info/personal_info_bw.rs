@@ -31,9 +31,7 @@ impl PersonalInfoBW {
     }
 
     pub fn set_telekinesis(&mut self, telekinesis: bool) {
-        self.set_ev_yield(
-            (self.get_ev_yield() & !(0x1 << 12)) | (if telekinesis { 1 } else { 0 } << 12),
-        );
+        self.set_ev_yield((self.get_ev_yield() & !(0x1 << 12)) | (usize::from(telekinesis) << 12));
     }
 
     pub fn get_item_1(&self) -> usize {

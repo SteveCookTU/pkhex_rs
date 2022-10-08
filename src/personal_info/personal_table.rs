@@ -143,7 +143,7 @@ impl<T: PersonalInfo> PersonalTable<T> {
         let count = data.len() / size;
         let mut table = Vec::with_capacity(count);
         for i in 0..count {
-            table.push(T::new((&data[(size * i)..((size * i) + size)]).to_vec()))
+            table.push(T::new((data[(size * i)..((size * i) + size)]).to_vec()))
         }
         Self {
             table,

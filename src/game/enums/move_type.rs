@@ -1,4 +1,4 @@
-#[derive(PartialEq, Copy, Clone, PartialOrd)]
+#[derive(PartialEq, Copy, Clone, PartialOrd, Ord, Eq)]
 #[repr(i8)]
 pub enum MoveType {
     Any = -1,

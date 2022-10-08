@@ -264,7 +264,7 @@ impl PK6 {
     }
 
     pub fn set_fateful_encounter(&mut self, value: bool) {
-        self.encounter_flags = (self.encounter_flags & !1) | if value { 1 } else { 0 };
+        self.encounter_flags = (self.encounter_flags & !1) | u8::from(value);
     }
 
     pub fn get_gender(&self) -> u8 {
@@ -320,7 +320,7 @@ impl PK6 {
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
         let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
+        let new_value = current | (u32::from(value) << (section * 4 + index));
         *ribbon_bits = new_value;
     }
 
@@ -337,7 +337,7 @@ impl PK6 {
         let section = 0;
         let index = 5;
         let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
+        let new_value = current | (u32::from(value) << (section * 4 + index));
         *ribbon_bits = new_value;
     }
 
@@ -354,7 +354,7 @@ impl PK6 {
         let section = 0;
         let index = 6;
         let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
+        let new_value = current | (u32::from(value) << (section * 4 + index));
         *ribbon_bits = new_value;
     }
 
@@ -402,8 +402,7 @@ impl PK6 {
     }
 
     pub fn set_secret_super_training_unlocked(&mut self, value: bool) {
-        self.super_train_progress_bits =
-            (self.super_train_progress_bits & !1) | if value { 1 } else { 0 };
+        self.super_train_progress_bits = (self.super_train_progress_bits & !1) | u8::from(value);
     }
 
     pub fn get_secret_super_training_complete(&self) -> bool {

@@ -1,4 +1,4 @@
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Ord, PartialOrd, Eq, Copy, Clone)]
 #[repr(u8)]
 pub enum GameVersion {
     // The following values are IDs stored within PKM data, and can also identify individual games.

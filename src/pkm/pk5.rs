@@ -294,7 +294,7 @@ impl PK5 {
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
         let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
+        let new_value = current | (u32::from(value) << (section * 4 + index));
         *ribbon_bits = new_value;
     }
 
@@ -303,7 +303,7 @@ impl PK5 {
     }
 
     pub fn set_fateful_encounter(&mut self, value: bool) {
-        self.encounter_flags = (self.encounter_flags & !1) | if value { 1 } else { 0 };
+        self.encounter_flags = (self.encounter_flags & !1) | u8::from(value);
     }
 
     pub fn get_gender(&self) -> u8 {
@@ -327,7 +327,7 @@ impl PK5 {
     }
 
     pub fn set_hidden_ability(&mut self, value: bool) {
-        self.ability_flags = (self.ability_flags & !1) | if value { 1 } else { 0 };
+        self.ability_flags = (self.ability_flags & !1) | u8::from(value);
     }
 
     pub fn get_n_sparkle(&self) -> bool {

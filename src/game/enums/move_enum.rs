@@ -1,4 +1,4 @@
-#[derive(PartialEq)]
+#[derive(PartialEq, Ord, PartialOrd, Eq, Copy, Clone)]
 #[repr(usize)]
 pub enum Move {
     None,

@@ -34,8 +34,8 @@ impl EggMoves2 {
             }
 
             let mut moves = Vec::with_capacity(move_count);
-            for m in 0..move_count {
-                moves.push(slice[m].try_into().unwrap());
+            for m in slice.iter().take(move_count) {
+                moves.push((*m).into());
             }
 
             entries.push(EggMoves2::new(moves));

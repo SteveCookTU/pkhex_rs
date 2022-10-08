@@ -123,9 +123,7 @@ impl PersonalInfoSWSH {
     }
 
     pub fn set_is_regional_form(&mut self, is_regional_form: bool) {
-        self.set_regional_flags(
-            (self.get_regional_flags() & 0xFFFE) | if is_regional_form { 1 } else { 0 },
-        );
+        self.set_regional_flags((self.get_regional_flags() & 0xFFFE) | u16::from(is_regional_form));
     }
 
     pub fn get_species(&self) -> usize {

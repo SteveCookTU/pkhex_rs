@@ -137,7 +137,7 @@ impl PersonalInfoSM {
     }
 
     pub fn set_local_variant(&mut self, local_variant: bool) {
-        self.child.child.data[0x52] = if local_variant { 1 } else { 0 };
+        self.child.child.data[0x52] = u8::from(local_variant);
     }
 }
 

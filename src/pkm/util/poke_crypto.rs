@@ -177,6 +177,16 @@ pub fn encrypt_array_8a(pkm: &[u8]) -> Vec<u8> {
     ekm
 }
 
+pub fn get_chk(data: &[u8], party_start: usize) -> u16 {
+    let mut chk: u16 = 0;
+
+    let slice = &data[0x8..party_start];
+    slice
+        .chunks(2)
+        .for_each(|c| chk = chk.wrapping_add(u16::from_le_bytes(c.try_into().unwrap())));
+    chk
+}
+
 pub fn decrypt_if_encrypted_45(pkm: &mut Vec<u8>) {
     if u16::from_le_bytes(pkm[0xC8..0xCA].try_into().unwrap()) != 0 {
         *pkm = decrypt_array_45(pkm.clone());

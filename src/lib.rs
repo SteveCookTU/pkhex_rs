@@ -1,6 +1,9 @@
 #![allow(dead_code)]
+#![allow(clippy::zero_prefixed_literal)]
+pub mod editing;
 mod game;
 mod legality;
+pub mod moves;
 mod personal_info;
 mod pkm;
 mod saves;

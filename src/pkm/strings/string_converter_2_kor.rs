@@ -32,7 +32,7 @@ fn load_string(data: &[u8], result: &mut [char]) -> usize {
     while i < data.len() {
         let mut value = &data[i];
         let table: &BTreeMap<u8, char> = if *value <= 0xB {
-            &GSC2U_KOR[*value as usize]
+            GSC2U_KOR[*value as usize]
         } else {
             &RBY2U_U
         };

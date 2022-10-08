@@ -1,4 +1,4 @@
-#[derive(PartialEq, Copy, Clone)]
+#[derive(PartialEq, Copy, Clone, Ord, PartialOrd, Eq)]
 #[repr(u8)]
 pub enum Nature {
     Hardy = 0,

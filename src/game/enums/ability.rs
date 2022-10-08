@@ -1,4 +1,4 @@
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq, Ord, PartialOrd, Copy, Clone)]
 #[repr(usize)]
 pub enum Ability {
     None,

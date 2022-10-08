@@ -289,7 +289,7 @@ impl PA8 {
     }
 
     pub fn set_favorite(&mut self, value: bool) {
-        self.ability_bits = (self.ability_bits & !8) | (if value { 1 } else { 0 } << 3);
+        self.ability_bits = (self.ability_bits & !8) | (u8::from(value) << 3);
     }
 
     pub fn get_can_gigantamax(&self) -> bool {
@@ -305,7 +305,7 @@ impl PA8 {
     }
 
     pub fn set_is_alpha(&mut self, value: bool) {
-        self.ability_bits = (self.ability_bits & !32) | (if value { 1 } else { 0 } << 5);
+        self.ability_bits = (self.ability_bits & !32) | (u8::from(value) << 5);
     }
 
     pub fn get_is_noble(&self) -> bool {
@@ -313,7 +313,7 @@ impl PA8 {
     }
 
     pub fn set_is_noble(&mut self, value: bool) {
-        self.ability_bits = (self.ability_bits & !64) | (if value { 1 } else { 0 } << 6);
+        self.ability_bits = (self.ability_bits & !64) | (u8::from(value) << 6);
     }
 
     pub fn get_fateful_encounter(&self) -> bool {
@@ -321,7 +321,7 @@ impl PA8 {
     }
 
     pub fn set_fateful_encounter(&mut self, value: bool) {
-        self.encounter_flags = (self.encounter_flags & !1) | if value { 1 } else { 0 };
+        self.encounter_flags = (self.encounter_flags & !1) | u8::from(value);
     }
 
     pub fn get_flag_2(&self) -> bool {
@@ -381,7 +381,7 @@ impl PA8 {
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
         let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
+        let new_value = current | (u32::from(value) << (section * 4 + index));
         *ribbon_bits = new_value;
     }
 
@@ -398,7 +398,7 @@ impl PA8 {
         let section = 0;
         let index = 5;
         let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
+        let new_value = current | (u32::from(value) << (section * 4 + index));
         *ribbon_bits = new_value;
     }
 
@@ -415,7 +415,7 @@ impl PA8 {
         let section = 0;
         let index = 6;
         let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
+        let new_value = current | (u32::from(value) << (section * 4 + index));
         *ribbon_bits = new_value;
     }
 
@@ -462,7 +462,7 @@ impl PA8 {
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
         let current = *ribbon_bits & !(1 << (section * 4 + index));
-        let new_value = current | (if value { 1 } else { 0 } << (section * 4 + index));
+        let new_value = current | (u32::from(value) << (section * 4 + index));
         *ribbon_bits = new_value;
     }
 
@@ -678,7 +678,7 @@ impl PA8 {
     }
 
     pub fn set_ht_hp(&mut self, value: bool) {
-        self.hyper_train_flags = (self.hyper_train_flags & !1) | if value { 1 } else { 0 };
+        self.hyper_train_flags = (self.hyper_train_flags & !1) | u8::from(value);
     }
 
     pub fn get_ht_atk(&self) -> bool {
@@ -686,8 +686,7 @@ impl PA8 {
     }
 
     pub fn set_ht_atk(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 1)) | (if value { 1 } else { 0 } << 1);
+        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 1)) | (u8::from(value) << 1);
     }
 
     pub fn get_ht_def(&self) -> bool {
@@ -695,8 +694,7 @@ impl PA8 {
     }
 
     pub fn set_ht_def(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 2)) | (if value { 1 } else { 0 } << 2);
+        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 2)) | (u8::from(value) << 2);
     }
 
     pub fn get_ht_spa(&self) -> bool {
@@ -704,8 +702,7 @@ impl PA8 {
     }
 
     pub fn set_ht_spa(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 3)) | (if value { 1 } else { 0 } << 3);
+        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 3)) | (u8::from(value) << 3);
     }
 
     pub fn get_ht_spd(&self) -> bool {
@@ -713,8 +710,7 @@ impl PA8 {
     }
 
     pub fn set_ht_spd(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 4)) | (if value { 1 } else { 0 } << 4);
+        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 4)) | (u8::from(value) << 4);
     }
 
     pub fn get_ht_spe(&self) -> bool {
@@ -722,8 +718,7 @@ impl PA8 {
     }
 
     pub fn set_ht_spe(&mut self, value: bool) {
-        self.hyper_train_flags =
-            (self.hyper_train_flags & !(1 << 5)) | (if value { 1 } else { 0 } << 5);
+        self.hyper_train_flags = (self.hyper_train_flags & !(1 << 5)) | (u8::from(value) << 5);
     }
 
     pub fn get_move_record_flag(&self, index: usize) -> bool {

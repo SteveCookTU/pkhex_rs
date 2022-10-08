@@ -11,7 +11,7 @@ const USUM_CHS_SIZE: usize = 0x4;
 
 fn get_is_67_chs_char(idx: usize) -> bool {
     idx < SM_ZH_CHAR_TABLE_SIZE
-        || (idx >= SM_ZH_CHAR_TABLE_SIZE * 2 && idx < (SM_ZH_CHAR_TABLE_SIZE * 2) + USUM_CHS_SIZE)
+        || (SM_ZH_CHAR_TABLE_SIZE * 2..(SM_ZH_CHAR_TABLE_SIZE * 2) + USUM_CHS_SIZE).contains(&idx)
 }
 
 lazy_static! {
@@ -22,12 +22,11 @@ lazy_static! {
 fn get_remapper(simplified: bool) -> HashMap<char, char> {
     let raw = GEN7_ZH_RAW.chars().collect::<Vec<char>>();
     let mut result = HashMap::with_capacity(788);
-    for i in 0..raw.len() {
+    for (i, &c) in raw.iter().enumerate() {
         let is_chs = get_is_67_chs_char(i);
         if is_chs != simplified {
             continue;
         }
-        let c = raw[i];
         result.insert(c, char::from_u32(GEN7_ZH_OFS as u32 + i as u32).unwrap());
     }
     result

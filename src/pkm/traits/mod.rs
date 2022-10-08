@@ -1,0 +1,20 @@
+mod affection;
+mod alpha;
+pub mod awakened;
+mod game_value_limit;
+pub mod hyper_train;
+mod lang_nick;
+mod nature;
+mod sanity_checksum;
+mod shiny;
+mod species_form;
+pub mod trainer_id;
+
+pub use affection::*;
+pub use alpha::*;
+pub use game_value_limit::*;
+pub use lang_nick::*;
+pub use nature::*;
+pub use sanity_checksum::*;
+pub use shiny::*;
+pub use species_form::*;

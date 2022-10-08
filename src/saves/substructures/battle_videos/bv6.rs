@@ -137,12 +137,12 @@ impl Default for BV6 {
 
 impl BV6 {
     pub fn get_player_names(&self) -> Vec<String> {
-        let mut trainers = Vec::with_capacity(4);
-        trainers.push(string_converter_6::get_string(&self.player_1_trash));
-        trainers.push(string_converter_6::get_string(&self.player_2_trash));
-        trainers.push(string_converter_6::get_string(&self.player_3_trash));
-        trainers.push(string_converter_6::get_string(&self.player_4_trash));
-        trainers
+        vec![
+            string_converter_6::get_string(&self.player_1_trash),
+            string_converter_6::get_string(&self.player_2_trash),
+            string_converter_6::get_string(&self.player_3_trash),
+            string_converter_6::get_string(&self.player_4_trash),
+        ]
     }
 
     pub fn set_player_names(&mut self, value: [&str; 4]) {

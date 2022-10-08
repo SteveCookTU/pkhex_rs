@@ -118,4 +118,26 @@ impl GameVersion {
             _ => false,
         }
     }
+
+    pub fn get_generation(&self) -> u8 {
+        if GameVersion::Gen1.contains(self) {
+            1
+        } else if GameVersion::Gen2.contains(self) {
+            2
+        } else if GameVersion::Gen3.contains(self) {
+            3
+        } else if GameVersion::Gen4.contains(self) {
+            4
+        } else if GameVersion::Gen5.contains(self) {
+            5
+        } else if GameVersion::Gen6.contains(self) {
+            6
+        } else if GameVersion::Gen7.contains(self) || GameVersion::Gen7b.contains(self) {
+            7
+        } else if GameVersion::Gen8.contains(self) {
+            8
+        } else {
+            0
+        }
+    }
 }

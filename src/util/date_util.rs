@@ -7,13 +7,13 @@ use time::{Date, Month, PrimitiveDateTime, Time};
 
 const SECONDS_PER_DAY: usize = 60 * 60 * 24;
 
-pub fn is_date_valid(year: usize, month: usize, day: usize) -> bool {
-    !(year == 0
+pub fn is_date_valid(year: i32, month: u8, day: u8) -> bool {
+    !(year <= 0
         || year > 9999
         || month == 0
         || month > 12
         || day == 0
-        || day > days_in_year_month(year as i32, Month::try_from(month as u8).unwrap()) as usize)
+        || day > days_in_year_month(year as i32, Month::try_from(month).unwrap()))
 }
 
 pub fn epoch_2000() -> PrimitiveDateTime {

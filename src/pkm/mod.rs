@@ -11,6 +11,7 @@ mod shared;
 mod strings;
 pub mod traits;
 mod util;
+mod xk3;
 
 pub use ck3::*;
 pub use pa8::*;
@@ -23,6 +24,7 @@ pub use pk8::*;
 pub use shared::*;
 pub use strings::*;
 pub use util::*;
+pub use xk3::*;
 
 use crate::editing::{hidden_power, nature_amp};
 use crate::structures::{shiny, IndividualValueSet, Moveset};

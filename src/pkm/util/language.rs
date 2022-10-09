@@ -44,7 +44,7 @@ pub fn get_main_lang_id_from_gc(value: u8) -> u8 {
     }
 }
 
-pub fn get_gc_lang_id_from_gc(value: u8) -> u8 {
+pub fn get_gc_lang_id_from_main(value: u8) -> u8 {
     match LanguageID::from(value) {
         LanguageID::German => LanguageGC::German as u8,
         LanguageID::French => LanguageGC::French as u8,

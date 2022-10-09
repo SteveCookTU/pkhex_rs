@@ -15,28 +15,42 @@ use no_std_io::{EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWr
 use rand::{thread_rng, Rng};
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
-pub struct CK3 {
+pub struct XK3 {
     species_id_3: u16,
+    held_item: u16,
+    stat_hp_current: u16,
+    ot_friendship: u16,
+    met_location: u16,
+    #[no_std_io(pad_before = 4)]
+    met_level: u8,
+    ball: u8,
+    ot_gender: u8,
+    stat_level: u8,
+    cnt_sheen: u8,
+    pkrs_strain: u8,
+    mark_value: u8,
+    pkrs_days: u8,
+    #[no_std_io(pad_before = 7)]
+    xd_pkm_flags: u8,
     #[no_std_io(pad_before = 2)]
+    exp: u32,
+    sid: u16,
+    tid: u16,
     pid: u32,
+    #[no_std_io(pad_before = 4)]
+    obedient: u8,
+    #[no_std_io(pad_before = 2)]
+    encounter_info: u8,
     version: u8,
     current_region: u8,
     original_region: u8,
     language: u8,
-    met_location: u16,
-    met_level: u8,
-    ball: u8,
-    #[no_std_io(pad_before = 3)]
-    ot_gender: u8,
-    sid: u16,
-    tid: u16,
     ot_trash: [u8; 22],
     nickname_trash: [u8; 22],
     nickname_copy_trash: [u8; 22],
     #[no_std_io(pad_before = 2)]
-    exp: u32,
-    stat_level: u8,
-    #[no_std_io(pad_before = 0x17)]
+    rib0: u16,
+    #[no_std_io(pad_before = 2)]
     move_1: u16,
     move_1_pp: u8,
     move_1_pp_ups: u8,
@@ -49,8 +63,6 @@ pub struct CK3 {
     move_4: u16,
     move_4_pp: u8,
     move_4_pp_ups: u8,
-    held_item: u16,
-    stat_hp_current: u16,
     stat_hp_max: u16,
     stat_atk: u16,
     stat_def: u16,
@@ -69,7 +81,6 @@ pub struct CK3 {
     iv_spa: u16,
     iv_spd: u16,
     iv_spe: u16,
-    ot_friendship: u16,
     cnt_cool: u8,
     cnt_beauty: u8,
     cnt_cute: u8,
@@ -80,36 +91,70 @@ pub struct CK3 {
     ribbon_count_g3_cute: u8,
     ribbon_count_g3_smart: u8,
     ribbon_count_g3_tough: u8,
-    cnt_sheen: u8,
-    ribbon_champion_g3: u8,
-    ribbon_winning: u8,
-    ribbon_victory: u8,
-    ribbon_artist: u8,
-    ribbon_effort: u8,
-    ribbon_champion_battle: u8,
-    ribbon_champion_regional: u8,
-    ribbon_champion_national: u8,
-    ribbon_country: u8,
-    ribbon_national: u8,
-    ribbon_earth: u8,
-    ribbon_world: u8,
-    ribbon_unused: u8,
-    pkrs_strain: u8,
-    is_egg: u8,
-    ability_bit: u8,
-    valid: u8,
-    #[no_std_io(pad_before = 1)]
-    mark_value: u8,
-    pkrs_days: u8,
-    #[no_std_io(pad_before = 6)]
-    party_slot: u8,
-    shadow_id: u16,
     #[no_std_io(pad_before = 2)]
-    purification: i32,
+    shadow_id: u16,
 }
 
-impl CK3 {
-    const PURIFIED: i32 = -100;
+impl XK3 {
+    pub fn get_nickname_copy_trash(&self) -> &[u8] {
+        &self.nickname_copy_trash
+    }
+
+    pub fn get_unused_flag_0(&self) -> bool {
+        flag_util::get_flag_from_u8(self.xd_pkm_flags, 0)
+    }
+
+    pub fn set_unused_flag_0(&mut self, value: bool) {
+        flag_util::set_flag_in_u8(&mut self.xd_pkm_flags, 0, value);
+    }
+
+    pub fn get_unused_flag_1(&self) -> bool {
+        flag_util::get_flag_from_u8(self.xd_pkm_flags, 1)
+    }
+
+    pub fn set_unused_flag_1(&mut self, value: bool) {
+        flag_util::set_flag_in_u8(&mut self.xd_pkm_flags, 1, value);
+    }
+
+    pub fn get_captured_flag(&self) -> bool {
+        flag_util::get_flag_from_u8(self.xd_pkm_flags, 2)
+    }
+
+    pub fn set_captured_flag(&mut self, value: bool) {
+        flag_util::set_flag_in_u8(&mut self.xd_pkm_flags, 2, value);
+    }
+
+    pub fn get_unused_flag_3(&self) -> bool {
+        flag_util::get_flag_from_u8(self.xd_pkm_flags, 3)
+    }
+
+    pub fn set_unused_flag_3(&mut self, value: bool) {
+        flag_util::set_flag_in_u8(&mut self.xd_pkm_flags, 3, value);
+    }
+
+    pub fn get_block_trades(&self) -> bool {
+        flag_util::get_flag_from_u8(self.xd_pkm_flags, 4)
+    }
+
+    pub fn set_block_trades(&mut self, value: bool) {
+        flag_util::set_flag_in_u8(&mut self.xd_pkm_flags, 4, value);
+    }
+
+    pub fn get_obedient(&self) -> bool {
+        self.obedient == 1
+    }
+
+    pub fn set_obedient(&mut self, obedient: bool) {
+        self.obedient = u8::from(obedient);
+    }
+
+    pub fn get_encounter_info(&self) -> u8 {
+        self.encounter_info
+    }
+
+    pub fn set_encounter_info(&mut self, info: u8) {
+        self.encounter_info = info;
+    }
 
     pub fn get_current_region(&self) -> u8 {
         self.current_region
@@ -139,36 +184,42 @@ impl CK3 {
             StringConverterOption::None,
         );
     }
+}
 
-    pub fn get_party_slot(&self) -> u8 {
-        self.party_slot
-    }
+impl From<XK3> for PK3 {
+    fn from(xk3: XK3) -> Self {
+        let version = xk3.get_version();
+        let shadow_id = xk3.get_shadow_id();
+        let met_location = xk3.get_met_location();
+        let mut pk: PK3 = convert_to(xk3);
 
-    pub fn set_party_slot(&mut self, slot: u8) {
-        self.party_slot = slot;
+        if version == 15 {
+            if shadow_id != 0 {
+                pk.set_ribbon_national(true);
+                pk.set_fateful_encounter(true);
+            } else if is_gift_xd(met_location) {
+                pk.set_fateful_encounter(true);
+            }
+        }
+
+        pk.set_flag_has_species(pk.get_species_id_3() != 0);
+        pk.refresh_checksum();
+
+        pk
     }
 }
 
-impl From<CK3> for PK3 {
-    fn from(ck3: CK3) -> Self {
-        let mut pk3: PK3 = convert_to(ck3);
-        pk3.set_flag_has_species(pk3.get_species_id_3() != 0);
-        pk3.refresh_checksum();
-        pk3
-    }
-}
-
-impl PKM<PersonalInfoG3> for CK3 {
+impl PKM<PersonalInfoG3> for XK3 {
     fn size_party(&self) -> usize {
-        poke_crypto::SIZE_3CSTORED
+        poke_crypto::SIZE_3XSTORED
     }
 
     fn size_stored(&self) -> usize {
-        poke_crypto::SIZE_3CSTORED
+        poke_crypto::SIZE_3XSTORED
     }
 
     fn extension(&self) -> String {
-        "ck3".to_string()
+        "xk3".to_string()
     }
 
     fn personal_info(&self) -> &'static PersonalInfoG3 {
@@ -176,11 +227,11 @@ impl PKM<PersonalInfoG3> for CK3 {
     }
 
     fn get_valid(&self) -> bool {
-        self.valid == 0
+        !flag_util::get_flag_from_u8(self.xd_pkm_flags, 5)
     }
 
     fn set_valid(&mut self, valid: bool) {
-        self.valid = u8::from(!valid);
+        flag_util::set_flag_in_u8(&mut self.xd_pkm_flags, 5, !valid);
     }
 
     fn nickname_trash(&self) -> &[u8] {
@@ -200,7 +251,7 @@ impl PKM<PersonalInfoG3> for CK3 {
     }
 
     fn set_species(&mut self, species: u16) {
-        self.species_id_3 = species_converter::get_g3_species(species);
+        self.species_id_3 = species_converter::get_g3_species(species)
     }
 
     fn set_nickname(&mut self, nickname: &str) {
@@ -251,11 +302,11 @@ impl PKM<PersonalInfoG3> for CK3 {
     }
 
     fn get_is_egg(&self) -> bool {
-        self.is_egg == 1
+        flag_util::get_flag_from_u8(self.xd_pkm_flags, 7)
     }
 
     fn set_is_egg(&mut self, is_egg: bool) {
-        self.is_egg = u8::from(is_egg);
+        flag_util::set_flag_in_u8(&mut self.xd_pkm_flags, 7, is_egg);
     }
 
     fn set_is_nicknamed(&mut self, _is_nicknamed: bool) {}
@@ -612,11 +663,17 @@ impl PKM<PersonalInfoG3> for CK3 {
     }
 
     fn get_fateful_encounter(&self) -> bool {
-        flag_util::get_flag_from_u8(self.ribbon_unused, 4)
+        self.encounter_info != 0 || self.get_obedient()
     }
 
     fn set_fateful_encounter(&mut self, fateful: bool) {
-        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 4, fateful);
+        if self.encounter_info != 0 {
+            if !fateful {
+                self.encounter_info = 0;
+            }
+            return;
+        }
+        flag_util::set_flag_in_u8(&mut self.encounter_info, 0, fateful)
     }
 
     fn characteristic(&self) -> Option<u8> {
@@ -665,7 +722,7 @@ impl PKM<PersonalInfoG3> for CK3 {
 
     fn get_marking(&self, index: u8) -> u8 {
         if index > self.marking_count() {
-            panic!("Mark index out of range for CK3")
+            panic!("Mark index out of range for XK3")
         } else {
             (self.mark_value >> index) & 1
         }
@@ -673,7 +730,7 @@ impl PKM<PersonalInfoG3> for CK3 {
 
     fn set_marking(&mut self, index: u8, value: u8) {
         if index > self.marking_count() {
-            panic!("Mark index out of range for CK3")
+            panic!("Mark index out of range for XK3")
         } else {
             self.mark_value = (self.mark_value & !(1 << index)) | ((value & 1) << index);
         }
@@ -686,7 +743,7 @@ impl PKM<PersonalInfoG3> for CK3 {
     }
 }
 
-impl SpeciesForm for CK3 {
+impl SpeciesForm for XK3 {
     fn species(&self) -> u16 {
         species_converter::get_g3_species_raw(self.species_id_3)
     }
@@ -700,7 +757,7 @@ impl SpeciesForm for CK3 {
     }
 }
 
-impl TrainerId for CK3 {
+impl TrainerId for XK3 {
     fn get_tid(&self) -> u16 {
         self.tid
     }
@@ -718,7 +775,7 @@ impl TrainerId for CK3 {
     }
 }
 
-impl Shiny for CK3 {
+impl Shiny for XK3 {
     fn tsv(&self) -> u16 {
         (self.tid ^ self.sid) >> 3
     }
@@ -728,7 +785,7 @@ impl Shiny for CK3 {
     }
 }
 
-impl LangNick for CK3 {
+impl LangNick for XK3 {
     fn nickname(&self) -> String {
         string_converter_3gc::get_string(&self.nickname_trash)
     }
@@ -742,7 +799,7 @@ impl LangNick for CK3 {
     }
 }
 
-impl GameValueLimit for CK3 {
+impl GameValueLimit for XK3 {
     fn max_move_id(&self) -> u16 {
         tables::MAX_MOVE_ID_3
     }
@@ -784,7 +841,7 @@ impl GameValueLimit for CK3 {
     }
 }
 
-impl Nature for CK3 {
+impl Nature for XK3 {
     fn get_nature(&self) -> u8 {
         (self.pid % 25) as u8
     }
@@ -792,118 +849,118 @@ impl Nature for CK3 {
     fn set_nature(&mut self, _nature: u8) {}
 }
 
-impl From<CK3> for Vec<u8> {
-    fn from(ck3: CK3) -> Self {
+impl From<XK3> for Vec<u8> {
+    fn from(xk3: XK3) -> Self {
         let data = vec![0u8; poke_crypto::SIZE_3CSTORED];
         let mut writer = StreamContainer::new(data);
-        writer.checked_write_stream_be(&ck3);
+        writer.checked_write_stream_be(&xk3);
         writer.into_raw()
     }
 }
 
-impl From<Vec<u8>> for CK3 {
+impl From<Vec<u8>> for XK3 {
     fn from(mut data: Vec<u8>) -> Self {
         data.resize(poke_crypto::SIZE_3CSTORED, 0);
         let mut reader = StreamContainer::new(data);
-        reader.default_read_stream_be::<CK3>()
+        reader.default_read_stream_be::<XK3>()
     }
 }
 
-impl RibbonSetEvent3 for CK3 {
+impl RibbonSetEvent3 for XK3 {
     fn get_ribbon_earth(&self) -> bool {
-        self.ribbon_earth == 1
+        flag_util::get_flag_from_u16(self.rib0, 5)
     }
 
     fn set_ribbon_earth(&mut self, value: bool) {
-        self.ribbon_earth = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 5, value);
     }
 
     fn get_ribbon_national(&self) -> bool {
-        self.ribbon_national == 1
+        flag_util::get_flag_from_u16(self.rib0, 6)
     }
 
     fn set_ribbon_national(&mut self, value: bool) {
-        self.ribbon_national = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 6, value);
     }
 
     fn get_ribbon_country(&self) -> bool {
-        self.ribbon_country == 1
+        flag_util::get_flag_from_u16(self.rib0, 7)
     }
 
     fn set_ribbon_country(&mut self, value: bool) {
-        self.ribbon_country = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 7, value);
     }
 
     fn get_ribbon_champion_battle(&self) -> bool {
-        self.ribbon_champion_battle == 1
+        flag_util::get_flag_from_u16(self.rib0, 10)
     }
 
     fn set_ribbon_champion_battle(&mut self, value: bool) {
-        self.ribbon_champion_battle = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 10, value);
     }
 
     fn get_ribbon_champion_regional(&self) -> bool {
-        self.ribbon_champion_regional == 1
+        flag_util::get_flag_from_u16(self.rib0, 9)
     }
 
     fn set_ribbon_champion_regional(&mut self, value: bool) {
-        self.ribbon_champion_regional = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 9, value);
     }
 
     fn get_ribbon_champion_national(&self) -> bool {
-        self.ribbon_champion_national == 1
+        flag_util::get_flag_from_u16(self.rib0, 8)
     }
 
     fn set_ribbon_champion_national(&mut self, value: bool) {
-        self.ribbon_champion_national = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 8, value);
     }
 }
 
-impl RibbonSetCommon3 for CK3 {
+impl RibbonSetCommon3 for XK3 {
     fn get_ribbon_champion_g3(&self) -> bool {
-        self.ribbon_champion_g3 == 1
+        flag_util::get_flag_from_u16(self.rib0, 15)
     }
 
     fn set_ribbon_champion_g3(&mut self, value: bool) {
-        self.ribbon_champion_g3 = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 15, value);
     }
 
     fn get_ribbon_artist(&self) -> bool {
-        self.ribbon_artist == 1
+        flag_util::get_flag_from_u16(self.rib0, 12)
     }
 
     fn set_ribbon_artist(&mut self, value: bool) {
-        self.ribbon_artist = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 12, value);
     }
 
     fn get_ribbon_effort(&self) -> bool {
-        self.ribbon_effort == 1
+        flag_util::get_flag_from_u16(self.rib0, 11)
     }
 
     fn set_ribbon_effort(&mut self, value: bool) {
-        self.ribbon_effort = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 11, value);
     }
 }
 
-impl RibbonSetUnique3 for CK3 {
+impl RibbonSetUnique3 for XK3 {
     fn get_ribbon_winning(&self) -> bool {
-        self.ribbon_winning == 1
+        flag_util::get_flag_from_u16(self.rib0, 14)
     }
 
     fn set_ribbon_winning(&mut self, value: bool) {
-        self.ribbon_winning = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 14, value);
     }
 
     fn get_ribbon_victory(&self) -> bool {
-        self.ribbon_victory == 1
+        flag_util::get_flag_from_u16(self.rib0, 13)
     }
 
     fn set_ribbon_victory(&mut self, value: bool) {
-        self.ribbon_victory = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 13, value);
     }
 }
 
-impl RibbonSetOnly3 for CK3 {
+impl RibbonSetOnly3 for XK3 {
     fn get_ribbon_count_g3_cool(&self) -> u8 {
         self.ribbon_count_g3_cool
     }
@@ -945,47 +1002,47 @@ impl RibbonSetOnly3 for CK3 {
     }
 
     fn get_ribbon_world(&self) -> bool {
-        self.ribbon_world == 1
+        flag_util::get_flag_from_u16(self.rib0, 4)
     }
 
     fn set_ribbon_world(&mut self, value: bool) {
-        self.ribbon_world = u8::from(value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 4, value);
     }
 
     fn get_unused1(&self) -> bool {
-        flag_util::get_flag_from_u8(self.ribbon_unused, 0)
+        flag_util::get_flag_from_u16(self.rib0, 3)
     }
 
     fn set_unused1(&mut self, value: bool) {
-        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 0, value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 3, value);
     }
 
     fn get_unused2(&self) -> bool {
-        flag_util::get_flag_from_u8(self.ribbon_unused, 1)
+        flag_util::get_flag_from_u16(self.rib0, 2)
     }
 
     fn set_unused2(&mut self, value: bool) {
-        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 1, value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 2, value);
     }
 
     fn get_unused3(&self) -> bool {
-        flag_util::get_flag_from_u8(self.ribbon_unused, 2)
+        flag_util::get_flag_from_u16(self.rib0, 1)
     }
 
     fn set_unused3(&mut self, value: bool) {
-        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 2, value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 1, value);
     }
 
     fn get_unused4(&self) -> bool {
-        flag_util::get_flag_from_u8(self.ribbon_unused, 3)
+        flag_util::get_flag_from_u16(self.rib0, 0)
     }
 
     fn set_unused4(&mut self, value: bool) {
-        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 3, value);
+        flag_util::set_flag_in_u16(&mut self.rib0, 0, value);
     }
 }
 
-impl ContestStats for CK3 {
+impl ContestStats for XK3 {
     fn get_cnt_cool(&self) -> u8 {
         self.cnt_cool
     }
@@ -1011,7 +1068,7 @@ impl ContestStats for CK3 {
     }
 }
 
-impl ContestStatsMutable for CK3 {
+impl ContestStatsMutable for XK3 {
     fn set_cnt_cool(&mut self, count: u8) {
         self.cnt_cool = count;
     }
@@ -1037,7 +1094,7 @@ impl ContestStatsMutable for CK3 {
     }
 }
 
-impl G3PKM<PersonalInfoG3> for CK3 {
+impl G3PKM<PersonalInfoG3> for XK3 {
     fn get_species_id_3(&self) -> u16 {
         self.species_id_3
     }
@@ -1047,15 +1104,15 @@ impl G3PKM<PersonalInfoG3> for CK3 {
     }
 
     fn get_ability_bit(&self) -> bool {
-        self.ability_bit == 1
+        flag_util::get_flag_from_u8(self.xd_pkm_flags, 6)
     }
 
     fn set_ability_bit(&mut self, value: bool) {
-        self.ability_bit = u8::from(value);
+        flag_util::set_flag_in_u8(&mut self.xd_pkm_flags, 6, value);
     }
 }
 
-impl ShadowPKM for CK3 {
+impl ShadowPKM for XK3 {
     fn get_shadow_id(&self) -> u16 {
         self.shadow_id
     }
@@ -1065,44 +1122,18 @@ impl ShadowPKM for CK3 {
     }
 
     fn get_purification(&self) -> i32 {
-        self.purification
+        unimplemented!()
     }
 
-    fn set_purification(&mut self, purification: i32) {
-        self.purification = purification;
+    fn set_purification(&mut self, _purification: i32) {
+        unimplemented!()
     }
 
     fn is_shadow(&self) -> bool {
-        self.shadow_id != 0 && self.purification != CK3::PURIFIED
+        unimplemented!()
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use crate::pkm::ck3::CK3;
-    use crate::{Move, PKM};
-
-    const COLO_CK3: &[u8] = include_bytes!("../resources/tests/colo.ck3");
-
-    #[test]
-    fn should_read() {
-        let bytes = COLO_CK3.to_vec();
-        let pkm: CK3 = bytes.into();
-        assert_eq!(pkm.pid, 0x317A28D1);
-        assert_eq!(pkm.exp, 15625);
-        assert_eq!(pkm.move_1, Move::Confusion as u16);
-        assert_eq!(pkm.ot_friendship, 70);
-        assert_eq!(pkm.get_iv_spe(), 14);
-        assert_eq!(pkm.get_ot_name(), "PKHeX".to_string());
-    }
-
-    #[test]
-    fn should_read_and_write() {
-        let bytes = COLO_CK3.to_vec();
-        let pkm: CK3 = bytes.clone().into();
-        let output: Vec<u8> = pkm.into();
-        println!("{:0>2X?}", bytes);
-        println!("{:0>2X?}", output);
-        assert_eq!(bytes, output.to_vec())
-    }
+fn is_gift_xd(met: u16) -> bool {
+    [0, 16, 90, 91, 92].contains(&met)
 }

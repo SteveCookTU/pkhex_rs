@@ -1,118 +1,137 @@
 use crate::conversion::species_converter;
-use crate::g3pkm::{swap_bits, G3PKM};
+use crate::g3pkm::{convert_to, get_gba_version_id, get_gc_version_id, swap_bits, G3PKM};
 use crate::personal_info_g3::PersonalInfoG3;
 use crate::ribbons::{RibbonSetCommon3, RibbonSetEvent3, RibbonSetOnly3, RibbonSetUnique3};
 use crate::traits::trainer_id::TrainerId;
 use crate::traits::{
-    ContestStats, ContestStatsMutable, GameValueLimit, LangNick, Nature, Shiny, SpeciesForm,
+    ContestStats, ContestStatsMutable, GameValueLimit, LangNick, Nature, ShadowPKM, Shiny,
+    SpeciesForm,
 };
 use crate::{
-    entity_gender, entity_pid, flag_util, species_name, string_converter_3, tables, LanguageID,
-    Species, StringConverterOption,
+    entity_gender, entity_pid, flag_util, language, personal_table, poke_crypto, species_name,
+    string_converter_3gc, tables, EntityContext, Species, StringConverterOption, PK3, PKM,
 };
-use crate::{personal_table, poke_crypto, EntityContext, PKM};
 use no_std_io::{EndianRead, EndianWrite, StreamContainer, StreamReader, StreamWriter};
 use rand::{thread_rng, Rng};
 
 #[derive(Default, Copy, Clone, EndianRead, EndianWrite)]
-pub struct PK3 {
-    pid: u32,
-    tid: u16,
-    sid: u16,
-    nickname_trash: [u8; 10],
-    language: u8,
-    egg_flags: u8,
-    ot_trash: [u8; 7],
-    mark_value: u8,
-    checksum: u16,
-    sanity: u16,
+pub struct CK3 {
     species_id_3: u16,
-    held_item: u16,
-    exp: u32,
-    pp_ups: u8,
-    ot_friendship: u8,
     #[no_std_io(pad_before = 2)]
+    pid: u32,
+    version: u8,
+    current_region: u8,
+    original_region: u8,
+    language: u8,
+    met_location: u16,
+    met_level: u8,
+    ball: u8,
+    #[no_std_io(pad_before = 3)]
+    ot_gender: u8,
+    sid: u16,
+    tid: u16,
+    ot_trash: [u8; 22],
+    nickname_trash: [u8; 22],
+    nickname_copy_trash: [u8; 22],
+    #[no_std_io(pad_before = 2)]
+    exp: u32,
+    stat_level: u8,
+    #[no_std_io(pad_before = 0x17)]
     move_1: u16,
-    move_2: u16,
-    move_3: u16,
-    move_4: u16,
     move_1_pp: u8,
+    move_1_pp_ups: u8,
+    move_2: u16,
     move_2_pp: u8,
+    move_2_pp_ups: u8,
+    move_3: u16,
     move_3_pp: u8,
+    move_3_pp_ups: u8,
+    move_4: u16,
     move_4_pp: u8,
-    ev_hp: u8,
-    ev_atk: u8,
-    ev_def: u8,
-    ev_spe: u8,
-    ev_spa: u8,
-    ev_spd: u8,
+    move_4_pp_ups: u8,
+    held_item: u16,
+    stat_hp_current: u16,
+    stat_hp_max: u16,
+    stat_atk: u16,
+    stat_def: u16,
+    stat_spa: u16,
+    stat_spd: u16,
+    stat_spe: u16,
+    ev_hp: u16,
+    ev_atk: u16,
+    ev_def: u16,
+    ev_spa: u16,
+    ev_spd: u16,
+    ev_spe: u16,
+    iv_hp: u16,
+    iv_atk: u16,
+    iv_def: u16,
+    iv_spa: u16,
+    iv_spd: u16,
+    iv_spe: u16,
+    ot_friendship: u16,
     cnt_cool: u8,
     cnt_beauty: u8,
     cnt_cute: u8,
     cnt_smart: u8,
     cnt_tough: u8,
+    ribbon_count_g3_cool: u8,
+    ribbon_count_g3_beauty: u8,
+    ribbon_count_g3_cute: u8,
+    ribbon_count_g3_smart: u8,
+    ribbon_count_g3_tough: u8,
     cnt_sheen: u8,
-    pkrs: u8,
-    met_location: u8,
-    origins: u16,
-    iv32: u32,
-    rib0: u32,
-    status_condition: u32,
-    stat_level: u8,
-    held_mail_id: u8,
-    stat_hp_current: u16,
-    stat_hp_max: u16,
-    stat_atk: u16,
-    stat_def: u16,
-    stat_spe: u16,
-    stat_spa: u16,
-    stat_spd: u16,
+    ribbon_champion_g3: u8,
+    ribbon_winning: u8,
+    ribbon_victory: u8,
+    ribbon_artist: u8,
+    ribbon_effort: u8,
+    ribbon_champion_battle: u8,
+    ribbon_champion_regional: u8,
+    ribbon_champion_national: u8,
+    ribbon_country: u8,
+    ribbon_national: u8,
+    ribbon_earth: u8,
+    ribbon_world: u8,
+    ribbon_unused: u8,
+    pkrs_strain: u8,
+    is_egg: u8,
+    ability_bit: u8,
+    valid: u8,
+    #[no_std_io(pad_before = 1)]
+    mark_value: u8,
+    pkrs_days: u8,
+    #[no_std_io(pad_before = 6)]
+    party_slot: u8,
+    shadow_id: u16,
+    #[no_std_io(pad_before = 2)]
+    purification: i32,
 }
 
-const EGG_NAME_JAPANESE: &str = "タマゴ";
+impl CK3 {
+    const PURIFIED: i32 = -100;
+}
 
-impl PK3 {
-    pub fn get_flag_is_bad_egg(&self) -> bool {
-        flag_util::get_flag_from_u8(self.egg_flags, 0)
-    }
-
-    pub fn set_flag_is_bad_egg(&mut self, value: bool) {
-        flag_util::set_flag_in_u8(&mut self.egg_flags, 0, value)
-    }
-
-    pub fn get_flag_has_species(&self) -> bool {
-        flag_util::get_flag_from_u8(self.egg_flags, 1)
-    }
-
-    pub fn set_flag_has_species(&mut self, value: bool) {
-        flag_util::set_flag_in_u8(&mut self.egg_flags, 1, value)
-    }
-
-    pub fn get_flag_is_egg(&self) -> bool {
-        flag_util::get_flag_from_u8(self.egg_flags, 2)
-    }
-
-    pub fn set_flag_is_egg(&mut self, value: bool) {
-        flag_util::set_flag_in_u8(&mut self.egg_flags, 2, value)
-    }
-
-    fn calculate_checksum(&self) -> u16 {
-        let data: Vec<u8> = (*self).into();
-        poke_crypto::get_chk3(&data)
+impl From<CK3> for PK3 {
+    fn from(ck3: CK3) -> Self {
+        let mut pk3: PK3 = convert_to(ck3);
+        pk3.set_flag_has_species(pk3.get_species_id_3() != 0);
+        pk3.refresh_checksum();
+        pk3
     }
 }
 
-impl PKM<PersonalInfoG3> for PK3 {
+impl PKM<PersonalInfoG3> for CK3 {
     fn size_party(&self) -> usize {
-        poke_crypto::SIZE_3PARTY
+        poke_crypto::SIZE_3CSTORED
     }
 
     fn size_stored(&self) -> usize {
-        poke_crypto::SIZE_3STORED
+        poke_crypto::SIZE_3CSTORED
     }
 
     fn extension(&self) -> String {
-        "pk3".to_string()
+        "ck3".to_string()
     }
 
     fn personal_info(&self) -> &'static PersonalInfoG3 {
@@ -120,10 +139,12 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn get_valid(&self) -> bool {
-        true
+        self.valid == 0
     }
 
-    fn set_valid(&mut self, _valid: bool) {}
+    fn set_valid(&mut self, valid: bool) {
+        self.valid = u8::from(!valid);
+    }
 
     fn nickname_trash(&self) -> &[u8] {
         &self.nickname_trash
@@ -134,9 +155,7 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn encrypt(&mut self) -> Vec<u8> {
-        self.refresh_checksum();
-        let data: Vec<u8> = (*self).into();
-        poke_crypto::encrypt_array_3(&data)
+        (*self).into()
     }
 
     fn context(&self) -> EntityContext {
@@ -144,23 +163,17 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn set_species(&mut self, species: u16) {
-        let s3 = species_converter::get_g3_species(species);
-        self.species_id_3 = s3;
-        self.set_flag_has_species(s3 != 0);
+        self.species_id_3 = species_converter::get_g3_species(species);
     }
 
     fn set_nickname(&mut self, nickname: &str) {
-        let jp = self.japanese();
-        let is_egg = self.get_is_egg();
-        string_converter_3::set_string(
+        string_converter_3gc::set_string(
             &mut self.nickname_trash,
-            &(if is_egg { EGG_NAME_JAPANESE } else { nickname })
-                .chars()
-                .collect::<Vec<char>>(),
+            nickname.chars().collect::<Vec<char>>(),
             10,
-            jp,
             StringConverterOption::None,
         );
+        self.nickname_copy_trash = self.nickname_trash;
     }
 
     fn get_held_item(&self) -> u16 {
@@ -168,7 +181,7 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn set_held_item(&mut self, item: u16) {
-        self.held_item = item
+        self.held_item = item;
     }
 
     fn get_gender(&self) -> u8 {
@@ -184,11 +197,11 @@ impl PKM<PersonalInfoG3> for PK3 {
     fn set_ability(&mut self, _ability: u16) {}
 
     fn get_current_friendship(&self) -> u8 {
-        self.ot_friendship
+        self.ot_friendship as u8
     }
 
     fn set_current_friendship(&mut self, friendship: u8) {
-        self.ot_friendship = friendship;
+        self.ot_friendship = friendship as u16;
     }
 
     fn set_form(&mut self, form: u8) {
@@ -201,16 +214,11 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn get_is_egg(&self) -> bool {
-        ((self.iv32 >> 30) & 1) == 1
+        self.is_egg == 1
     }
 
     fn set_is_egg(&mut self, is_egg: bool) {
-        self.iv32 = (self.iv32 & !0x40000000) | if is_egg { 0x40000000 } else { 0 };
-        self.set_flag_is_egg(is_egg);
-        if is_egg {
-            self.set_nickname(EGG_NAME_JAPANESE);
-            self.language = LanguageID::Japanese as u8;
-        }
+        self.is_egg = u8::from(is_egg);
     }
 
     fn set_is_nicknamed(&mut self, _is_nicknamed: bool) {}
@@ -224,42 +232,40 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn get_ot_name(&self) -> String {
-        string_converter_3::get_string(&self.ot_trash, self.japanese())
+        string_converter_3gc::get_string(&self.ot_trash)
     }
 
     fn set_ot_name(&mut self, name: &str) {
-        let jp = self.japanese();
-        string_converter_3::set_string(
+        string_converter_3gc::set_string(
             &mut self.ot_trash,
-            &(name.chars().collect::<Vec<char>>()),
-            7,
-            jp,
+            name.chars().collect::<Vec<char>>(),
+            10,
             StringConverterOption::None,
         );
     }
 
     fn get_ot_gender(&self) -> u8 {
-        ((self.origins >> 15) & 1) as u8
+        self.ot_gender
     }
 
     fn set_ot_gender(&mut self, gender: u8) {
-        self.origins = (self.origins & !(1 << 15)) | ((gender as u16 & 1) << 15);
+        self.ot_gender = gender;
     }
 
     fn get_ball(&self) -> u8 {
-        ((self.origins >> 11) & 0xF) as u8
+        self.ball
     }
 
     fn set_ball(&mut self, ball: u8) {
-        self.origins = (self.origins & !0x7800) | ((ball as u16 & 0xF) << 11);
+        self.ball = ball;
     }
 
     fn get_met_level(&self) -> u8 {
-        (self.origins & 0x7F) as u8
+        self.met_level
     }
 
     fn set_met_level(&mut self, met_level: u8) {
-        self.origins = (self.origins & !0x7F) | met_level as u16;
+        self.met_level = met_level;
     }
 
     fn get_move_1(&self) -> u16 {
@@ -327,144 +333,139 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn get_move_1_pp_ups(&self) -> u8 {
-        self.pp_ups & 3
+        self.move_1_pp_ups
     }
 
     fn set_move_1_pp_ups(&mut self, pp_ups: u8) {
-        self.pp_ups = (self.pp_ups & !3) | pp_ups;
+        self.move_1_pp_ups = pp_ups;
     }
 
     fn get_move_2_pp_ups(&self) -> u8 {
-        (self.pp_ups >> 2) & 3
+        self.move_2_pp_ups
     }
 
     fn set_move_2_pp_ups(&mut self, pp_ups: u8) {
-        self.pp_ups = (self.pp_ups & !(3 << 2)) | (pp_ups << 2);
+        self.move_2_pp_ups = pp_ups;
     }
 
     fn get_move_3_pp_ups(&self) -> u8 {
-        (self.pp_ups >> 4) & 3
+        self.move_3_pp_ups
     }
 
     fn set_move_3_pp_ups(&mut self, pp_ups: u8) {
-        self.pp_ups = (self.pp_ups & !(3 << 4)) | (pp_ups << 4);
+        self.move_3_pp_ups = pp_ups;
     }
 
     fn get_move_4_pp_ups(&self) -> u8 {
-        (self.pp_ups >> 6) & 3
+        self.move_4_pp_ups
     }
 
     fn set_move_4_pp_ups(&mut self, pp_ups: u8) {
-        self.pp_ups = (self.pp_ups & !(3 << 6)) | (pp_ups << 6);
+        self.move_4_pp_ups = pp_ups;
     }
 
     fn get_ev_hp(&self) -> u8 {
-        self.ev_hp
+        self.ev_hp as u8
     }
 
     fn set_ev_hp(&mut self, ev_hp: u8) {
-        self.ev_hp = ev_hp;
+        self.ev_hp = ev_hp as u16;
     }
 
     fn get_ev_atk(&self) -> u8 {
-        self.ev_atk
+        self.ev_atk as u8
     }
 
     fn set_ev_atk(&mut self, ev_atk: u8) {
-        self.ev_atk = ev_atk;
+        self.ev_atk = ev_atk as u16;
     }
 
     fn get_ev_def(&self) -> u8 {
-        self.ev_def
+        self.ev_def as u8
     }
 
     fn set_ev_def(&mut self, ev_def: u8) {
-        self.ev_def = ev_def;
+        self.ev_def = ev_def as u16;
     }
 
     fn get_ev_spe(&self) -> u8 {
-        self.ev_spe
+        self.ev_spe as u8
     }
 
     fn set_ev_spe(&mut self, ev_spe: u8) {
-        self.ev_spe = ev_spe;
+        self.ev_spe = ev_spe as u16;
     }
 
     fn get_ev_spa(&self) -> u8 {
-        self.ev_spa
+        self.ev_spa as u8
     }
 
     fn set_ev_spa(&mut self, ev_spa: u8) {
-        self.ev_spa = ev_spa;
+        self.ev_spa = ev_spa as u16;
     }
 
     fn get_ev_spd(&self) -> u8 {
-        self.ev_spd
+        self.ev_spd as u8
     }
 
     fn set_ev_spd(&mut self, ev_spd: u8) {
-        self.ev_spd = ev_spd;
+        self.ev_spd = ev_spd as u16;
     }
 
     fn get_iv_hp(&self) -> u8 {
-        (self.iv32 & 0x1F) as u8
+        (self.iv_hp as u8).min(31)
     }
 
     fn set_iv_hp(&mut self, iv_hp: u8) {
-        self.iv32 = (self.iv32 & !0x1F) | if iv_hp > 31 { 31 } else { iv_hp as u32 };
+        self.iv_hp = (iv_hp & 0x1F) as u16;
     }
 
     fn get_iv_atk(&self) -> u8 {
-        ((self.iv32 >> 5) & 0x1F) as u8
+        (self.iv_atk as u8).min(31)
     }
 
     fn set_iv_atk(&mut self, iv_atk: u8) {
-        self.iv32 =
-            (self.iv32 & !(0x1F << 5)) | (if iv_atk > 31 { 31 } else { iv_atk as u32 } << 5);
+        self.iv_atk = (iv_atk & 0x1F) as u16;
     }
 
     fn get_iv_def(&self) -> u8 {
-        ((self.iv32 >> 10) & 0x1F) as u8
+        (self.iv_def as u8).min(31)
     }
 
     fn set_iv_def(&mut self, iv_def: u8) {
-        self.iv32 =
-            (self.iv32 & !(0x1F << 10)) | (if iv_def > 31 { 31 } else { iv_def as u32 } << 10);
+        self.iv_def = (iv_def & 0x1F) as u16;
     }
 
     fn get_iv_spe(&self) -> u8 {
-        ((self.iv32 >> 15) & 0x1F) as u8
+        (self.iv_spe as u8).min(31)
     }
 
     fn set_iv_spe(&mut self, iv_spe: u8) {
-        self.iv32 =
-            (self.iv32 & !(0x1F << 15)) | (if iv_spe > 31 { 31 } else { iv_spe as u32 } << 15);
+        self.iv_spe = (iv_spe & 0x1F) as u16;
     }
 
     fn get_iv_spa(&self) -> u8 {
-        ((self.iv32 >> 20) & 0x1F) as u8
+        (self.iv_spa as u8).min(31)
     }
 
     fn set_iv_spa(&mut self, iv_spa: u8) {
-        self.iv32 =
-            (self.iv32 & !(0x1F << 20)) | (if iv_spa > 31 { 31 } else { iv_spa as u32 } << 20);
+        self.iv_spa = (iv_spa & 0x1F) as u16;
     }
 
     fn get_iv_spd(&self) -> u8 {
-        ((self.iv32 >> 25) & 0x1F) as u8
+        (self.iv_spd as u8).min(31)
     }
 
     fn set_iv_spd(&mut self, iv_spd: u8) {
-        self.iv32 =
-            (self.iv32 & !(0x1F << 25)) | (if iv_spd > 31 { 31 } else { iv_spd as u32 } << 25);
+        self.iv_spd = (iv_spd & 0x1F) as u16;
     }
 
     fn get_status_condition(&self) -> u32 {
-        self.status_condition
+        unimplemented!()
     }
 
-    fn set_status_condition(&mut self, condition: u32) {
-        self.status_condition = condition;
+    fn set_status_condition(&mut self, _condition: u32) {
+        unimplemented!()
     }
 
     fn get_stat_level(&self) -> u8 {
@@ -532,27 +533,27 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn get_version(&self) -> u8 {
-        ((self.origins >> 7) & 0xF) as u8
+        get_gba_version_id(self.version)
     }
 
     fn set_version(&mut self, version: u8) {
-        self.origins = (self.origins & !0x780) | ((version as u16 & 0xF) << 7);
+        self.version = get_gc_version_id(version);
     }
 
     fn get_pkrs_strain(&self) -> u8 {
-        self.pkrs >> 4
+        self.pkrs_strain & 0xF
     }
 
     fn set_pkrs_strain(&mut self, strain: u8) {
-        self.pkrs = (self.pkrs & 0xF) | (strain << 4);
+        self.pkrs_strain = strain & 0xF;
     }
 
     fn get_pkrs_days(&self) -> u8 {
-        self.pkrs & 0xF
+        (self.pkrs_days as i8).max(0) as u8
     }
 
     fn set_pkrs_days(&mut self, days: u8) {
-        self.pkrs = (self.pkrs & !0xF) | days;
+        self.pkrs_days = if days == 0 { 0xFF } else { days & 0xF };
     }
 
     fn get_encryption_constant(&self) -> u32 {
@@ -570,15 +571,15 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn set_language(&mut self, language: u8) {
-        self.language = language;
+        self.language = language::get_gc_lang_id_from_gc(language);
     }
 
     fn get_fateful_encounter(&self) -> bool {
-        (self.rib0 >> 31) == 1
+        flag_util::get_flag_from_u8(self.ribbon_unused, 4)
     }
 
     fn set_fateful_encounter(&mut self, fateful: bool) {
-        self.rib0 = (self.rib0 & !(1 << 31)) | (u32::from(fateful) << 31)
+        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 4, fateful);
     }
 
     fn characteristic(&self) -> Option<u8> {
@@ -594,11 +595,11 @@ impl PKM<PersonalInfoG3> for PK3 {
     }
 
     fn get_met_location(&self) -> u16 {
-        self.met_location as u16
+        self.met_location
     }
 
     fn set_met_location(&mut self, location: u16) {
-        self.met_location = location as u8;
+        self.met_location = location;
     }
 
     fn get_egg_location(&self) -> u16 {
@@ -608,11 +609,11 @@ impl PKM<PersonalInfoG3> for PK3 {
     fn set_egg_location(&mut self, _location: u16) {}
 
     fn get_ot_friendship(&self) -> u8 {
-        self.ot_friendship
+        self.ot_friendship as u8
     }
 
     fn set_ot_friendship(&mut self, friendship: u8) {
-        self.ot_friendship = friendship;
+        self.ot_friendship = friendship as u16;
     }
 
     fn get_current_handler(&self) -> u8 {
@@ -627,7 +628,7 @@ impl PKM<PersonalInfoG3> for PK3 {
 
     fn get_marking(&self, index: u8) -> u8 {
         if index > self.marking_count() {
-            panic!("Mark index out of range for PK3")
+            panic!("Mark index out of range for CK3")
         } else {
             (self.mark_value >> index) & 1
         }
@@ -635,24 +636,20 @@ impl PKM<PersonalInfoG3> for PK3 {
 
     fn set_marking(&mut self, index: u8, value: u8) {
         if index > self.marking_count() {
-            panic!("Mark index out of range for PK3")
+            panic!("Mark index out of range for CK3")
         } else {
             self.mark_value = (self.mark_value & !(1 << index)) | ((value & 1) << index);
         }
     }
 
-    fn refresh_checksum(&mut self) {
-        self.set_flag_is_bad_egg(false);
-        let data: Vec<u8> = (*self).into();
-        self.checksum = poke_crypto::get_chk3(&data);
-    }
+    fn refresh_checksum(&mut self) {}
 
     fn checksum_valid(&self) -> bool {
-        self.checksum == self.calculate_checksum()
+        self.get_valid()
     }
 }
 
-impl SpeciesForm for PK3 {
+impl SpeciesForm for CK3 {
     fn species(&self) -> u16 {
         species_converter::get_g3_species_raw(self.species_id_3)
     }
@@ -666,7 +663,7 @@ impl SpeciesForm for PK3 {
     }
 }
 
-impl TrainerId for PK3 {
+impl TrainerId for CK3 {
     fn get_tid(&self) -> u16 {
         self.tid
     }
@@ -684,7 +681,7 @@ impl TrainerId for PK3 {
     }
 }
 
-impl Shiny for PK3 {
+impl Shiny for CK3 {
     fn tsv(&self) -> u16 {
         (self.tid ^ self.sid) >> 3
     }
@@ -694,21 +691,21 @@ impl Shiny for PK3 {
     }
 }
 
-impl LangNick for PK3 {
+impl LangNick for CK3 {
     fn nickname(&self) -> String {
-        string_converter_3::get_string(&self.nickname_trash, self.japanese())
+        string_converter_3gc::get_string(&self.nickname_trash)
     }
 
     fn is_nicknamed(&self) -> bool {
-        species_name::is_nicknamed(self.species(), &self.nickname(), self.language, 3)
+        species_name::is_nicknamed(self.species(), &self.nickname(), self.language(), 3)
     }
 
     fn language(&self) -> u8 {
-        self.language
+        language::get_main_lang_id_from_gc(self.language)
     }
 }
 
-impl GameValueLimit for PK3 {
+impl GameValueLimit for CK3 {
     fn max_move_id(&self) -> u16 {
         tables::MAX_MOVE_ID_3
     }
@@ -750,7 +747,7 @@ impl GameValueLimit for PK3 {
     }
 }
 
-impl Nature for PK3 {
+impl Nature for CK3 {
     fn get_nature(&self) -> u8 {
         (self.pid % 25) as u8
     }
@@ -758,201 +755,200 @@ impl Nature for PK3 {
     fn set_nature(&mut self, _nature: u8) {}
 }
 
-impl From<Vec<u8>> for PK3 {
-    fn from(mut data: Vec<u8>) -> Self {
-        poke_crypto::decrypt_if_encrypted_3(&mut data);
-        data.resize(poke_crypto::SIZE_3PARTY, 0);
-        let mut reader = StreamContainer::new(data);
-        reader.default_read_stream_le::<PK3>()
-    }
-}
-
-impl From<PK3> for Vec<u8> {
-    fn from(pkm: PK3) -> Self {
-        let data = vec![0u8; poke_crypto::SIZE_3PARTY];
+impl From<CK3> for Vec<u8> {
+    fn from(ck3: CK3) -> Self {
+        let data = vec![0u8; poke_crypto::SIZE_3CSTORED];
         let mut writer = StreamContainer::new(data);
-        writer.checked_write_stream_le(&pkm);
+        writer.checked_write_stream_be(&ck3);
         writer.into_raw()
     }
 }
 
-impl RibbonSetEvent3 for PK3 {
+impl From<Vec<u8>> for CK3 {
+    fn from(mut data: Vec<u8>) -> Self {
+        data.resize(poke_crypto::SIZE_3CSTORED, 0);
+        let mut reader = StreamContainer::new(data);
+        reader.default_read_stream_be::<CK3>()
+    }
+}
+
+impl RibbonSetEvent3 for CK3 {
     fn get_ribbon_earth(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 25)
+        self.ribbon_earth == 1
     }
 
     fn set_ribbon_earth(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 25, value);
+        self.ribbon_earth = u8::from(value);
     }
 
     fn get_ribbon_national(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 24)
+        self.ribbon_national == 1
     }
 
     fn set_ribbon_national(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 24, value);
+        self.ribbon_national = u8::from(value);
     }
 
     fn get_ribbon_country(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 23)
+        self.ribbon_country == 1
     }
 
     fn set_ribbon_country(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 23, value);
+        self.ribbon_country = u8::from(value);
     }
 
     fn get_ribbon_champion_battle(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 20)
+        self.ribbon_champion_battle == 1
     }
 
     fn set_ribbon_champion_battle(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 20, value);
+        self.ribbon_champion_battle = u8::from(value);
     }
 
     fn get_ribbon_champion_regional(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 21)
+        self.ribbon_champion_regional == 1
     }
 
     fn set_ribbon_champion_regional(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 21, value);
+        self.ribbon_champion_regional = u8::from(value);
     }
 
     fn get_ribbon_champion_national(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 22)
+        self.ribbon_champion_national == 1
     }
 
     fn set_ribbon_champion_national(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 22, value);
+        self.ribbon_champion_national = u8::from(value);
     }
 }
 
-impl RibbonSetCommon3 for PK3 {
+impl RibbonSetCommon3 for CK3 {
     fn get_ribbon_champion_g3(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 15)
+        self.ribbon_champion_g3 == 1
     }
 
     fn set_ribbon_champion_g3(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 15, value);
+        self.ribbon_champion_g3 = u8::from(value);
     }
 
     fn get_ribbon_artist(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 18)
+        self.ribbon_artist == 1
     }
 
     fn set_ribbon_artist(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 18, value);
+        self.ribbon_artist = u8::from(value);
     }
 
     fn get_ribbon_effort(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 19)
+        self.ribbon_effort == 1
     }
 
     fn set_ribbon_effort(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 19, value);
+        self.ribbon_effort = u8::from(value);
     }
 }
 
-impl RibbonSetUnique3 for PK3 {
+impl RibbonSetUnique3 for CK3 {
     fn get_ribbon_winning(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 16)
+        self.ribbon_winning == 1
     }
 
     fn set_ribbon_winning(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 16, value);
+        self.ribbon_winning = u8::from(value);
     }
 
     fn get_ribbon_victory(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 17)
+        self.ribbon_victory == 1
     }
 
     fn set_ribbon_victory(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 17, value);
+        self.ribbon_victory = u8::from(value);
     }
 }
 
-impl RibbonSetOnly3 for PK3 {
+impl RibbonSetOnly3 for CK3 {
     fn get_ribbon_count_g3_cool(&self) -> u8 {
-        (self.rib0 & 7) as u8
+        self.ribbon_count_g3_cool
     }
 
     fn set_ribbon_count_g3_cool(&mut self, count: u8) {
-        self.rib0 = (self.rib0 & !7) | (count as u32 & 7);
+        self.ribbon_count_g3_cool = count;
     }
 
     fn get_ribbon_count_g3_beauty(&self) -> u8 {
-        ((self.rib0 >> 3) & 7) as u8
+        self.ribbon_count_g3_beauty
     }
 
     fn set_ribbon_count_g3_beauty(&mut self, count: u8) {
-        self.rib0 = (self.rib0 & !(7 << 3)) | ((count as u32 & 7) << 3);
+        self.ribbon_count_g3_beauty = count;
     }
 
     fn get_ribbon_count_g3_cute(&self) -> u8 {
-        ((self.rib0 >> 6) & 7) as u8
+        self.ribbon_count_g3_cute
     }
 
     fn set_ribbon_count_g3_cute(&mut self, count: u8) {
-        self.rib0 = (self.rib0 & !(7 << 6)) | ((count as u32 & 7) << 6);
+        self.ribbon_count_g3_cute = count;
     }
 
     fn get_ribbon_count_g3_smart(&self) -> u8 {
-        ((self.rib0 >> 9) & 7) as u8
+        self.ribbon_count_g3_smart
     }
 
     fn set_ribbon_count_g3_smart(&mut self, count: u8) {
-        self.rib0 = (self.rib0 & !(7 << 9)) | ((count as u32 & 7) << 9);
+        self.ribbon_count_g3_smart = count;
     }
 
     fn get_ribbon_count_g3_tough(&self) -> u8 {
-        ((self.rib0 >> 12) & 7) as u8
+        self.ribbon_count_g3_tough
     }
 
     fn set_ribbon_count_g3_tough(&mut self, count: u8) {
-        self.rib0 = (self.rib0 & !(7 << 12)) | ((count as u32 & 7) << 12);
+        self.ribbon_count_g3_tough = count;
     }
 
     fn get_ribbon_world(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 26)
+        self.ribbon_world == 1
     }
 
     fn set_ribbon_world(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 26, value);
+        self.ribbon_world = u8::from(value);
     }
 
     fn get_unused1(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 27)
+        flag_util::get_flag_from_u8(self.ribbon_unused, 0)
     }
 
     fn set_unused1(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 27, value);
+        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 0, value);
     }
 
     fn get_unused2(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 28)
+        flag_util::get_flag_from_u8(self.ribbon_unused, 1)
     }
 
     fn set_unused2(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 28, value);
+        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 1, value);
     }
 
     fn get_unused3(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 29)
+        flag_util::get_flag_from_u8(self.ribbon_unused, 2)
     }
 
     fn set_unused3(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 29, value);
+        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 2, value);
     }
 
     fn get_unused4(&self) -> bool {
-        flag_util::get_flag_in_u32(self.rib0, 30)
+        flag_util::get_flag_from_u8(self.ribbon_unused, 3)
     }
 
     fn set_unused4(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.rib0, 30, value);
+        flag_util::set_flag_in_u8(&mut self.ribbon_unused, 3, value);
     }
 }
 
-impl ContestStats for PK3 {
+impl ContestStats for CK3 {
     fn get_cnt_cool(&self) -> u8 {
         self.cnt_cool
     }
@@ -978,7 +974,7 @@ impl ContestStats for PK3 {
     }
 }
 
-impl ContestStatsMutable for PK3 {
+impl ContestStatsMutable for CK3 {
     fn set_cnt_cool(&mut self, count: u8) {
         self.cnt_cool = count;
     }
@@ -1004,7 +1000,7 @@ impl ContestStatsMutable for PK3 {
     }
 }
 
-impl G3PKM<PersonalInfoG3> for PK3 {
+impl G3PKM<PersonalInfoG3> for CK3 {
     fn get_species_id_3(&self) -> u16 {
         self.species_id_3
     }
@@ -1014,43 +1010,62 @@ impl G3PKM<PersonalInfoG3> for PK3 {
     }
 
     fn get_ability_bit(&self) -> bool {
-        flag_util::get_flag_in_u32(self.iv32, 31)
+        self.ability_bit == 1
     }
 
     fn set_ability_bit(&mut self, value: bool) {
-        flag_util::set_flag_in_u32(&mut self.iv32, 31, value);
+        self.ability_bit = u8::from(value);
+    }
+}
+
+impl ShadowPKM for CK3 {
+    fn get_shadow_id(&self) -> u16 {
+        self.shadow_id
+    }
+
+    fn set_shadow_id(&mut self, id: u16) {
+        self.shadow_id = id;
+    }
+
+    fn get_purification(&self) -> i32 {
+        self.purification
+    }
+
+    fn set_purification(&mut self, purification: i32) {
+        self.purification = purification;
+    }
+
+    fn is_shadow(&self) -> bool {
+        self.shadow_id != 0 && self.purification != CK3::PURIFIED
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::pkm::pk3::PK3;
-    use crate::PKM;
+    use crate::pkm::ck3::CK3;
+    use crate::{Move, PKM};
 
-    const E_PK3: &[u8] = include_bytes!("../resources/tests/e.pk3");
+    const COLO_CK3: &[u8] = include_bytes!("../resources/tests/colo.ck3");
 
     #[test]
     fn should_read() {
-        let bytes = E_PK3.to_vec();
-        let pkm: PK3 = bytes.into();
-        assert_eq!(pkm.pid, 0xC673685D);
-        assert_eq!(pkm.exp, 19683);
-        assert_eq!(pkm.get_iv_spe(), 22);
+        let bytes = COLO_CK3.to_vec();
+        let pkm: CK3 = bytes.into();
+        assert_eq!(pkm.pid, 0x317A28D1);
+        assert_eq!(pkm.exp, 15625);
+        assert_eq!(pkm.move_1, Move::Confusion as u16);
+        assert_eq!(pkm.ot_friendship, 70);
+        assert_eq!(pkm.get_iv_spe(), 14);
         assert_eq!(pkm.get_ot_name(), "PKHeX".to_string());
     }
 
     #[test]
     fn should_read_and_write() {
-        let bytes = E_PK3.to_vec();
-        let pkm: PK3 = bytes.clone().into();
+        let bytes = COLO_CK3.to_vec();
+        let pkm: CK3 = bytes.clone().into();
         let output: Vec<u8> = pkm.into();
+        println!("{:0>2X?}", bytes);
+        println!("{:0>2X?}", output);
         assert_eq!(bytes, output.to_vec())
-    }
-
-    #[test]
-    fn should_calc_checksum() {
-        let bytes = E_PK3.to_vec();
-        let pkm: PK3 = bytes.into();
-        assert_eq!(pkm.checksum, pkm.calculate_checksum());
     }
 }

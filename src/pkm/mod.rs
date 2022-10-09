@@ -1,3 +1,4 @@
+mod ck3;
 mod pa8;
 mod pb8;
 mod pk3;
@@ -11,6 +12,7 @@ mod strings;
 pub mod traits;
 mod util;
 
+pub use ck3::*;
 pub use pa8::*;
 pub use pb8::*;
 pub use pk3::*;
@@ -116,7 +118,7 @@ pub trait PKM<Personal: PersonalInfo + 'static>:
     fn set_exp(&mut self, exp: u32);
 
     fn get_ot_name(&self) -> String;
-    fn set_ot_name(&mut self, name: String);
+    fn set_ot_name(&mut self, name: &str);
 
     fn get_ot_gender(&self) -> u8;
     fn set_ot_gender(&mut self, gender: u8);

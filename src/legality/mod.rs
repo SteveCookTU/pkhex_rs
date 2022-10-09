@@ -13,7 +13,7 @@ pub fn get_max_species_origin(generation: usize) -> Option<usize> {
     match generation {
         1 => Some(MAX_SPECIES_ID_1),
         2 => Some(MAX_SPECIES_ID_2),
-        3 => Some(MAX_SPECIES_ID_3),
+        3 => Some(MAX_SPECIES_ID_3 as usize),
         4 => Some(MAX_SPECIES_ID_4),
         5 => Some(MAX_SPECIES_ID_5),
         6 => Some(MAX_SPECIES_ID_6),
@@ -27,7 +27,7 @@ pub fn get_debut_generation(species: usize) -> usize {
     match species {
         _ if species <= MAX_SPECIES_ID_1 => 1,
         _ if species <= MAX_SPECIES_ID_2 => 2,
-        _ if species <= MAX_SPECIES_ID_3 => 3,
+        _ if species <= MAX_SPECIES_ID_3 as usize => 3,
         _ if species <= MAX_SPECIES_ID_4 => 4,
         _ if species <= MAX_SPECIES_ID_5 => 5,
         _ if species <= MAX_SPECIES_ID_6 => 6,

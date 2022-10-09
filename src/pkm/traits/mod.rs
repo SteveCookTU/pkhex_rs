@@ -1,6 +1,7 @@
 mod affection;
 mod alpha;
 pub mod awakened;
+mod contest_stats;
 mod game_value_limit;
 pub mod hyper_train;
 mod lang_nick;
@@ -12,6 +13,7 @@ pub mod trainer_id;
 
 pub use affection::*;
 pub use alpha::*;
+pub use contest_stats::*;
 pub use game_value_limit::*;
 pub use lang_nick::*;
 pub use nature::*;

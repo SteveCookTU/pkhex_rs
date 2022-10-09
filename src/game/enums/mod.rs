@@ -1,6 +1,7 @@
 mod ability;
 mod ball;
 mod game_version;
+mod gc_version;
 mod gender;
 mod language_id;
 mod move_enum;
@@ -11,6 +12,7 @@ mod species;
 pub use ability::*;
 pub use ball::*;
 pub use game_version::*;
+pub use gc_version::*;
 pub use gender::*;
 pub use language_id::*;
 pub use move_enum::*;

@@ -1,3 +1,5 @@
+use no_std_io::{Cursor, StreamContainer, StreamReader};
+
 pub const SIZE_1ULIST: usize = 69;
 pub const SIZE_1JLIST: usize = 59;
 pub const SIZE_1PARTY: usize = 44;
@@ -14,6 +16,7 @@ pub const SIZE_3XSTORED: usize = 196;
 pub const SIZE_3PARTY: usize = 100;
 pub const SIZE_3STORED: usize = 80;
 pub const SIZE_3BLOCK: usize = 12;
+pub const SIZE_3HEADER: usize = 32;
 
 pub const SIZE_4PARTY: usize = 236;
 pub const SIZE_4STORED: usize = 136;
@@ -94,6 +97,26 @@ fn crypt_array(data: &mut [u8], mut seed: usize, start: usize, end: usize) {
     }
 }
 
+pub fn decrypt_array_3(mut ekm: Vec<u8>) -> Vec<u8> {
+    let pid = u32::from_le_bytes(ekm[..4].try_into().unwrap());
+    let oid = u32::from_le_bytes(ekm[4..8].try_into().unwrap());
+    let seed = pid ^ oid;
+
+    {
+        let to_encrypt = &mut ekm[SIZE_3HEADER..SIZE_3STORED];
+        to_encrypt.chunks_mut(4).for_each(|slice| {
+            let chunk = u32::from_le_bytes(slice.try_into().unwrap());
+            let update = (chunk ^ seed).to_le_bytes();
+            slice[0] = update[0];
+            slice[1] = update[1];
+            slice[2] = update[2];
+            slice[3] = update[3];
+        });
+    }
+
+    shuffle_array_3(&ekm, pid as usize % 24)
+}
+
 pub fn decrypt_array_45(mut ekm: Vec<u8>) -> Vec<u8> {
     let seed = u32::from_le_bytes(ekm[0..4].try_into().unwrap()) as usize;
     let chk = u16::from_le_bytes(ekm[6..8].try_into().unwrap()) as usize;
@@ -121,6 +144,39 @@ pub fn decrypt_array_8a(mut ekm: Vec<u8>) -> Vec<u8> {
     let sv = seed >> 13 & 31;
     crypt_pkm(&mut ekm, seed, SIZE_8ABLOCK);
     shuffle_array(&mut ekm, sv, SIZE_8ABLOCK)
+}
+
+pub fn shuffle_array_3(data: &[u8], sv: usize) -> Vec<u8> {
+    let idx = 4 * sv;
+    let sdata = data;
+    let mut data = data.to_vec();
+    for block in 0..4 {
+        let ofs = BLOCK_POSITION[idx + block] as usize;
+        data.splice(
+            (SIZE_3HEADER + SIZE_3BLOCK * block)..(SIZE_3HEADER + SIZE_3BLOCK * (block + 1)),
+            sdata[(SIZE_3HEADER + SIZE_3BLOCK * ofs)..(SIZE_3HEADER + SIZE_3BLOCK * (ofs + 1))]
+                .to_vec(),
+        );
+    }
+    data
+}
+
+pub fn encrypt_array_3(pkm: &[u8]) -> Vec<u8> {
+    let pid = u32::from_le_bytes(pkm[..4].try_into().unwrap());
+    let oid = u32::from_le_bytes(pkm[4..8].try_into().unwrap());
+    let seed = pid ^ oid;
+
+    let mut ekm = shuffle_array_3(pkm, BLOCK_POSITION_INVERT[(pid % 24) as usize] as usize);
+    let to_encrypt = &mut ekm[SIZE_3HEADER..SIZE_3STORED];
+    to_encrypt.chunks_mut(4).for_each(|slice| {
+        let chunk = u32::from_le_bytes(slice.try_into().unwrap());
+        let update = (chunk ^ seed).to_le_bytes();
+        slice[0] = update[0];
+        slice[1] = update[1];
+        slice[2] = update[2];
+        slice[3] = update[3];
+    });
+    ekm
 }
 
 pub fn encrypt_array_45(pkm: &[u8]) -> Vec<u8> {
@@ -180,11 +236,30 @@ pub fn encrypt_array_8a(pkm: &[u8]) -> Vec<u8> {
 pub fn get_chk(data: &[u8], party_start: usize) -> u16 {
     let mut chk: u16 = 0;
 
-    let slice = &data[0x8..party_start];
-    slice
-        .chunks(2)
-        .for_each(|c| chk = chk.wrapping_add(u16::from_le_bytes(c.try_into().unwrap())));
+    let mut reader = StreamContainer::new(data);
+    reader.set_index(8);
+    while reader.get_index() < party_start {
+        chk = chk.wrapping_add(reader.default_read_stream_le::<u16>())
+    }
     chk
+}
+
+pub fn get_chk3(data: &[u8]) -> u16 {
+    let mut chk: u16 = 0;
+
+    let mut reader = StreamContainer::new(data);
+    reader.set_index(0x20);
+    while reader.get_index() < SIZE_3STORED {
+        chk = chk.wrapping_add(reader.default_read_stream_le::<u16>())
+    }
+    chk
+}
+
+pub fn decrypt_if_encrypted_3(pkm: &mut Vec<u8>) {
+    let chk = get_chk3(pkm);
+    if chk != u16::from_le_bytes(pkm[0x1C..0x1E].try_into().unwrap()) {
+        *pkm = decrypt_array_3(pkm.clone());
+    }
 }
 
 pub fn decrypt_if_encrypted_45(pkm: &mut Vec<u8>) {

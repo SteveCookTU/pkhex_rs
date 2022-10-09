@@ -257,7 +257,7 @@ fn fix_personal_table_g1(table: &mut PersonalTable<PersonalInfoG1>) {
 fn populate_gen_3_tutors(table: &mut PersonalTable<PersonalInfoG3>) {
     let machine = BinLinkerAccessor::new(HMTM_G3);
     let tutors = BinLinkerAccessor::new(TUTORS_G3);
-    for i in (0..=MAX_SPECIES_ID_3).rev() {
+    for i in (0..=(MAX_SPECIES_ID_3 as usize)).rev() {
         let entry = &mut table[i];
         entry.set_tmhm(get_bits(&machine[i]));
         entry.set_type_tutors(get_bits(&tutors[i]));

@@ -368,7 +368,7 @@ impl PK8 {
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
-        let flags = (ribbon_bits >> (section * 4)) as u8;
+        let flags = (ribbon_bits >> (section * 8)) as u8;
         flag_util::get_flag_from_u8(flags, index as usize)
     }
 
@@ -391,7 +391,7 @@ impl PK8 {
         let ribbon_bits = self.ribbon_1;
         let section = 0;
         let index = 5;
-        let flags = (ribbon_bits >> (section * 4)) as u8;
+        let flags = (ribbon_bits >> (section * 8)) as u8;
         flag_util::get_flag_from_u8(flags, index as usize)
     }
 
@@ -408,7 +408,7 @@ impl PK8 {
         let ribbon_bits = self.ribbon_1;
         let section = 0;
         let index = 6;
-        let flags = (ribbon_bits >> (section * 4)) as u8;
+        let flags = (ribbon_bits >> (section * 8)) as u8;
         flag_util::get_flag_from_u8(flags, index as usize)
     }
 
@@ -449,7 +449,7 @@ impl PK8 {
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
-        let flags = (ribbon_bits >> (section * 4)) as u8;
+        let flags = (ribbon_bits >> (section * 8)) as u8;
         flag_util::get_flag_from_u8(flags, index as usize)
     }
 

@@ -8,7 +8,7 @@ impl GameVersion {
         } else if GameVersion::Gen2.contains(self) {
             tables::MAX_SPECIES_ID_2
         } else if GameVersion::Gen3.contains(self) {
-            tables::MAX_SPECIES_ID_3
+            tables::MAX_SPECIES_ID_3 as usize
         } else if GameVersion::Gen4.contains(self) {
             tables::MAX_SPECIES_ID_4
         } else if GameVersion::Gen5.contains(self) {

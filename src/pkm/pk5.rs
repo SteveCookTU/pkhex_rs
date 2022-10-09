@@ -280,7 +280,7 @@ impl PK5 {
         };
         let section = (location >> 4) & 0xF;
         let index = location & 0xF;
-        let flags = (ribbon_bits >> (section * 4)) as u8;
+        let flags = (ribbon_bits >> (section * 8)) as u8;
         flag_util::get_flag_from_u8(flags, index as usize)
     }
 

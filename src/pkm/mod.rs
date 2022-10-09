@@ -1,5 +1,6 @@
 mod pa8;
 mod pb8;
+mod pk3;
 mod pk5;
 mod pk6;
 mod pk7;
@@ -12,6 +13,7 @@ mod util;
 
 pub use pa8::*;
 pub use pb8::*;
+pub use pk3::*;
 pub use pk5::*;
 pub use pk6::*;
 pub use pk7::*;
@@ -46,10 +48,10 @@ pub trait PKM<Personal: PersonalInfo + 'static>:
         vec![]
     }
 
-    fn encrypted_party_data(&self) -> Vec<u8> {
+    fn encrypted_party_data(&mut self) -> Vec<u8> {
         self.encrypt()[0..self.size_party()].to_vec()
     }
-    fn encrypted_box_data(&self) -> Vec<u8> {
+    fn encrypted_box_data(&mut self) -> Vec<u8> {
         self.encrypt()[0..self.size_stored()].to_vec()
     }
     fn decrypted_party_data(&mut self) -> Vec<u8> {
@@ -69,7 +71,7 @@ pub trait PKM<Personal: PersonalInfo + 'static>:
         &[]
     }
 
-    fn encrypt(&self) -> Vec<u8>;
+    fn encrypt(&mut self) -> Vec<u8>;
     fn context(&self) -> EntityContext;
     fn format(&self) -> u8 {
         self.context().generation()
@@ -108,7 +110,6 @@ pub trait PKM<Personal: PersonalInfo + 'static>:
     fn get_is_egg(&self) -> bool;
     fn set_is_egg(&mut self, is_egg: bool);
 
-    fn get_is_nicknamed(&self) -> bool;
     fn set_is_nicknamed(&mut self, is_nicknamed: bool);
 
     fn get_exp(&self) -> u32;
@@ -179,8 +180,8 @@ pub trait PKM<Personal: PersonalInfo + 'static>:
     fn get_iv_spd(&self) -> u8;
     fn set_iv_spd(&mut self, iv_spd: u8);
 
-    fn get_status_condition(&self) -> u8;
-    fn set_status_condition(&mut self, condition: u8);
+    fn get_status_condition(&self) -> u32;
+    fn set_status_condition(&mut self, condition: u32);
 
     fn get_stat_level(&self) -> u8;
     fn set_stat_level(&mut self, stat_level: u8);
@@ -219,7 +220,7 @@ pub trait PKM<Personal: PersonalInfo + 'static>:
     fn get_fateful_encounter(&self) -> bool;
     fn set_fateful_encounter(&mut self, fateful: bool);
 
-    fn characteristic(&self) -> u8;
+    fn characteristic(&self) -> Option<u8>;
 
     fn get_mark_value(&self) -> u8;
     fn set_mark_value(&mut self, value: u8);
@@ -249,7 +250,9 @@ pub trait PKM<Personal: PersonalInfo + 'static>:
         0
     }
     fn set_met_month(&mut self, _month: u8) {}
-    fn get_met_day(&self) -> u8;
+    fn get_met_day(&self) -> u8 {
+        0
+    }
     fn set_met_day(&mut self, _day: u8) {}
     fn get_ht_name(&self) -> String {
         String::new()

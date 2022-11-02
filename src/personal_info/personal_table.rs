@@ -1,25 +1,61 @@
 use crate::game::GameVersion;
+#[cfg(feature = "gen5")]
 use crate::personal_info_b2w2::PersonalInfoB2W2;
+#[cfg(feature = "gen8")]
 use crate::personal_info_bdsp::PersonalInfoBDSP;
+#[cfg(feature = "gen5")]
 use crate::personal_info_bw::PersonalInfoBW;
+#[cfg(feature = "gen1")]
 use crate::personal_info_g1::PersonalInfoG1;
+#[cfg(feature = "gen2")]
 use crate::personal_info_g2::PersonalInfoG2;
+#[cfg(feature = "gen3")]
 use crate::personal_info_g3::PersonalInfoG3;
+#[cfg(feature = "gen4")]
 use crate::personal_info_g4::PersonalInfoG4;
+#[cfg(feature = "gen7")]
 use crate::personal_info_gg::PersonalInfoGG;
 use crate::personal_info_la::PersonalInfoLA;
+#[cfg(feature = "gen6")]
 use crate::personal_info_oras::PersonalInfoORAS;
 use crate::personal_info_sm::PersonalInfoSM;
 use crate::personal_info_swsh::PersonalInfoSWSH;
+#[cfg(feature = "gen6")]
 use crate::personal_info_xy::PersonalInfoXY;
-use crate::tables::{
-    MAX_SPECIES_ID_1, MAX_SPECIES_ID_3, MAX_SPECIES_ID_7_USUM, MAX_SPECIES_ID_8_R2,
-};
-use crate::{
-    get_bits, personal_info_b2w2, personal_info_bdsp, personal_info_bw, personal_info_g1,
-    personal_info_g2, personal_info_g3, personal_info_g4, personal_info_la, personal_info_oras,
-    personal_info_sm, personal_info_swsh, personal_info_xy, BinLinkerAccessor, PersonalInfo,
-};
+use crate::tables::{MAX_SPECIES_ID_7_USUM, MAX_SPECIES_ID_8_R2};
+
+#[cfg(feature = "gen1")]
+use crate::tables::MAX_SPECIES_ID_1;
+#[cfg(feature = "gen1")]
+use crate::{personal_info_g1};
+
+#[cfg(feature = "gen2")]
+use crate::personal_info_g2;
+
+#[cfg(feature = "gen3")]
+use crate::personal_info_g3;
+#[cfg(feature = "gen3")]
+use crate::tables::MAX_SPECIES_ID_3;
+
+#[cfg(all(feature = "gen4", feature = "gen3"))]
+use crate::personal_info_g4;
+
+#[cfg(all(feature = "gen4", feature = "gen3"))]
+use crate::{get_bits, BinLinkerAccessor};
+
+#[cfg(feature = "gen5")]
+use crate::{personal_info_b2w2, personal_info_bw};
+
+#[cfg(feature = "gen6")]
+use crate::{personal_info_oras, personal_info_xy};
+
+#[cfg(feature = "gen7")]
+use crate::personal_info_sm;
+
+#[cfg(feature = "gen8")]
+use crate::{personal_info_bdsp};
+
+use crate::{personal_info_la, personal_info_swsh, PersonalInfo};
 use lazy_static::lazy_static;
 use std::ops::{Index, IndexMut};
 
@@ -54,33 +90,57 @@ lazy_static! {
         copy_dexit_genders_la(&mut table);
         table
     };
-    pub static ref BDSP: PersonalTable<PersonalInfoBDSP> =
-        PersonalTable::new(PERSONAL_BDSP.to_vec(), GameVersion::BDSP);
     pub static ref SWSH: PersonalTable<PersonalInfoSWSH> = {
         let mut table = PersonalTable::new(PERSONAL_SWSH.to_vec(), GameVersion::SWSH);
         copy_dexit_genders_swsh(&mut table);
         table
     };
-    pub static ref GG: PersonalTable<PersonalInfoGG> =
-        PersonalTable::new(PERSONAL_GG.to_vec(), GameVersion::GG);
     pub static ref USUM: PersonalTable<PersonalInfoSM> =
         PersonalTable::new(PERSONAL_USUM.to_vec(), GameVersion::USUM);
+}
+
+#[cfg(feature = "gen8")]
+lazy_static! {
+    pub static ref BDSP: PersonalTable<PersonalInfoBDSP> =
+        PersonalTable::new(PERSONAL_BDSP.to_vec(), GameVersion::BDSP);
+}
+
+#[cfg(feature = "gen7")]
+lazy_static! {
     pub static ref SM: PersonalTable<PersonalInfoSM> =
         PersonalTable::new(PERSONAL_SM.to_vec(), GameVersion::SM);
+    pub static ref GG: PersonalTable<PersonalInfoGG> =
+        PersonalTable::new(PERSONAL_GG.to_vec(), GameVersion::GG);
+}
+
+#[cfg(feature = "gen6")]
+lazy_static! {
     pub static ref AO: PersonalTable<PersonalInfoORAS> =
         PersonalTable::new(PERSONAL_AO.to_vec(), GameVersion::ORAS);
     pub static ref XY: PersonalTable<PersonalInfoXY> =
         PersonalTable::new(PERSONAL_XY.to_vec(), GameVersion::XY);
+}
+
+#[cfg(feature = "gen5")]
+lazy_static! {
     pub static ref B2W2: PersonalTable<PersonalInfoB2W2> =
         PersonalTable::new(PERSONAL_B2W2.to_vec(), GameVersion::B2W2);
     pub static ref BW: PersonalTable<PersonalInfoBW> =
         PersonalTable::new(PERSONAL_BW.to_vec(), GameVersion::BW);
+}
+
+#[cfg(feature = "gen4")]
+lazy_static! {
     pub static ref HGSS: PersonalTable<PersonalInfoG4> =
         PersonalTable::new(PERSONAL_HGSS.to_vec(), GameVersion::HGSS);
     pub static ref PT: PersonalTable<PersonalInfoG4> =
         PersonalTable::new(PERSONAL_PT.to_vec(), GameVersion::Pt);
     pub static ref DP: PersonalTable<PersonalInfoG4> =
         PersonalTable::new(PERSONAL_DP.to_vec(), GameVersion::DP);
+}
+
+#[cfg(feature = "gen3")]
+lazy_static! {
     pub static ref LG: PersonalTable<PersonalInfoG3> = {
         let mut table = PersonalTable::new(PERSONAL_LG.to_vec(), GameVersion::LG);
         populate_gen_3_tutors(&mut table);
@@ -101,10 +161,18 @@ lazy_static! {
         populate_gen_3_tutors(&mut table);
         table
     };
+}
+
+#[cfg(feature = "gen2")]
+lazy_static! {
     pub static ref GS: PersonalTable<PersonalInfoG2> =
         PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::GS);
     pub static ref C: PersonalTable<PersonalInfoG2> =
         PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::C);
+}
+
+#[cfg(feature = "gen1")]
+lazy_static! {
     pub static ref RB: PersonalTable<PersonalInfoG1> = {
         let mut table = PersonalTable::new(PERSONAL_RB.to_vec(), GameVersion::RB);
         fix_personal_table_g1(&mut table);
@@ -248,12 +316,14 @@ impl<T: PersonalInfo> PersonalTable<T> {
     }
 }
 
+#[cfg(feature = "gen1")]
 fn fix_personal_table_g1(table: &mut PersonalTable<PersonalInfoG1>) {
     for i in (0..=MAX_SPECIES_ID_1).rev() {
         table.table[i].set_gender(GS[i].get_gender())
     }
 }
 
+#[cfg(feature = "gen3")]
 fn populate_gen_3_tutors(table: &mut PersonalTable<PersonalInfoG3>) {
     let machine = BinLinkerAccessor::new(HMTM_G3);
     let tutors = BinLinkerAccessor::new(TUTORS_G3);
@@ -264,6 +334,7 @@ fn populate_gen_3_tutors(table: &mut PersonalTable<PersonalInfoG3>) {
     }
 }
 
+#[cfg(feature = "gen4")]
 fn populate_gen_4_tutors(table: &mut PersonalTable<PersonalInfoG4>) {
     let tutors = BinLinkerAccessor::new(TUTORS_G4);
     for i in 0..tutors.length() {
@@ -301,18 +372,28 @@ fn copy_dexit_genders_la(table: &mut PersonalTable<PersonalInfoLA>) {
 
 fn get_entry_size(version: GameVersion) -> usize {
     match version {
+        #[cfg(feature = "gen1")]
         GameVersion::RB | GameVersion::YW => personal_info_g1::SIZE,
+        #[cfg(feature = "gen2")]
         GameVersion::GS | GameVersion::C => personal_info_g2::SIZE,
+        #[cfg(feature = "gen3")]
         GameVersion::RS | GameVersion::E | GameVersion::FR | GameVersion::LG => {
             personal_info_g3::SIZE
         }
+        #[cfg(feature = "gen4")]
         GameVersion::DP | GameVersion::Pt | GameVersion::HGSS => personal_info_g4::SIZE,
+        #[cfg(feature = "gen5")]
         GameVersion::BW => personal_info_bw::SIZE,
+        #[cfg(feature = "gen5")]
         GameVersion::B2W2 => personal_info_b2w2::SIZE,
+        #[cfg(feature = "gen6")]
         GameVersion::XY => personal_info_xy::SIZE,
+        #[cfg(feature = "gen6")]
         GameVersion::ORAS => personal_info_oras::SIZE,
+        #[cfg(feature = "gen7")]
         GameVersion::SM | GameVersion::USUM | GameVersion::GG => personal_info_sm::SIZE,
         GameVersion::SWSH => personal_info_swsh::SIZE,
+        #[cfg(feature = "gen8")]
         GameVersion::BDSP => personal_info_bdsp::SIZE,
         GameVersion::PLA => personal_info_la::SIZE,
         _ => 0,

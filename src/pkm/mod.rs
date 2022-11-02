@@ -1,29 +1,47 @@
+#[cfg(feature = "gen3")]
 mod ck3;
+#[cfg(feature = "gen8")]
 mod pa8;
+#[cfg(feature = "gen8")]
 mod pb8;
+#[cfg(feature = "gen3")]
 mod pk3;
+#[cfg(feature = "gen5")]
 mod pk5;
+#[cfg(feature = "gen6")]
 mod pk6;
+#[cfg(feature = "gen7")]
 mod pk7;
+#[cfg(feature = "gen8")]
 mod pk8;
 pub mod ribbons;
 mod shared;
 mod strings;
 pub mod traits;
 mod util;
+#[cfg(feature = "gen3")]
 mod xk3;
 
+#[cfg(feature = "gen3")]
 pub use ck3::*;
+#[cfg(feature = "gen8")]
 pub use pa8::*;
+#[cfg(feature = "gen8")]
 pub use pb8::*;
+#[cfg(feature = "gen3")]
 pub use pk3::*;
+#[cfg(feature = "gen5")]
 pub use pk5::*;
+#[cfg(feature = "gen6")]
 pub use pk6::*;
+#[cfg(feature = "gen6")]
 pub use pk7::*;
+#[cfg(feature = "gen8")]
 pub use pk8::*;
 pub use shared::*;
 pub use strings::*;
 pub use util::*;
+#[cfg(feature = "gen3")]
 pub use xk3::*;
 
 use crate::editing::{hidden_power, nature_amp};
@@ -38,12 +56,13 @@ use crate::{
 use rand::{thread_rng, Rng};
 use time::{Date, Month, PrimitiveDateTime, Time};
 
+pub fn extensions() -> Vec<String> {
+    entity_file_extension::get_extensions(pkx::GENERATION)
+}
+
 pub trait PKM<Personal: PersonalInfo + 'static>:
     SpeciesForm + TrainerId + Shiny + LangNick + GameValueLimit + Nature + Into<Vec<u8>> + Clone + Copy
 {
-    fn extensions() -> Vec<String> {
-        entity_file_extension::get_extensions(pkx::GENERATION)
-    }
     fn size_party(&self) -> usize;
     fn size_stored(&self) -> usize;
     fn extension(&self) -> String;
@@ -261,7 +280,7 @@ pub trait PKM<Personal: PersonalInfo + 'static>:
     fn get_ht_name(&self) -> String {
         String::new()
     }
-    fn set_ht_name(&mut self, _name: String) {}
+    fn set_ht_name(&mut self, _name: &str) {}
     fn get_ht_gender(&self) -> u8 {
         0
     }

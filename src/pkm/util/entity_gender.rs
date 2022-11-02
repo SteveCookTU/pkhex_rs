@@ -1,4 +1,6 @@
-use crate::{personal_info, personal_table, PersonalInfo};
+use crate::personal_info;
+#[cfg(feature = "gen3")]
+use crate::{personal_table, PersonalInfo};
 
 pub fn get_from_string(s: &str) -> u8 {
     if s.len() != 1 {
@@ -16,8 +18,9 @@ pub fn get_from_char(c: char) -> u8 {
     }
 }
 
+#[cfg(feature = "gen3")]
 pub fn get_from_pid(species: u16, pid: u32) -> u8 {
-    let gt = personal_table::LA[species as usize].get_gender();
+    let gt = personal_table::RS[species as usize].get_gender();
     get_from_pid_and_ratio(pid, gt)
 }
 

@@ -1,6 +1,8 @@
 use crate::game::GameVersion;
 use crate::tables;
 
+pub(crate) const HIGHEST_GAME_ID: u8 = GameVersion::RB as u8 - 1;
+
 impl GameVersion {
     pub fn get_max_species_id(&self) -> usize {
         if GameVersion::Gen1.contains(self) {

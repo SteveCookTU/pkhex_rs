@@ -49,39 +49,56 @@ use crate::{personal_info_b2w2, personal_info_bw};
 #[cfg(feature = "gen6")]
 use crate::{personal_info_oras, personal_info_xy};
 
-#[cfg(feature = "gen7")]
-use crate::personal_info_sm;
-
 #[cfg(feature = "gen8")]
 use crate::personal_info_bdsp;
 
-use crate::{personal_info_la, personal_info_swsh, PersonalInfo};
+use crate::{personal_info_la, personal_info_sm, personal_info_swsh, PersonalInfo};
 use lazy_static::lazy_static;
 use std::ops::{Index, IndexMut};
 
 const PERSONAL_LA: &[u8] = include_bytes!("../resources/byte/personal/personal_la");
+#[cfg(feature = "gen8")]
 const PERSONAL_BDSP: &[u8] = include_bytes!("../resources/byte/personal/personal_bdsp");
 const PERSONAL_SWSH: &[u8] = include_bytes!("../resources/byte/personal/personal_swsh");
+#[cfg(feature = "gen7")]
 const PERSONAL_GG: &[u8] = include_bytes!("../resources/byte/personal/personal_gg");
 const PERSONAL_USUM: &[u8] = include_bytes!("../resources/byte/personal/personal_uu");
+#[cfg(feature = "gen7")]
 const PERSONAL_SM: &[u8] = include_bytes!("../resources/byte/personal/personal_sm");
+#[cfg(feature = "gen6")]
 const PERSONAL_AO: &[u8] = include_bytes!("../resources/byte/personal/personal_ao");
+#[cfg(feature = "gen6")]
 const PERSONAL_XY: &[u8] = include_bytes!("../resources/byte/personal/personal_xy");
+#[cfg(feature = "gen5")]
 const PERSONAL_B2W2: &[u8] = include_bytes!("../resources/byte/personal/personal_b2w2");
+#[cfg(feature = "gen5")]
 const PERSONAL_BW: &[u8] = include_bytes!("../resources/byte/personal/personal_bw");
+#[cfg(feature = "gen4")]
 const PERSONAL_HGSS: &[u8] = include_bytes!("../resources/byte/personal/personal_hgss");
+#[cfg(feature = "gen4")]
 const PERSONAL_PT: &[u8] = include_bytes!("../resources/byte/personal/personal_pt");
+#[cfg(feature = "gen4")]
 const PERSONAL_DP: &[u8] = include_bytes!("../resources/byte/personal/personal_dp");
+#[cfg(feature = "gen3")]
 const PERSONAL_LG: &[u8] = include_bytes!("../resources/byte/personal/personal_lg");
+#[cfg(feature = "gen3")]
 const PERSONAL_FR: &[u8] = include_bytes!("../resources/byte/personal/personal_fr");
+#[cfg(feature = "gen3")]
 const PERSONAL_E: &[u8] = include_bytes!("../resources/byte/personal/personal_e");
+#[cfg(feature = "gen3")]
 const PERSONAL_RS: &[u8] = include_bytes!("../resources/byte/personal/personal_rs");
+#[cfg(any(feature = "gen1", feature = "gen2"))]
 const PERSONAL_C_GS: &[u8] = include_bytes!("../resources/byte/personal/personal_c");
+#[cfg(feature = "gen1")]
 const PERSONAL_RB: &[u8] = include_bytes!("../resources/byte/personal/personal_rb");
+#[cfg(feature = "gen1")]
 const PERSONAL_Y: &[u8] = include_bytes!("../resources/byte/personal/personal_y");
 
+#[cfg(feature = "gen3")]
 const HMTM_G3: &[u8] = include_bytes!("../resources/byte/personal/hmtm_g3.pkl");
+#[cfg(feature = "gen3")]
 const TUTORS_G3: &[u8] = include_bytes!("../resources/byte/personal/tutors_g3.pkl");
+#[cfg(feature = "gen4")]
 const TUTORS_G4: &[u8] = include_bytes!("../resources/byte/personal/tutors_g4.pkl");
 
 lazy_static! {
@@ -163,16 +180,12 @@ lazy_static! {
     };
 }
 
-#[cfg(feature = "gen2")]
-lazy_static! {
-    pub static ref C: PersonalTable<PersonalInfoG2> =
-        PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::C);
-}
-
 #[cfg(any(feature = "gen1", feature = "gen2"))]
 lazy_static! {
     pub static ref GS: PersonalTable<PersonalInfoG2> =
         PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::GS);
+    pub static ref C: PersonalTable<PersonalInfoG2> =
+        PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::C);
 }
 
 #[cfg(feature = "gen1")]

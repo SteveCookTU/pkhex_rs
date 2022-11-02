@@ -394,7 +394,6 @@ fn get_entry_size(version: GameVersion) -> usize {
         GameVersion::XY => personal_info_xy::SIZE,
         #[cfg(feature = "gen6")]
         GameVersion::ORAS => personal_info_oras::SIZE,
-        #[cfg(feature = "gen7")]
         GameVersion::SM | GameVersion::USUM | GameVersion::GG => personal_info_sm::SIZE,
         GameVersion::SWSH => personal_info_swsh::SIZE,
         #[cfg(feature = "gen8")]

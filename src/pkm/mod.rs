@@ -34,7 +34,7 @@ pub use pk3::*;
 pub use pk5::*;
 #[cfg(feature = "gen6")]
 pub use pk6::*;
-#[cfg(feature = "gen6")]
+#[cfg(feature = "gen7")]
 pub use pk7::*;
 #[cfg(feature = "gen8")]
 pub use pk8::*;

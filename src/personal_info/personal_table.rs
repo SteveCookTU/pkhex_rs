@@ -7,7 +7,7 @@ use crate::personal_info_bdsp::PersonalInfoBDSP;
 use crate::personal_info_bw::PersonalInfoBW;
 #[cfg(feature = "gen1")]
 use crate::personal_info_g1::PersonalInfoG1;
-#[cfg(feature = "gen2")]
+#[cfg(any(feature = "gen2", feature = "gen1"))]
 use crate::personal_info_g2::PersonalInfoG2;
 #[cfg(feature = "gen3")]
 use crate::personal_info_g3::PersonalInfoG3;
@@ -25,11 +25,11 @@ use crate::personal_info_xy::PersonalInfoXY;
 use crate::tables::{MAX_SPECIES_ID_7_USUM, MAX_SPECIES_ID_8_R2};
 
 #[cfg(feature = "gen1")]
-use crate::tables::MAX_SPECIES_ID_1;
+use crate::personal_info_g1;
 #[cfg(feature = "gen1")]
-use crate::{personal_info_g1};
+use crate::tables::MAX_SPECIES_ID_1;
 
-#[cfg(feature = "gen2")]
+#[cfg(any(feature = "gen2"))]
 use crate::personal_info_g2;
 
 #[cfg(feature = "gen3")]
@@ -37,10 +37,10 @@ use crate::personal_info_g3;
 #[cfg(feature = "gen3")]
 use crate::tables::MAX_SPECIES_ID_3;
 
-#[cfg(all(feature = "gen4", feature = "gen3"))]
+#[cfg(feature = "gen4")]
 use crate::personal_info_g4;
 
-#[cfg(all(feature = "gen4", feature = "gen3"))]
+#[cfg(any(feature = "gen4", feature = "gen3"))]
 use crate::{get_bits, BinLinkerAccessor};
 
 #[cfg(feature = "gen5")]
@@ -53,7 +53,7 @@ use crate::{personal_info_oras, personal_info_xy};
 use crate::personal_info_sm;
 
 #[cfg(feature = "gen8")]
-use crate::{personal_info_bdsp};
+use crate::personal_info_bdsp;
 
 use crate::{personal_info_la, personal_info_swsh, PersonalInfo};
 use lazy_static::lazy_static;
@@ -165,10 +165,14 @@ lazy_static! {
 
 #[cfg(feature = "gen2")]
 lazy_static! {
-    pub static ref GS: PersonalTable<PersonalInfoG2> =
-        PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::GS);
     pub static ref C: PersonalTable<PersonalInfoG2> =
         PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::C);
+}
+
+#[cfg(any(feature = "gen1", feature = "gen2"))]
+lazy_static! {
+    pub static ref GS: PersonalTable<PersonalInfoG2> =
+        PersonalTable::new(PERSONAL_C_GS.to_vec(), GameVersion::GS);
 }
 
 #[cfg(feature = "gen1")]

@@ -5,9 +5,9 @@ pub mod personal_info_bdsp;
 pub mod personal_info_bw;
 #[cfg(feature = "gen1")]
 pub mod personal_info_g1;
-#[cfg(feature = "gen2")]
+#[cfg(any(feature = "gen2", feature = "gen1"))]
 pub mod personal_info_g2;
-#[cfg(feature = "gen3")]
+#[cfg(any(feature = "gen3", feature = "gen4"))]
 pub mod personal_info_g3;
 #[cfg(feature = "gen4")]
 pub mod personal_info_g4;

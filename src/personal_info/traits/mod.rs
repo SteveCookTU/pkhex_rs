@@ -1,21 +1,21 @@
 mod base_stat;
 mod effort_value_yield;
-mod gender_detail;
+pub mod gender_detail;
 mod personal_ability;
 mod personal_egg;
 mod personal_encounter;
 mod personal_form_info;
-mod personal_info;
+pub mod personal_info;
 mod personal_misc;
+mod personal_table;
 mod personal_type;
 
 pub use base_stat::*;
 pub use effort_value_yield::*;
-pub use gender_detail::*;
 pub use personal_ability::*;
 pub use personal_egg::*;
 pub use personal_encounter::*;
 pub use personal_form_info::*;
-pub use personal_info::*;
 pub use personal_misc::*;
+pub use personal_table::*;
 pub use personal_type::*;

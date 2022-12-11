@@ -1,6 +1,6 @@
 use crate::{PKError, PKResult};
 
-pub trait BaseState {
+pub trait BaseStat {
     fn hp(&self) -> u16;
     fn atk(&self) -> u16;
     fn def(&self) -> u16;

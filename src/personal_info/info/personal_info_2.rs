@@ -98,7 +98,7 @@ impl GenderDetail for PersonalInfo2<'_> {
 
 impl PersonalFormInfo for PersonalInfo2<'_> {
     fn form_count(&self) -> u8 {
-        0
+        1
     }
 
     fn form_stats_index(&self) -> Option<usize> {

@@ -1,5 +1,5 @@
-use std::ops::Index;
 use crate::personal_info::traits::personal_info::PersonalInfo;
+use std::ops::Index;
 
 pub trait PersonalTable:
     Index<usize, Output = Self::PersonalInfoInner> + Index<(u16, u8), Output = Self::PersonalInfoInner>

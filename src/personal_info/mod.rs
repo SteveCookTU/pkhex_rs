@@ -89,3 +89,9 @@ const PERSONAL_B2W2: &[u8] = include_bytes!("../resources/personal/personal_b2w2
 lazy_static! {
     pub static ref B2W2: PersonalTable5B2BW<'static> = PersonalTable5B2BW::new(PERSONAL_B2W2);
 }
+
+const PERSONAL_XY: &[u8] = include_bytes!("../resources/personal/personal_xy");
+
+lazy_static! {
+    pub static ref XY: PersonalTable6XY<'static> = PersonalTable6XY::new(PERSONAL_XY);
+}

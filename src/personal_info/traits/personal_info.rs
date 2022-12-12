@@ -1,5 +1,5 @@
-use crate::traits::gender_detail::GenderDetail;
-use crate::traits::{
+use crate::personal_info::traits::gender_detail::GenderDetail;
+use crate::personal_info::traits::{
     BaseStat, EffortValueYield, PersonalAbility, PersonalEgg, PersonalEncounter, PersonalFormInfo,
     PersonalMisc, PersonalType,
 };
@@ -15,24 +15,22 @@ pub trait PersonalInfo:
     + PersonalType
     + PersonalMisc
 {
-    fn write(&self) -> Vec<u8>;
-
     fn exp_growth(&self) -> u8;
 
-    fn tmhm(&self) -> Vec<bool> {
-        vec![]
+    fn tmhm(&self) -> &[bool] {
+        &[]
     }
 
     fn set_tmhm(&mut self, _bits: Vec<bool>) {}
 
-    fn type_tutors(&self) -> Vec<bool> {
-        vec![]
+    fn type_tutors(&self) -> &[bool] {
+        &[]
     }
 
     fn set_type_tutors(&mut self, _bits: Vec<bool>) {}
 
-    fn special_tutors(&self) -> Vec<Vec<bool>> {
-        vec![]
+    fn special_tutors(&self) -> &[Vec<bool>] {
+        &[]
     }
 
     fn add_tmhm(&mut self, data: &[u8]) {
@@ -51,9 +49,3 @@ pub(crate) fn get_bits(data: &[u8]) -> Vec<bool> {
     }
     result
 }
-
-// pub(crate) fn set_bits(bits: &[bool], data: &mut [u8]) {
-//     for i in (0..bits.len()).rev() {
-//         data[i >> 3] |= if bits[i] { 1 << (i & 7) } else { 0 };
-//     }
-// }

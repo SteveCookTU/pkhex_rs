@@ -1,6 +1,5 @@
 mod error;
-mod personal_info;
-
-pub use personal_info::*;
+pub mod legality;
+pub mod personal_info;
 
 pub use error::*;

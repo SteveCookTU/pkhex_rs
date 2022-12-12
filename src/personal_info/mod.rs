@@ -77,3 +77,15 @@ lazy_static! {
         tables
     };
 }
+
+const PERSONAL_BW: &[u8] = include_bytes!("../resources/personal/personal_bw");
+
+lazy_static! {
+    pub static ref BW: PersonalTable5BW<'static> = PersonalTable5BW::new(PERSONAL_BW);
+}
+
+const PERSONAL_B2W2: &[u8] = include_bytes!("../resources/personal/personal_b2w2");
+
+lazy_static! {
+    pub static ref B2W2: PersonalTable5B2BW<'static> = PersonalTable5B2BW::new(PERSONAL_B2W2);
+}

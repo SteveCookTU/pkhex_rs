@@ -135,8 +135,8 @@ impl PersonalEgg for PersonalInfo1<'_> {
 }
 
 impl PersonalEncounter for PersonalInfo1<'_> {
-    fn base_exp(&self) -> u8 {
-        self.data.default_read_le(9)
+    fn base_exp(&self) -> u16 {
+        self.data.default_read_le::<u8>(9) as u16
     }
 
     fn hatch_cycles(&self) -> u8 {
@@ -175,11 +175,11 @@ impl PersonalMisc for PersonalInfo1<'_> {
         0
     }
 
-    fn height(&self) -> u8 {
+    fn height(&self) -> u16 {
         0
     }
 
-    fn weight(&self) -> u8 {
+    fn weight(&self) -> u16 {
         0
     }
 }

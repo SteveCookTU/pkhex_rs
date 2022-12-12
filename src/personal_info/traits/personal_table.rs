@@ -1,9 +1,10 @@
 use std::ops::Index;
+use crate::personal_info::traits::personal_info::PersonalInfo;
 
 pub trait PersonalTable:
     Index<usize, Output = Self::PersonalInfoInner> + Index<(u16, u8), Output = Self::PersonalInfoInner>
 {
-    type PersonalInfoInner;
+    type PersonalInfoInner: PersonalInfo;
 
     fn max_species_id(&self) -> u16;
     fn get_form_index(&self, species: u16, form: u8) -> usize;

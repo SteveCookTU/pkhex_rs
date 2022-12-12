@@ -61,3 +61,19 @@ lazy_static! {
         table
     };
 }
+
+const PERSONAL_DP: &[u8] = include_bytes!("../resources/personal/personal_dp");
+const PERSONAL_PT: &[u8] = include_bytes!("../resources/personal/personal_pt");
+const PERSONAL_HGSS: &[u8] = include_bytes!("../resources/personal/personal_hgss");
+const TUTORS_G4: &[u8] = include_bytes!("../resources/personal/tutors_g4.pkl");
+
+lazy_static! {
+    pub static ref DP: PersonalTable4<'static> = PersonalTable4::new(PERSONAL_DP);
+    pub static ref PT: PersonalTable4<'static> = PersonalTable4::new(PERSONAL_PT);
+    pub static ref HGSS: PersonalTable4<'static> = {
+        let mut tables = PersonalTable4::new(PERSONAL_HGSS);
+        let tutors = BinLinkerAccessor::new(TUTORS_G4);
+        tables.load_tables(tutors);
+        tables
+    };
+}

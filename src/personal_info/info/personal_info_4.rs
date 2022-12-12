@@ -1,29 +1,28 @@
 use crate::personal_info::traits::gender_detail::GenderDetail;
-use crate::personal_info::traits::personal_info::PersonalInfo;
+use crate::personal_info::traits::personal_info::{get_bits, PersonalInfo};
 use crate::personal_info::traits::{
     BaseStat, EffortValueYield, PersonalAbility, PersonalAbility12, PersonalEgg, PersonalEncounter,
     PersonalFormInfo, PersonalMisc, PersonalType,
 };
 use no_std_io::Reader;
 
-pub struct PersonalInfo3<'a> {
+pub struct PersonalInfo4<'a> {
     data: &'a [u8],
     tmhm: Vec<bool>,
     type_tutors: Vec<bool>,
 }
 
-impl<'a> PersonalInfo3<'a> {
-    pub const SIZE: usize = 0x1C;
+impl<'a> PersonalInfo4<'a> {
+    pub const SIZE: usize = 0x2C;
 
-    pub fn new(data: &'a [u8]) -> PersonalInfo3<'a> {
+    pub fn new(data: &'a [u8]) -> PersonalInfo4<'a> {
         Self {
             data,
-            tmhm: vec![],
+            tmhm: get_bits(&data[0x1C..0x29]),
             type_tutors: vec![],
         }
     }
 
-    #[inline]
     fn ev_yield(&self) -> u16 {
         self.data.default_read_le(0xA)
     }
@@ -37,7 +36,7 @@ impl<'a> PersonalInfo3<'a> {
     }
 
     pub fn no_flip(&self) -> bool {
-        (self.data.default_read_le::<u8>(0x19) >> 7) == 1
+        (self.data.default_read_le::<u8>(0x14) >> 7) == 1
     }
 
     pub fn get_ability(&self, second: bool) -> u16 {
@@ -49,7 +48,7 @@ impl<'a> PersonalInfo3<'a> {
     }
 }
 
-impl BaseStat for PersonalInfo3<'_> {
+impl BaseStat for PersonalInfo4<'_> {
     fn hp(&self) -> u8 {
         self.data.default_read_le(0)
     }
@@ -75,7 +74,7 @@ impl BaseStat for PersonalInfo3<'_> {
     }
 }
 
-impl EffortValueYield for PersonalInfo3<'_> {
+impl EffortValueYield for PersonalInfo4<'_> {
     fn ev_hp(&self) -> u8 {
         (self.ev_yield() & 0x3) as u8
     }
@@ -101,23 +100,23 @@ impl EffortValueYield for PersonalInfo3<'_> {
     }
 }
 
-impl GenderDetail for PersonalInfo3<'_> {
+impl GenderDetail for PersonalInfo4<'_> {
     fn gender(&self) -> u8 {
         self.data.default_read_le(0x10)
     }
 }
 
-impl PersonalFormInfo for PersonalInfo3<'_> {
+impl PersonalFormInfo for PersonalInfo4<'_> {
     fn form_count(&self) -> u8 {
-        1
+        self.data.default_read_le(0x29)
     }
 
     fn form_stats_index(&self) -> Option<usize> {
-        None
+        Some(self.data.default_read_le::<u16>(0x2A) as usize)
     }
 }
 
-impl PersonalAbility for PersonalInfo3<'_> {
+impl PersonalAbility for PersonalInfo4<'_> {
     fn get_index_of_ability(&self, ability_id: u16) -> Option<usize> {
         if ability_id == self.ability_1() {
             Some(0)
@@ -141,7 +140,7 @@ impl PersonalAbility for PersonalInfo3<'_> {
     }
 }
 
-impl PersonalAbility12 for PersonalInfo3<'_> {
+impl PersonalAbility12 for PersonalInfo4<'_> {
     fn ability_1(&self) -> u16 {
         self.data.default_read_le::<u8>(0x16) as u16
     }
@@ -151,7 +150,7 @@ impl PersonalAbility12 for PersonalInfo3<'_> {
     }
 }
 
-impl PersonalEgg for PersonalInfo3<'_> {
+impl PersonalEgg for PersonalInfo4<'_> {
     fn egg_group_1(&self) -> u8 {
         self.data.default_read_le(0x14)
     }
@@ -161,7 +160,7 @@ impl PersonalEgg for PersonalInfo3<'_> {
     }
 }
 
-impl PersonalEncounter for PersonalInfo3<'_> {
+impl PersonalEncounter for PersonalInfo4<'_> {
     fn base_exp(&self) -> u8 {
         self.data.default_read_le(9)
     }
@@ -183,7 +182,7 @@ impl PersonalEncounter for PersonalInfo3<'_> {
     }
 }
 
-impl PersonalType for PersonalInfo3<'_> {
+impl PersonalType for PersonalInfo4<'_> {
     fn type_1(&self) -> u8 {
         self.data.default_read_le(6)
     }
@@ -193,7 +192,7 @@ impl PersonalType for PersonalInfo3<'_> {
     }
 }
 
-impl PersonalMisc for PersonalInfo3<'_> {
+impl PersonalMisc for PersonalInfo4<'_> {
     fn evo_stage(&self) -> u8 {
         0
     }
@@ -211,7 +210,7 @@ impl PersonalMisc for PersonalInfo3<'_> {
     }
 }
 
-impl PersonalInfo for PersonalInfo3<'_> {
+impl PersonalInfo for PersonalInfo4<'_> {
     fn exp_growth(&self) -> u8 {
         self.data.default_read_le(0x13)
     }

@@ -1,6 +1,7 @@
 pub mod tables1;
 pub mod tables2;
 pub mod tables3;
+pub mod tables4;
 
 const fn get_permit_list<const SIZE: usize>(allowed: &[u16]) -> [bool; SIZE] {
     let mut result = [false; SIZE];

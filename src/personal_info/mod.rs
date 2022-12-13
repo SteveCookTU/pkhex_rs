@@ -106,3 +106,9 @@ lazy_static! {
         PersonalTable7::new(PERSONAL_USUM, legality::tables7::MAX_SPECIES_ID_7_USUM);
     pub static ref GG: PersonalTable7GG<'static> = PersonalTable7GG::new(PERSONAL_GG);
 }
+
+const PERSONAL_SWSH: &[u8] = include_bytes!("../resources/personal/personal_swsh");
+
+lazy_static! {
+    pub static ref SWSH: PersonalTable8SWSH<'static> = PersonalTable8SWSH::new(PERSONAL_SWSH);
+}

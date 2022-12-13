@@ -116,3 +116,9 @@ lazy_static! {
     pub static ref BDSP: PersonalTable8BDSP<'static> = PersonalTable8BDSP::new(PERSONAL_BDSP);
     pub static ref LA: PersonalTable8LA<'static> = PersonalTable8LA::new(PERSONAL_LA);
 }
+
+const PERSONAL_SV: &[u8] = include_bytes!("../resources/personal/personal_sv");
+
+lazy_static! {
+    pub static ref SV: PersonalTable9SV<'static> = PersonalTable9SV::new(PERSONAL_SV);
+}

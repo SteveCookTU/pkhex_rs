@@ -11,6 +11,7 @@ mod personal_info_7_gg;
 mod personal_info_8_bdsp;
 mod personal_info_8_la;
 mod personal_info_8_swsh;
+mod personal_info_9_sv;
 
 pub use personal_info_1::*;
 pub use personal_info_2::*;
@@ -25,3 +26,4 @@ pub use personal_info_7_gg::*;
 pub use personal_info_8_bdsp::*;
 pub use personal_info_8_la::*;
 pub use personal_info_8_swsh::*;
+pub use personal_info_9_sv::*;

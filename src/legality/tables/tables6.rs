@@ -104,12 +104,12 @@ pub(crate) const POUCH_BERRY_XY: [u16; 67] = [
     206, 207, 208, 209, 210, 211, 212, 686, 687, 688,
 ];
 
-pub(crate) const HELD_ITEM_XY: [u16; POUCH_ITEMS_XY.len()
+pub(crate) const HELD_ITEMS_XY: [u16; POUCH_ITEMS_XY.len()
     + POUCH_MEDICINE_XY.len()
     + POUCH_BERRY_XY.len()] =
     array_util::concat_all(&[&POUCH_ITEMS_XY, &POUCH_MEDICINE_XY, &POUCH_BERRY_XY], 0);
 
-pub(crate) const HELD_ITEM_AO: [u16; POUCH_ITEMS_AO.len()
+pub(crate) const HELD_ITEMS_AO: [u16; POUCH_ITEMS_AO.len()
     + POUCH_MEDICINE_AO.len()
     + POUCH_BERRY_XY.len()] =
     array_util::concat_all(&[&POUCH_ITEMS_AO, &POUCH_MEDICINE_AO, &POUCH_BERRY_XY], 0);
@@ -134,7 +134,7 @@ pub(crate) const VALID_MET_AO: [u16; 92] = [
 
 pub(crate) const RELEASED_HELD_ITEMS_6: [bool; (MAX_ITEM_ID_6_AO + 1) as usize] =
     get_permit_list_disallowed(
-        &HELD_ITEM_AO,
+        &HELD_ITEMS_AO,
         &[
             5, 16, 492, 493, 494, 495, 496, 497, 498, 499, 500, 548, 549, 550, 551, 552, 553, 554,
             555, 556, 557, 558, 559, 560, 561, 562, 563, 576, 584, 585, 587, 588, 589, 590, 715,

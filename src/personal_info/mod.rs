@@ -2,6 +2,7 @@ mod info;
 mod table;
 pub mod traits;
 
+use crate::legality;
 pub use info::*;
 use lazy_static::lazy_static;
 pub use table::*;
@@ -92,4 +93,16 @@ const PERSONAL_AO: &[u8] = include_bytes!("../resources/personal/personal_ao");
 lazy_static! {
     pub static ref XY: PersonalTable6XY<'static> = PersonalTable6XY::new(PERSONAL_XY);
     pub static ref AO: PersonalTable6AO<'static> = PersonalTable6AO::new(PERSONAL_AO);
+}
+
+const PERSONAL_SM: &[u8] = include_bytes!("../resources/personal/personal_sm");
+const PERSONAL_USUM: &[u8] = include_bytes!("../resources/personal/personal_uu");
+const PERSONAL_GG: &[u8] = include_bytes!("../resources/personal/personal_gg");
+
+lazy_static! {
+    pub static ref SM: PersonalTable7<'static> =
+        PersonalTable7::new(PERSONAL_SM, legality::tables7::MAX_SPECIES_ID_7);
+    pub static ref USUM: PersonalTable7<'static> =
+        PersonalTable7::new(PERSONAL_USUM, legality::tables7::MAX_SPECIES_ID_7_USUM);
+    pub static ref GG: PersonalTable7GG<'static> = PersonalTable7GG::new(PERSONAL_GG);
 }

@@ -6,6 +6,8 @@ mod personal_table_5_b2w2;
 mod personal_table_5_bw;
 mod personal_table_6_ao;
 mod personal_table_6_xy;
+mod personal_table_7;
+mod personal_table_7_gg;
 
 pub use personal_table_1::*;
 pub use personal_table_2::*;
@@ -15,3 +17,5 @@ pub use personal_table_5_b2w2::*;
 pub use personal_table_5_bw::*;
 pub use personal_table_6_ao::*;
 pub use personal_table_6_xy::*;
+pub use personal_table_7::*;
+pub use personal_table_7_gg::*;

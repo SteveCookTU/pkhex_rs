@@ -10,3 +10,4 @@ snafu = "0.7.3"
 rand = "0.8.5"
 no_std_io = { git = "https://github.com/zaksabeast/no_std_io.git", rev = "4bc5adf"}
 lazy_static = "1.4.0"
+num_enum = "0.5.7"

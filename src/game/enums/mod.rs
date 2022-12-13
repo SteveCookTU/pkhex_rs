@@ -1,11 +1,25 @@
 mod ability;
 mod ball;
 mod game_version;
+mod gc_version;
+mod gender;
+mod language_gc;
+mod language_id;
+mod move_type;
 mod moves;
+mod nature;
+mod region_3ds_index;
 mod species;
 
 pub use ability::*;
 pub use ball::*;
 pub use game_version::*;
+pub use gc_version::*;
+pub use gender::*;
+pub use language_gc::*;
+pub use language_id::*;
+pub use move_type::*;
 pub use moves::*;
+pub use nature::*;
+pub use region_3ds_index::*;
 pub use species::*;

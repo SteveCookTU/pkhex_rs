@@ -118,6 +118,10 @@ impl<'a> PersonalInfo8SWSH<'a> {
             self.local_form_index()
         }
     }
+
+    pub fn is_in_dex(&self) -> bool {
+        self.pokedex_index() != 0 || self.armor_dex_index() != 0 || self.crown_dex_index() != 0
+    }
 }
 
 impl BaseStat for PersonalInfo8SWSH<'_> {

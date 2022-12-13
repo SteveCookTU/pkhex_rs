@@ -2,6 +2,7 @@
 
 use crate::array_util;
 use crate::game::enums::{Ability, Ball, GameVersion, Move, Species};
+use crate::legality::tables::get_permit_list_disallowed;
 
 pub(crate) const MAX_SPECIES_ID_9: u16 = Species::Annihilape as u16;
 pub(crate) const MAX_MOVE_ID_9: u16 = Move::MagicalTorque as u16;
@@ -122,3 +123,76 @@ pub(crate) const HELD_ITEMS_SV: [u16; POUCH_MEDICINE_SV.len()
     ],
     0,
 );
+
+#[allow(clippy::zero_prefixed_literal)]
+pub(crate) const VALID_MET_SV: [u16; 56] = [
+    006, 010, 012, 014, 016, 018, 020, 022, 024, 026, 028, 030, 032, 034, 036, 038, 040, 044, 046,
+    048, 050, 052, 056, 058, 060, 062, 064, 067, 069, 070, 072, 076, 078, 080, 082, 084, 086, 088,
+    090, 092, 094, 096, 099, 101, 103, 105, 107, 109, 111, 113, 115, 117, 118, 124, 130, 131,
+];
+
+pub fn is_valid_egg_hatch_location_9(location: u16, version: GameVersion) -> bool {
+    if (version == GameVersion::SL && location == 131)
+        || (version == GameVersion::VL && location == 130)
+    {
+        false
+    } else {
+        VALID_MET_SV.contains(&location)
+    }
+}
+
+pub(crate) const RELEASED_HELD_ITEMS_9: [bool; (MAX_ITEM_ID_9 + 1) as usize] =
+    get_permit_list_disallowed(
+        &HELD_ITEMS_SV,
+        &[
+            5,    // Safari Ball
+            16,   // Cherish Ball
+            499,  // Sport Ball
+            500,  // Park Ball
+            1785, // Strange Ball
+            208,  // Enigma Berry
+            209,  // Micle Berry
+            210,  // Custap Berry
+            211,  // Jaboca Berry
+            212,  // Rowap Berry
+            111,  // Odd Keystone
+            485,  // Red Apricorn
+            486,  // Blue Apricorn
+            487,  // Yellow Apricorn
+            488,  // Green Apricorn
+            489,  // Pink Apricorn
+            490,  // White Apricorn
+            491,  // Black Apricorn
+            708,  // Lumiose Galette
+            709,  // Shalour Sable
+            // Porto Marinada specialty auctioneer, locked behind HOME in 2023.
+            112,  // Griseous Orb
+            135,  // Adamant Orb
+            136,  // Lustrous Orb
+            298,  // Flame Plate
+            299,  // Splash Plate
+            300,  // Zap Plate
+            301,  // Meadow Plate
+            302,  // Icicle Plate
+            303,  // Fist Plate
+            304,  // Toxic Plate
+            305,  // Earth Plate
+            306,  // Sky Plate
+            307,  // Mind Plate
+            308,  // Insect Plate
+            309,  // Stone Plate
+            310,  // Spooky Plate
+            311,  // Draco Plate
+            312,  // Dread Plate
+            313,  // Iron Plate
+            644,  // Pixie Plate
+            1103, // Rusted Sword
+            1104, // Rusted Shield
+            1777, // Adamant Crystal
+            1778, // Lustrous Globe
+            1779, // Griseous Core
+            1582, // Galarica Cuff
+            1592, // Galarica Wreath
+            1230, // TM00 - Mega Punch (Nothing learns, not obtainable even though it is assigned a move.)
+        ],
+    );

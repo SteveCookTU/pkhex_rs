@@ -125,3 +125,56 @@ pub(crate) const RELEASED_HELD_ITEMS_8B: [bool; (MAX_ITEM_ID_8B + 1) as usize] =
             1821, // Distortion Slate
         ],
     );
+
+const MAX_VALID_HATCH_LOCATION_8B: u16 = 657;
+
+fn is_valid_egg_hatch_location_8b(location: u16, version: GameVersion) -> bool {
+    if location > MAX_VALID_HATCH_LOCATION_8B || LOCATIONS_NO_HATCH_BDSP.contains(&location) {
+        false
+    } else {
+        let table = if version == GameVersion::BD {
+            &LOCATIONS_EXCLUSIVE_SP
+        } else {
+            &LOCATIONS_EXCLUSIVE_BD
+        };
+        !table.contains(&location)
+    }
+}
+
+const LOCATIONS_EXCLUSIVE_BD: [u16; 6] = [
+    216, // Spear Pillar
+    218, // Hall of Origin
+    498, // Ramanas Park (Johto Room)
+    503, // Ramanas Park (Rainbow Room)
+    650, // Ramanas Park (Johto Room)
+    655, // Ramanas Park (Rainbow Room)
+];
+
+const LOCATIONS_EXCLUSIVE_SP: [u16; 6] = [
+    217, // Spear Pillar
+    497, // Ramanas Park (Kanto Room)
+    504, // Ramanas Park (Squall Room)
+    618, // Hall of Origin
+    649, // Ramanas Park (Kanto Room)
+    656, // Ramanas Park (Squall Room)
+];
+
+const LOCATIONS_NO_HATCH_BDSP: [u16; 54] = [
+    94, 103, 107, // Hearthome City
+    154, 155, 158, // Sunyshore City
+    181, 182, 183, // Pokémon League
+    329, // Lake Acuity
+    337, 338, // Battle Park
+    339, 340, 341, 342, 343, 344, // Battle Tower
+    345, 353, 421, // Mystery Zone
+    474, // Resort Area
+    483, 484, // Mystery Zone
+    491, 492, 493, // Mystery Zone
+    495, // Ramanas Park
+    620, 621, 622, 623, // Grand Underground (Secret Base)
+    625, // Sea (sailing animation)
+    627, 628, 629, 630, 631, 632, // Grand Underground (Secret Base)
+    633, 634, 635, 636, 637, 638, // Grand Underground (Secret Base)
+    639, 640, 641, 642, 643, 644, // Grand Underground (Secret Base)
+    645, 646, 647, // Grand Underground (Secret Base)
+];

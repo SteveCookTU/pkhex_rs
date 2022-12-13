@@ -79,19 +79,17 @@ lazy_static! {
 }
 
 const PERSONAL_BW: &[u8] = include_bytes!("../resources/personal/personal_bw");
-
-lazy_static! {
-    pub static ref BW: PersonalTable5BW<'static> = PersonalTable5BW::new(PERSONAL_BW);
-}
-
 const PERSONAL_B2W2: &[u8] = include_bytes!("../resources/personal/personal_b2w2");
 
 lazy_static! {
+    pub static ref BW: PersonalTable5BW<'static> = PersonalTable5BW::new(PERSONAL_BW);
     pub static ref B2W2: PersonalTable5B2BW<'static> = PersonalTable5B2BW::new(PERSONAL_B2W2);
 }
 
 const PERSONAL_XY: &[u8] = include_bytes!("../resources/personal/personal_xy");
+const PERSONAL_AO: &[u8] = include_bytes!("../resources/personal/personal_ao");
 
 lazy_static! {
     pub static ref XY: PersonalTable6XY<'static> = PersonalTable6XY::new(PERSONAL_XY);
+    pub static ref AO: PersonalTable6AO<'static> = PersonalTable6AO::new(PERSONAL_AO);
 }

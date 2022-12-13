@@ -8,6 +8,7 @@ mod personal_table_6_ao;
 mod personal_table_6_xy;
 mod personal_table_7;
 mod personal_table_7_gg;
+mod personal_table_8_bdsp;
 mod personal_table_8_swsh;
 
 pub use personal_table_1::*;
@@ -20,4 +21,5 @@ pub use personal_table_6_ao::*;
 pub use personal_table_6_xy::*;
 pub use personal_table_7::*;
 pub use personal_table_7_gg::*;
+pub use personal_table_8_bdsp::*;
 pub use personal_table_8_swsh::*;

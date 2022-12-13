@@ -108,7 +108,9 @@ lazy_static! {
 }
 
 const PERSONAL_SWSH: &[u8] = include_bytes!("../resources/personal/personal_swsh");
+const PERSONAL_BDSP: &[u8] = include_bytes!("../resources/personal/personal_bdsp");
 
 lazy_static! {
     pub static ref SWSH: PersonalTable8SWSH<'static> = PersonalTable8SWSH::new(PERSONAL_SWSH);
+    pub static ref BDSP: PersonalTable8BDSP<'static> = PersonalTable8BDSP::new(PERSONAL_BDSP);
 }

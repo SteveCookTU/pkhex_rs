@@ -9,28 +9,28 @@ pub use table::*;
 
 use crate::legality::BinLinkerAccessor;
 
-const PERSONAL_Y: &[u8] = include_bytes!("../resources/byte/personal/personal_y");
-const PERSONAL_RB: &[u8] = include_bytes!("../resources/byte/personal/personal_rb");
+const PERSONAL_Y: &[u8] = include_bytes!("../../resources/byte/personal/personal_y");
+const PERSONAL_RB: &[u8] = include_bytes!("../../resources/byte/personal/personal_rb");
 
 lazy_static! {
     pub static ref Y: PersonalTable1<'static> = PersonalTable1::new(PERSONAL_Y);
     pub static ref RB: PersonalTable1<'static> = PersonalTable1::new(PERSONAL_RB);
 }
 
-const PERSONAL_GS: &[u8] = include_bytes!("../resources/byte/personal/personal_gs");
-const PERSONAL_C: &[u8] = include_bytes!("../resources/byte/personal/personal_c");
+const PERSONAL_GS: &[u8] = include_bytes!("../../resources/byte/personal/personal_gs");
+const PERSONAL_C: &[u8] = include_bytes!("../../resources/byte/personal/personal_c");
 
 lazy_static! {
     pub static ref GS: PersonalTable2<'static> = PersonalTable2::new(PERSONAL_GS);
     pub static ref C: PersonalTable2<'static> = PersonalTable2::new(PERSONAL_C);
 }
 
-const PERSONAL_RS: &[u8] = include_bytes!("../resources/byte/personal/personal_rs");
-const PERSONAL_E: &[u8] = include_bytes!("../resources/byte/personal/personal_e");
-const PERSONAL_FR: &[u8] = include_bytes!("../resources/byte/personal/personal_fr");
-const PERSONAL_LG: &[u8] = include_bytes!("../resources/byte/personal/personal_lg");
-const HMTM_G3: &[u8] = include_bytes!("../resources/byte/personal/hmtm_g3.pkl");
-const TUTORS_G3: &[u8] = include_bytes!("../resources/byte/personal/tutors_g3.pkl");
+const PERSONAL_RS: &[u8] = include_bytes!("../../resources/byte/personal/personal_rs");
+const PERSONAL_E: &[u8] = include_bytes!("../../resources/byte/personal/personal_e");
+const PERSONAL_FR: &[u8] = include_bytes!("../../resources/byte/personal/personal_fr");
+const PERSONAL_LG: &[u8] = include_bytes!("../../resources/byte/personal/personal_lg");
+const HMTM_G3: &[u8] = include_bytes!("../../resources/byte/personal/hmtm_g3.pkl");
+const TUTORS_G3: &[u8] = include_bytes!("../../resources/byte/personal/tutors_g3.pkl");
 
 lazy_static! {
     pub static ref RS: PersonalTable3<'static> = {
@@ -63,10 +63,10 @@ lazy_static! {
     };
 }
 
-const PERSONAL_DP: &[u8] = include_bytes!("../resources/byte/personal/personal_dp");
-const PERSONAL_PT: &[u8] = include_bytes!("../resources/byte/personal/personal_pt");
-const PERSONAL_HGSS: &[u8] = include_bytes!("../resources/byte/personal/personal_hgss");
-const TUTORS_G4: &[u8] = include_bytes!("../resources/byte/personal/tutors_g4.pkl");
+const PERSONAL_DP: &[u8] = include_bytes!("../../resources/byte/personal/personal_dp");
+const PERSONAL_PT: &[u8] = include_bytes!("../../resources/byte/personal/personal_pt");
+const PERSONAL_HGSS: &[u8] = include_bytes!("../../resources/byte/personal/personal_hgss");
+const TUTORS_G4: &[u8] = include_bytes!("../../resources/byte/personal/tutors_g4.pkl");
 
 lazy_static! {
     pub static ref DP: PersonalTable4<'static> = PersonalTable4::new(PERSONAL_DP);
@@ -79,25 +79,25 @@ lazy_static! {
     };
 }
 
-const PERSONAL_BW: &[u8] = include_bytes!("../resources/byte/personal/personal_bw");
-const PERSONAL_B2W2: &[u8] = include_bytes!("../resources/byte/personal/personal_b2w2");
+const PERSONAL_BW: &[u8] = include_bytes!("../../resources/byte/personal/personal_bw");
+const PERSONAL_B2W2: &[u8] = include_bytes!("../../resources/byte/personal/personal_b2w2");
 
 lazy_static! {
     pub static ref BW: PersonalTable5BW<'static> = PersonalTable5BW::new(PERSONAL_BW);
     pub static ref B2W2: PersonalTable5B2BW<'static> = PersonalTable5B2BW::new(PERSONAL_B2W2);
 }
 
-const PERSONAL_XY: &[u8] = include_bytes!("../resources/byte/personal/personal_xy");
-const PERSONAL_AO: &[u8] = include_bytes!("../resources/byte/personal/personal_ao");
+const PERSONAL_XY: &[u8] = include_bytes!("../../resources/byte/personal/personal_xy");
+const PERSONAL_AO: &[u8] = include_bytes!("../../resources/byte/personal/personal_ao");
 
 lazy_static! {
     pub static ref XY: PersonalTable6XY<'static> = PersonalTable6XY::new(PERSONAL_XY);
     pub static ref AO: PersonalTable6AO<'static> = PersonalTable6AO::new(PERSONAL_AO);
 }
 
-const PERSONAL_SM: &[u8] = include_bytes!("../resources/byte/personal/personal_sm");
-const PERSONAL_USUM: &[u8] = include_bytes!("../resources/byte/personal/personal_uu");
-const PERSONAL_GG: &[u8] = include_bytes!("../resources/byte/personal/personal_gg");
+const PERSONAL_SM: &[u8] = include_bytes!("../../resources/byte/personal/personal_sm");
+const PERSONAL_USUM: &[u8] = include_bytes!("../../resources/byte/personal/personal_uu");
+const PERSONAL_GG: &[u8] = include_bytes!("../../resources/byte/personal/personal_gg");
 
 lazy_static! {
     pub static ref SM: PersonalTable7<'static> =
@@ -107,9 +107,9 @@ lazy_static! {
     pub static ref GG: PersonalTable7GG<'static> = PersonalTable7GG::new(PERSONAL_GG);
 }
 
-const PERSONAL_SWSH: &[u8] = include_bytes!("../resources/byte/personal/personal_swsh");
-const PERSONAL_BDSP: &[u8] = include_bytes!("../resources/byte/personal/personal_bdsp");
-const PERSONAL_LA: &[u8] = include_bytes!("../resources/byte/personal/personal_la");
+const PERSONAL_SWSH: &[u8] = include_bytes!("../../resources/byte/personal/personal_swsh");
+const PERSONAL_BDSP: &[u8] = include_bytes!("../../resources/byte/personal/personal_bdsp");
+const PERSONAL_LA: &[u8] = include_bytes!("../../resources/byte/personal/personal_la");
 
 lazy_static! {
     pub static ref SWSH: PersonalTable8SWSH<'static> = PersonalTable8SWSH::new(PERSONAL_SWSH);
@@ -117,7 +117,7 @@ lazy_static! {
     pub static ref LA: PersonalTable8LA<'static> = PersonalTable8LA::new(PERSONAL_LA);
 }
 
-const PERSONAL_SV: &[u8] = include_bytes!("../resources/byte/personal/personal_sv");
+const PERSONAL_SV: &[u8] = include_bytes!("../../resources/byte/personal/personal_sv");
 
 lazy_static! {
     pub static ref SV: PersonalTable9SV<'static> = PersonalTable9SV::new(PERSONAL_SV);

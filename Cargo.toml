@@ -13,3 +13,4 @@ lazy_static = "1.4.0"
 num_enum = "0.5.7"
 enum-iterator = "1.2.0"
 chrono = "0.4.23"
+include_dir = { version = "0.7.3", features = ['glob'] }

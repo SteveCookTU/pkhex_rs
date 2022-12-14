@@ -9,7 +9,7 @@ pub(crate) const MAX_MOVE_ID_7: u16 = 719;
 pub(crate) const MAX_ITEM_ID_7: u16 = 920;
 pub(crate) const MAX_ABILITY_ID_7: u16 = 232;
 pub(crate) const MAX_BALL_ID_7: u16 = 0x1A;
-pub(crate) const MAX_GAME_ID_7: u16 = 41;
+pub(crate) const MAX_GAME_ID_7: u8 = 41;
 
 pub(crate) const MAX_SPECIES_ID_7_USUM: u16 = 807;
 pub(crate) const MAX_MOVE_ID_7_USUM: u16 = 728;

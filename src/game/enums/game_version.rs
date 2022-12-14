@@ -1,7 +1,11 @@
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
+use enum_iterator::Sequence;
+use num_enum::{FromPrimitive, IntoPrimitive};
+
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, IntoPrimitive, FromPrimitive, Sequence)]
 #[repr(u8)]
 pub enum GameVersion {
     Any = 0,
+    #[num_enum(default)]
     Unknown = u8::MAX - 1,
     Invalid = u8::MAX,
     S = 1,

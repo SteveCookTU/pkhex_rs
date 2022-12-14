@@ -12,3 +12,4 @@ no_std_io = { git = "https://github.com/zaksabeast/no_std_io.git", rev = "4bc5ad
 lazy_static = "1.4.0"
 num_enum = "0.5.7"
 enum-iterator = "1.2.0"
+chrono = "0.4.23"

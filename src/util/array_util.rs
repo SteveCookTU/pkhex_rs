@@ -1,3 +1,23 @@
+pub fn get_bit_flag_array<const SIZE: usize>(data: &[u8]) -> [bool; SIZE] {
+    let mut result = [false; SIZE];
+    for (i, val) in result.iter_mut().enumerate() {
+        *val = ((data[i >> 3] >> (i & 7)) & 1) == 1;
+    }
+    result
+}
+
+pub fn set_bit_flag_array(data: &mut [u8], value: &[bool]) {
+    for (i, value) in value.iter().enumerate() {
+        let ofs = i >> 3;
+        let mask = 1 << (i & 7);
+        if *value {
+            data[ofs] |= mask as u8;
+        } else {
+            data[ofs] &= (!mask) as u8;
+        }
+    }
+}
+
 pub(crate) const fn concat_all<const SIZE: usize, T: Copy>(params: &[&[T]], init: T) -> [T; SIZE] {
     let mut result = [init; SIZE];
 

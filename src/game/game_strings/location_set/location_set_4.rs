@@ -1,12 +1,20 @@
-use crate::game::game_strings::LocationSet;
+use crate::game::game_strings::location_set::LocationSet;
 
 pub struct LocationSet4 {
-    met_0: Vec<String>,
-    met_2: Vec<String>,
-    met_3: Vec<String>,
+    pub(crate) met_0: Vec<String>,
+    pub(crate) met_2: Vec<String>,
+    pub(crate) met_3: Vec<String>,
 }
 
 impl LocationSet4 {
+    pub fn new(met_0: Vec<String>, met_2: Vec<String>, met_3: Vec<String>) -> Self {
+        Self {
+            met_0,
+            met_2,
+            met_3,
+        }
+    }
+
     fn get(names: &[String], index: usize) -> &str {
         if index >= names.len() {
             ""

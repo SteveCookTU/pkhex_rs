@@ -1,7 +1,13 @@
-use crate::game::game_strings::LocationSet;
+use crate::game::game_strings::location_set::LocationSet;
 
 pub struct LocationSet0 {
-    met_0: Vec<String>,
+    pub(crate) met_0: Vec<String>,
+}
+
+impl LocationSet0 {
+    pub fn new(met_0: Vec<String>) -> Self {
+        Self { met_0 }
+    }
 }
 
 impl LocationSet for LocationSet0 {

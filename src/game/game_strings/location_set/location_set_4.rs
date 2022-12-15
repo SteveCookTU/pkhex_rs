@@ -1,5 +1,6 @@
 use crate::game::game_strings::location_set::LocationSet;
 
+#[derive(Clone)]
 pub struct LocationSet4 {
     pub(crate) met_0: Vec<String>,
     pub(crate) met_2: Vec<String>,

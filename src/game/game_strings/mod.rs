@@ -2,15 +2,24 @@ use crate::game::enums::{Ability, GameVersion, Species};
 use crate::game::game_strings::location_set::{
     LocationSet, LocationSet0, LocationSet4, LocationSet6,
 };
+use crate::game::BasicStrings;
 use crate::pkm::shared::EntityContext;
 use crate::{legality, resource_util};
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::sync::Arc;
 
+mod game_data_source;
+pub mod game_info;
 pub mod game_language;
 pub mod geo_location;
 pub mod location_set;
+mod met_data_source;
 
+pub use game_data_source::*;
+pub use met_data_source::*;
+
+#[derive(Clone)]
 pub struct GameStrings {
     pub species_list: Vec<String>,
     pub move_list: Vec<String>,
@@ -600,10 +609,10 @@ impl GameStrings {
         items[1769] += " (5)"; // Lost Satchel
     }
 
-    pub fn new(lang: impl AsRef<str>) -> Box<Self> {
+    pub fn new(lang: impl AsRef<str>) -> Arc<Self> {
         let gen7 = GameStrings::get_6("sm", lang.as_ref());
 
-        let mut result = Box::new(Self {
+        let mut result = Self {
             species_list: vec![],
             move_list: vec![],
             item_list: vec![],
@@ -652,7 +661,7 @@ impl GameStrings {
             language_index: game_language::get_language_index(lang.as_ref()),
             lang: lang.as_ref().to_string(),
             egg_name: "".to_string(),
-        });
+        };
 
         result.ribbons = GameStrings::get("ribbons", lang.as_ref());
 
@@ -723,7 +732,7 @@ impl GameStrings {
             result.g4_items[i + 137] = s;
         }
 
-        result
+        Arc::new(result)
     }
 
     fn deduplicate(arr: &mut [String]) {
@@ -902,5 +911,35 @@ impl GameStrings {
         } else {
             &[]
         }
+    }
+}
+
+impl BasicStrings for GameStrings {
+    fn species(&self) -> &[String] {
+        &self.species_list
+    }
+
+    fn items(&self) -> &[String] {
+        &self.item_list
+    }
+
+    fn moves(&self) -> &[String] {
+        &self.move_list
+    }
+
+    fn abilities(&self) -> &[String] {
+        &self.ability_list
+    }
+
+    fn types(&self) -> &[String] {
+        &self.types
+    }
+
+    fn natures(&self) -> &[String] {
+        &self.natures
+    }
+
+    fn egg_name(&self) -> &str {
+        &self.egg_name
     }
 }

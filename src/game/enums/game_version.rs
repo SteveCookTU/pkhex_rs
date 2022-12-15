@@ -1,7 +1,9 @@
 use enum_iterator::Sequence;
 use num_enum::{FromPrimitive, IntoPrimitive};
 
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, IntoPrimitive, FromPrimitive, Sequence)]
+#[derive(
+    Copy, Clone, Ord, PartialOrd, Eq, PartialEq, IntoPrimitive, FromPrimitive, Sequence, Debug,
+)]
 #[repr(u8)]
 pub enum GameVersion {
     Any = 0,

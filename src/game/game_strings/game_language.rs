@@ -48,7 +48,7 @@ pub fn get_strings(
     ident: impl AsRef<str>,
     lang: impl AsRef<str>,
     data_type: Option<&str>,
-) -> Arc<Vec<&'static str>> {
+) -> Arc<Vec<String>> {
     let mut data = resource_util::get_string_list_from_param(ident.as_ref(), lang, data_type);
     if data.is_empty() {
         data = resource_util::get_string_list_from_param(ident, DEFAULT_LANGUAGE, data_type);

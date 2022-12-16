@@ -17,9 +17,9 @@ pub fn get_country_region_list(text_file: &str, lang: impl AsRef<str>) -> Vec<Co
     list
 }
 
-fn get_cb_list_from_csv(input_csv: &[&'static str], index: usize) -> Vec<ComboItem<String>> {
+fn get_cb_list_from_csv(input_csv: &[String], index: usize) -> Vec<ComboItem<String>> {
     let mut arr = Vec::with_capacity(input_csv.len());
-    for &line in input_csv {
+    for line in input_csv {
         let text = line.split(',').skip(4).nth(index).unwrap_or(&line[5..]);
         let value = &line[..3];
         let item = ComboItem::new(text.to_string(), i32::from_str(value).unwrap_or_default());

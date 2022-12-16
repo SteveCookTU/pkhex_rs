@@ -11,4 +11,4 @@ pub use util::*;
 
 pub use error::*;
 
-static RESOURCES: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/resources");
+pub static RESOURCES: Dir<'_> = include_dir!("$CARGO_MANIFEST_DIR/resources");

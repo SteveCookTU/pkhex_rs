@@ -110,15 +110,15 @@ impl GameStrings {
             .iter()
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
-        let met_3 = GameStrings::get(format!("{ident}_03000"), lang.as_ref())
+        let met_3 = GameStrings::get(format!("{ident}_30000"), lang.as_ref())
             .iter()
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
-        let met_4 = GameStrings::get(format!("{ident}_04000"), lang.as_ref())
+        let met_4 = GameStrings::get(format!("{ident}_40000"), lang.as_ref())
             .iter()
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
-        let met_6 = GameStrings::get(format!("{ident}_06000"), lang)
+        let met_6 = GameStrings::get(format!("{ident}_60000"), lang)
             .iter()
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
@@ -155,7 +155,7 @@ impl GameStrings {
             .iter()
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
-        let met_4 = GameStrings::get(format!("{ident}_04000"), lang.as_ref())
+        let met_4 = GameStrings::get(format!("{ident}_40000"), lang.as_ref())
             .iter()
             .map(|s| s.to_string())
             .collect::<Vec<_>>();
@@ -376,7 +376,7 @@ impl GameStrings {
     }
 
     fn sanitize_met_g7(set: &mut LocationSet6, egg_name: impl AsRef<str>) {
-        for i in (6..=set.met_0.len()).step_by(2) {
+        for i in (6..set.met_0.len()).step_by(2) {
             if (194..198).contains(&i) {
                 continue;
             }
@@ -409,7 +409,7 @@ impl GameStrings {
     }
 
     fn sanitize_met_gen_8(set: &mut LocationSet6, egg_name: impl AsRef<str>) {
-        for i in (88..=set.met_0.len()).step_by(2) {
+        for i in (88..set.met_0.len()).step_by(2) {
             let next_loc = set.met_0[i + 1].clone();
             if next_loc.is_empty() {
                 continue;
@@ -698,9 +698,11 @@ impl GameStrings {
         result.game_list = GameStrings::get("games", lang.as_ref());
 
         result.item_list = GameStrings::get("items", lang.as_ref());
-        for i in 0..GameStrings::ITEMS_BALL.len() {
-            result.ball_list[i] = result.item_list[GameStrings::ITEMS_BALL[i] as usize].clone();
+        let mut ball_list = vec![String::new(); GameStrings::ITEMS_BALL.len()];
+        for (i, ball) in ball_list.iter_mut().enumerate() {
+            *ball = result.item_list[GameStrings::ITEMS_BALL[i] as usize].clone();
         }
+        result.ball_list = ball_list;
 
         result.poke_blocks = GameStrings::get("pokeblock", lang.as_ref());
         result.forms = GameStrings::get("forms", lang.as_ref());
@@ -709,7 +711,7 @@ impl GameStrings {
         result.feeling_8 = GameStrings::get("feeling", lang.as_ref());
         result.intensity = GameStrings::get("intensity", lang.as_ref());
         result.gen_loc = GameStrings::get("genloc", lang.as_ref());
-        result.training_bags = GameStrings::get("training_bag", lang.as_ref());
+        result.training_bags = GameStrings::get("TrainingBag", lang.as_ref());
         result.training_stage = GameStrings::get("supertraining", lang.as_ref());
         result.puffs = GameStrings::get("puff", lang.as_ref());
 

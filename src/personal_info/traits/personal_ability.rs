@@ -1,5 +1,5 @@
 pub trait PersonalAbility {
-    fn get_index_of_ability(&self, ability_id: u16) -> Option<usize>;
+    fn get_index_of_ability(&self, ability_id: u16) -> Option<u8>;
     fn get_ability_at_index(&self, ability_index: usize) -> Option<u16>;
     fn get_ability_count(&self) -> u8;
 

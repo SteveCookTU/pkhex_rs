@@ -1,3 +1,4 @@
+pub mod editing;
 mod error;
 pub mod game;
 pub mod legality;

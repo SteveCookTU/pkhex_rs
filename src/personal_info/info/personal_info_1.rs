@@ -111,7 +111,7 @@ impl PersonalFormInfo for PersonalInfo1<'_> {
 }
 
 impl PersonalAbility for PersonalInfo1<'_> {
-    fn get_index_of_ability(&self, _ability_id: u16) -> Option<usize> {
+    fn get_index_of_ability(&self, _ability_id: u16) -> Option<u8> {
         None
     }
 

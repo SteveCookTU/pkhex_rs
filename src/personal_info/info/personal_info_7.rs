@@ -143,7 +143,7 @@ impl PersonalFormInfo for PersonalInfo7<'_> {
 }
 
 impl PersonalAbility for PersonalInfo7<'_> {
-    fn get_index_of_ability(&self, ability_id: u16) -> Option<usize> {
+    fn get_index_of_ability(&self, ability_id: u16) -> Option<u8> {
         if ability_id == self.ability_1() {
             Some(0)
         } else if ability_id == self.ability_2() {

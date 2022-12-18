@@ -1229,7 +1229,10 @@ pub trait Pkm:
         ]
     }
 
-    fn clear_invalid_moves(&mut self) {
+    fn clear_invalid_moves(&mut self)
+    where
+        Self: Sized,
+    {
         let mut invalid = 0;
         let mut moves = self.moves();
         for mov in moves.iter_mut() {

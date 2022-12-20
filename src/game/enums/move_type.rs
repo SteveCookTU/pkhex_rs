@@ -1,6 +1,9 @@
-#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq)]
+use num_enum::{FromPrimitive, IntoPrimitive};
+
+#[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, FromPrimitive, IntoPrimitive)]
 #[repr(i8)]
 pub enum MoveType {
+    #[num_enum(default)]
     Any = -1,
     Normal,
     Fighting,
@@ -20,32 +23,6 @@ pub enum MoveType {
     Dragon,
     Dark,
     Fairy,
-}
-
-impl From<i8> for MoveType {
-    fn from(val: i8) -> Self {
-        match val {
-            0 => MoveType::Normal,
-            1 => MoveType::Fighting,
-            2 => MoveType::Flying,
-            3 => MoveType::Poison,
-            4 => MoveType::Ground,
-            5 => MoveType::Rock,
-            6 => MoveType::Bug,
-            7 => MoveType::Ghost,
-            8 => MoveType::Steel,
-            9 => MoveType::Fire,
-            10 => MoveType::Water,
-            11 => MoveType::Grass,
-            12 => MoveType::Electric,
-            13 => MoveType::Psychic,
-            14 => MoveType::Ice,
-            15 => MoveType::Dragon,
-            16 => MoveType::Dark,
-            17 => MoveType::Fairy,
-            _ => MoveType::Any,
-        }
-    }
 }
 
 impl MoveType {

@@ -4,3 +4,4 @@ pub mod entity_pid;
 pub mod experience;
 pub mod language;
 pub mod pkx;
+pub mod poke_crypto;

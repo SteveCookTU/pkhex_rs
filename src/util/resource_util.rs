@@ -140,7 +140,7 @@ fn get_full_resource_name(
     String::new() + data_type.as_ref() + "_" + file_name.as_ref() + "_" + lang_2_char.as_ref()
 }
 
-pub fn get_bin_resource(name: impl AsRef<str>) -> Option<&'static [u8]> {
+pub fn get_bin_resource(name: impl AsRef<str>) -> &'static [u8] {
     let glob = "**/*";
     if let Ok(files) = RESOURCES.find(glob) {
         for file in files {
@@ -154,12 +154,12 @@ pub fn get_bin_resource(name: impl AsRef<str>) -> Option<&'static [u8]> {
                     .to_lowercase()
                     .contains(&name.as_ref().to_lowercase())
                 {
-                    return Some(file.contents());
+                    return file.contents();
                 }
             }
         }
     }
-    None
+    &[]
 }
 
 pub fn get_string_resource(name: impl AsRef<str>) -> String {

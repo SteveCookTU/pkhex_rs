@@ -1,4 +1,4 @@
-use crate::editing::hidden_power;
+use crate::editing::{hidden_power, nature_amp};
 use crate::game::enums::{GameVersion, LanguageID, Species};
 use crate::game::locations;
 use crate::legality::{IndividualValueSet, MoveSetData};
@@ -8,7 +8,7 @@ use crate::personal_info::traits::personal_info::PersonalInfo;
 use crate::personal_info::traits::{gender_detail, BaseStat, PersonalAbility, PersonalEgg};
 use crate::pkm::shared::EntityContext;
 use crate::pkm::traits::metadata::{GameValueLimit, Generation, LangNick, Shiny, SpeciesForm};
-use crate::pkm::traits::{Nature, TrainerIDPKM};
+use crate::pkm::traits::{HyperTrain, Nature, TrainerIDPKM};
 use crate::pkm::util::{entity_gender, entity_pid, experience};
 use crate::{legality, rand_util, PKError, PKResult};
 use chrono::{Datelike, NaiveDate};
@@ -81,7 +81,7 @@ pub trait Pkm:
     fn size_stored(&self) -> usize;
     fn extension(&self) -> &str;
     fn personal_info(&self) -> &Self::PersonalInfoOutput;
-    fn extra_bytes(&self) -> Vec<u8> {
+    fn extra_bytes(&self) -> Vec<u16> {
         vec![]
     }
 
@@ -113,8 +113,12 @@ pub trait Pkm:
     fn nickname_trash_mut(&mut self) -> &mut [u8];
     fn ot_trash(&self) -> &[u8];
     fn ot_trash_mut(&mut self) -> &mut [u8];
-    fn ht_trash(&self) -> &[u8];
-    fn ht_trash_mut(&mut self) -> &mut [u8];
+    fn ht_trash(&self) -> &[u8] {
+        &[]
+    }
+    fn ht_trash_mut(&mut self) -> &mut [u8] {
+        &mut []
+    }
 
     fn encrypt(&mut self) -> Vec<u8>;
     fn context(&self) -> EntityContext;
@@ -123,7 +127,6 @@ pub trait Pkm:
     }
 
     fn set_species(&mut self, species: u16);
-    fn nickname(&self) -> String;
     fn set_nickname(&mut self, nickname: &str);
     fn held_item(&self) -> u16;
     fn set_held_item(&mut self, item: u16);
@@ -142,7 +145,6 @@ pub trait Pkm:
     fn set_form(&mut self, form: u8);
     fn is_egg(&self) -> bool;
     fn set_is_egg(&mut self, egg: bool);
-    fn is_nicknamed(&self) -> bool;
     fn set_is_nicknamed(&mut self, nicknamed: bool);
     fn exp(&self) -> u32;
     fn set_exp(&mut self, exp: u32);
@@ -238,7 +240,6 @@ pub trait Pkm:
     fn fateful_encounter(&self) -> bool;
     fn set_fateful_encounter(&mut self, fateful: bool);
     fn characteristic(&self) -> u8;
-    fn set_characteristic(&mut self, characteristic: u8);
     fn mark_value(&self) -> u16;
     fn set_mark_value(&mut self, value: u16);
     fn met_location(&self) -> u16;
@@ -878,19 +879,32 @@ pub trait Pkm:
         }
     }
 
-    fn get_stats(&self, p: &dyn BaseStat) -> [u16; 6] {
+    fn get_stats(&self, p: &dyn BaseStat) -> [u16; 6]
+    where
+        Self: Sized,
+    {
         let mut stats = [0; 6];
         self.load_stats(p, &mut stats);
         stats
     }
 
-    fn load_stats(&self, p: &dyn BaseStat, stats: &mut [u16]);
+    fn load_stats(&self, p: &dyn BaseStat, stats: &mut [u16])
+    where
+        Self: Sized,
+    {
+        let level = self.current_level();
+        load_stats(stats, p, self, level);
+        nature_amp::modify_stats_for_nature(stats, self.stat_nature());
+    }
 
     fn party_stats_present(&self) -> bool {
         self.stat_hp_max() != 0
     }
 
-    fn reset_party_stats(&mut self) {
+    fn reset_party_stats(&mut self)
+    where
+        Self: Sized,
+    {
         let mut stats = [0; 6];
         self.load_stats(self.personal_info(), &mut stats);
         self.set_stats(&stats);
@@ -950,7 +964,10 @@ pub trait Pkm:
         Ok(())
     }
 
-    fn force_party_data(&mut self) -> bool {
+    fn force_party_data(&mut self) -> bool
+    where
+        Self: Sized,
+    {
         if self.party_stats_present() {
             return false;
         }
@@ -1279,4 +1296,91 @@ pub trait Pkm:
             _ => Err(PKError::IndexOutOfRange { index }),
         }
     }
+
+    fn set_maximum_pp_current_moves(&mut self, moves: &[u16])
+    where
+        Self: Sized,
+    {
+        self.set_move_1_pp(if moves.is_empty() {
+            0
+        } else {
+            self.get_move_pp(moves[0], self.move_1_pp_ups())
+        });
+        self.set_move_2_pp(if moves.len() <= 1 {
+            0
+        } else {
+            self.get_move_pp(moves[1], self.move_2_pp_ups())
+        });
+        self.set_move_3_pp(if moves.len() <= 2 {
+            0
+        } else {
+            self.get_move_pp(moves[2], self.move_3_pp_ups())
+        });
+        self.set_move_4_pp(if moves.len() <= 3 {
+            0
+        } else {
+            self.get_move_pp(moves[3], self.move_4_pp_ups())
+        });
+    }
+
+    fn set_maximum_pp_current(&mut self)
+    where
+        Self: Sized,
+    {
+        let moves = self.moves();
+        self.set_maximum_pp_current_moves(&moves);
+    }
+}
+
+pub(crate) fn load_stats_ht(
+    stats: &mut [u16],
+    p: &(impl BaseStat + ?Sized),
+    t: &(impl HyperTrain + Pkm),
+    level: u8,
+) {
+    stats[0] = u16::from(if p.hp() == 1 {
+        1
+    } else {
+        ((if t.ht_hp() { 31 } else { t.iv_hp() } + (2 * p.hp()) + (t.ev_hp() / 4) + 100) * level
+            / 100)
+            + 10
+    });
+    stats[1] = u16::from(
+        ((if t.ht_atk() { 31 } else { t.iv_atk() } + (2 * p.atk()) + (t.ev_atk() / 4)) * level
+            / 100)
+            + 5,
+    );
+    stats[2] = u16::from(
+        ((if t.ht_def() { 31 } else { t.iv_def() } + (2 * p.def()) + (t.ev_def() / 4)) * level
+            / 100)
+            + 5,
+    );
+    stats[3] = u16::from(
+        ((if t.ht_spa() { 31 } else { t.iv_spa() } + (2 * p.spa()) + (t.ev_spa() / 4)) * level
+            / 100)
+            + 5,
+    );
+    stats[4] = u16::from(
+        ((if t.ht_spd() { 31 } else { t.iv_spd() } + (2 * p.spd()) + (t.ev_spd() / 4)) * level
+            / 100)
+            + 5,
+    );
+    stats[5] = u16::from(
+        ((if t.ht_spe() { 31 } else { t.iv_spe() } + (2 * p.spe()) + (t.ev_spe() / 4)) * level
+            / 100)
+            + 5,
+    );
+}
+
+pub(crate) fn load_stats(stats: &mut [u16], p: &(impl BaseStat + ?Sized), t: &impl Pkm, level: u8) {
+    stats[0] = u16::from(if p.hp() == 1 {
+        1
+    } else {
+        ((t.iv_hp() + (2 * p.hp()) + (t.ev_hp() / 4) + 100) * level / 100) + 10
+    });
+    stats[1] = u16::from(((t.iv_atk() + (2 * p.atk()) + (t.ev_atk() / 4)) * level / 100) + 5);
+    stats[2] = u16::from(((t.iv_def() + (2 * p.def()) + (t.ev_def() / 4)) * level / 100) + 5);
+    stats[3] = u16::from(((t.iv_spa() + (2 * p.spa()) + (t.ev_spa() / 4)) * level / 100) + 5);
+    stats[4] = u16::from(((t.iv_spd() + (2 * p.spd()) + (t.ev_spd() / 4)) * level / 100) + 5);
+    stats[5] = u16::from(((t.iv_spe() + (2 * p.spe()) + (t.ev_spe() / 4)) * level / 100) + 5);
 }

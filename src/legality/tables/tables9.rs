@@ -9,8 +9,8 @@ pub(crate) const MAX_MOVE_ID_9: u16 = Move::MagicalTorque as u16;
 pub(crate) const MAX_ITEM_ID_9: u16 = 2400;
 pub(crate) const MAX_ABILITY_ID_9: u16 = Ability::MyceliumMight as u16;
 
-pub(crate) const MAX_BALL_ID_9: u16 = Ball::LAOrigin as u16;
-pub(crate) const MAX_GAME_ID_9: u16 = GameVersion::VL as u16;
+pub(crate) const MAX_BALL_ID_9: u8 = Ball::LAOrigin as u8;
+pub(crate) const MAX_GAME_ID_9: u8 = GameVersion::VL as u8;
 
 #[allow(clippy::zero_prefixed_literal)]
 pub(crate) const POUCH_MEDICINE_SV: [u16; 27] = [

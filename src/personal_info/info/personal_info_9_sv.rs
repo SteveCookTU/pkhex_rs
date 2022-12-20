@@ -14,10 +14,10 @@ pub struct PersonalInfo9SV<'a> {
 
 impl<'a> PersonalInfo9SV<'a> {
     pub const SIZE: usize = 0x44;
-    pub const COUNT_TM: usize = 172;
+    pub const COUNT_TM: u16 = 172;
 
     pub fn new(data: &'a [u8]) -> PersonalInfo9SV<'a> {
-        let mut tmhm = vec![false; Self::COUNT_TM];
+        let mut tmhm = vec![false; Self::COUNT_TM as usize];
         let tm = &data[0x2C..];
         tmhm.iter_mut()
             .enumerate()

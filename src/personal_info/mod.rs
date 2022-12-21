@@ -2,123 +2,108 @@ mod info;
 mod table;
 pub mod traits;
 
-use crate::legality;
+use crate::{legality, resource_util};
 pub use info::*;
 use lazy_static::lazy_static;
 pub use table::*;
 
 use crate::legality::BinLinkerAccessor;
 
-const PERSONAL_Y: &[u8] = include_bytes!("../../resources/byte/personal/personal_y");
-const PERSONAL_RB: &[u8] = include_bytes!("../../resources/byte/personal/personal_rb");
-
 lazy_static! {
-    pub static ref Y: PersonalTable1<'static> = PersonalTable1::new(PERSONAL_Y);
-    pub static ref RB: PersonalTable1<'static> = PersonalTable1::new(PERSONAL_RB);
+    pub static ref Y: PersonalTable1<'static> =
+        PersonalTable1::new(resource_util::get_bin_resource("personal_y"));
+    pub static ref RB: PersonalTable1<'static> =
+        PersonalTable1::new(resource_util::get_bin_resource("personal_rb"));
 }
 
-const PERSONAL_GS: &[u8] = include_bytes!("../../resources/byte/personal/personal_gs");
-const PERSONAL_C: &[u8] = include_bytes!("../../resources/byte/personal/personal_c");
-
 lazy_static! {
-    pub static ref GS: PersonalTable2<'static> = PersonalTable2::new(PERSONAL_GS);
-    pub static ref C: PersonalTable2<'static> = PersonalTable2::new(PERSONAL_C);
+    pub static ref GS: PersonalTable2<'static> =
+        PersonalTable2::new(resource_util::get_bin_resource("personal_gs"));
+    pub static ref C: PersonalTable2<'static> =
+        PersonalTable2::new(resource_util::get_bin_resource("personal_c"));
 }
-
-const PERSONAL_RS: &[u8] = include_bytes!("../../resources/byte/personal/personal_rs");
-const PERSONAL_E: &[u8] = include_bytes!("../../resources/byte/personal/personal_e");
-const PERSONAL_FR: &[u8] = include_bytes!("../../resources/byte/personal/personal_fr");
-const PERSONAL_LG: &[u8] = include_bytes!("../../resources/byte/personal/personal_lg");
-const HMTM_G3: &[u8] = include_bytes!("../../resources/byte/personal/hmtm_g3.pkl");
-const TUTORS_G3: &[u8] = include_bytes!("../../resources/byte/personal/tutors_g3.pkl");
 
 lazy_static! {
     pub static ref RS: PersonalTable3<'static> = {
-        let mut table = PersonalTable3::new(PERSONAL_RS);
-        let machine = BinLinkerAccessor::new(HMTM_G3);
-        let tutors = BinLinkerAccessor::new(TUTORS_G3);
+        let mut table = PersonalTable3::new(resource_util::get_bin_resource("personal_rs"));
+        let machine = BinLinkerAccessor::new(resource_util::get_bin_resource("hmtm_g3.pkl"));
+        let tutors = BinLinkerAccessor::new(resource_util::get_bin_resource("tutors_g3.pkl"));
         table.load_tables(machine, tutors);
         table
     };
     pub static ref E: PersonalTable3<'static> = {
-        let mut table = PersonalTable3::new(PERSONAL_E);
-        let machine = BinLinkerAccessor::new(HMTM_G3);
-        let tutors = BinLinkerAccessor::new(TUTORS_G3);
+        let mut table = PersonalTable3::new(resource_util::get_bin_resource("personal_e"));
+        let machine = BinLinkerAccessor::new(resource_util::get_bin_resource("hmtm_g3.pkl"));
+        let tutors = BinLinkerAccessor::new(resource_util::get_bin_resource("tutors_g3.pkl"));
         table.load_tables(machine, tutors);
         table
     };
     pub static ref FR: PersonalTable3<'static> = {
-        let mut table = PersonalTable3::new(PERSONAL_FR);
-        let machine = BinLinkerAccessor::new(HMTM_G3);
-        let tutors = BinLinkerAccessor::new(TUTORS_G3);
+        let mut table = PersonalTable3::new(resource_util::get_bin_resource("personal_fr"));
+        let machine = BinLinkerAccessor::new(resource_util::get_bin_resource("hmtm_g3.pkl"));
+        let tutors = BinLinkerAccessor::new(resource_util::get_bin_resource("tutors_g3.pkl"));
         table.load_tables(machine, tutors);
         table
     };
     pub static ref LG: PersonalTable3<'static> = {
-        let mut table = PersonalTable3::new(PERSONAL_LG);
-        let machine = BinLinkerAccessor::new(HMTM_G3);
-        let tutors = BinLinkerAccessor::new(TUTORS_G3);
+        let mut table = PersonalTable3::new(resource_util::get_bin_resource("personal_lg"));
+        let machine = BinLinkerAccessor::new(resource_util::get_bin_resource("hmtm_g3.pkl"));
+        let tutors = BinLinkerAccessor::new(resource_util::get_bin_resource("tutors_g3.pkl"));
         table.load_tables(machine, tutors);
         table
     };
 }
 
-const PERSONAL_DP: &[u8] = include_bytes!("../../resources/byte/personal/personal_dp");
-const PERSONAL_PT: &[u8] = include_bytes!("../../resources/byte/personal/personal_pt");
-const PERSONAL_HGSS: &[u8] = include_bytes!("../../resources/byte/personal/personal_hgss");
-const TUTORS_G4: &[u8] = include_bytes!("../../resources/byte/personal/tutors_g4.pkl");
-
 lazy_static! {
-    pub static ref DP: PersonalTable4<'static> = PersonalTable4::new(PERSONAL_DP);
-    pub static ref PT: PersonalTable4<'static> = PersonalTable4::new(PERSONAL_PT);
+    pub static ref DP: PersonalTable4<'static> =
+        PersonalTable4::new(resource_util::get_bin_resource("personal_dp"));
+    pub static ref PT: PersonalTable4<'static> =
+        PersonalTable4::new(resource_util::get_bin_resource("personal_pt"));
     pub static ref HGSS: PersonalTable4<'static> = {
-        let mut tables = PersonalTable4::new(PERSONAL_HGSS);
-        let tutors = BinLinkerAccessor::new(TUTORS_G4);
+        let mut tables = PersonalTable4::new(resource_util::get_bin_resource("personal_hgss"));
+        let tutors = BinLinkerAccessor::new(resource_util::get_bin_resource("tutors_g4.pkl"));
         tables.load_tables(tutors);
         tables
     };
 }
 
-const PERSONAL_BW: &[u8] = include_bytes!("../../resources/byte/personal/personal_bw");
-const PERSONAL_B2W2: &[u8] = include_bytes!("../../resources/byte/personal/personal_b2w2");
-
 lazy_static! {
-    pub static ref BW: PersonalTable5BW<'static> = PersonalTable5BW::new(PERSONAL_BW);
-    pub static ref B2W2: PersonalTable5B2BW<'static> = PersonalTable5B2BW::new(PERSONAL_B2W2);
+    pub static ref BW: PersonalTable5BW<'static> =
+        PersonalTable5BW::new(resource_util::get_bin_resource("personal_bw"));
+    pub static ref B2W2: PersonalTable5B2BW<'static> =
+        PersonalTable5B2BW::new(resource_util::get_bin_resource("personal_b2w2"));
 }
 
-const PERSONAL_XY: &[u8] = include_bytes!("../../resources/byte/personal/personal_xy");
-const PERSONAL_AO: &[u8] = include_bytes!("../../resources/byte/personal/personal_ao");
-
 lazy_static! {
-    pub static ref XY: PersonalTable6XY<'static> = PersonalTable6XY::new(PERSONAL_XY);
-    pub static ref AO: PersonalTable6AO<'static> = PersonalTable6AO::new(PERSONAL_AO);
+    pub static ref XY: PersonalTable6XY<'static> =
+        PersonalTable6XY::new(resource_util::get_bin_resource("personal_xy"));
+    pub static ref AO: PersonalTable6AO<'static> =
+        PersonalTable6AO::new(resource_util::get_bin_resource("personal_ao"));
 }
 
-const PERSONAL_SM: &[u8] = include_bytes!("../../resources/byte/personal/personal_sm");
-const PERSONAL_USUM: &[u8] = include_bytes!("../../resources/byte/personal/personal_uu");
-const PERSONAL_GG: &[u8] = include_bytes!("../../resources/byte/personal/personal_gg");
-
 lazy_static! {
-    pub static ref SM: PersonalTable7<'static> =
-        PersonalTable7::new(PERSONAL_SM, legality::tables7::MAX_SPECIES_ID_7);
-    pub static ref USUM: PersonalTable7<'static> =
-        PersonalTable7::new(PERSONAL_USUM, legality::tables7::MAX_SPECIES_ID_7_USUM);
-    pub static ref GG: PersonalTable7GG<'static> = PersonalTable7GG::new(PERSONAL_GG);
+    pub static ref SM: PersonalTable7<'static> = PersonalTable7::new(
+        resource_util::get_bin_resource("personal_sm"),
+        legality::tables7::MAX_SPECIES_ID_7
+    );
+    pub static ref USUM: PersonalTable7<'static> = PersonalTable7::new(
+        resource_util::get_bin_resource("personal_uu"),
+        legality::tables7::MAX_SPECIES_ID_7_USUM
+    );
+    pub static ref GG: PersonalTable7GG<'static> =
+        PersonalTable7GG::new(resource_util::get_bin_resource("personal_gg"));
 }
 
-const PERSONAL_SWSH: &[u8] = include_bytes!("../../resources/byte/personal/personal_swsh");
-const PERSONAL_BDSP: &[u8] = include_bytes!("../../resources/byte/personal/personal_bdsp");
-const PERSONAL_LA: &[u8] = include_bytes!("../../resources/byte/personal/personal_la");
-
 lazy_static! {
-    pub static ref SWSH: PersonalTable8SWSH<'static> = PersonalTable8SWSH::new(PERSONAL_SWSH);
-    pub static ref BDSP: PersonalTable8BDSP<'static> = PersonalTable8BDSP::new(PERSONAL_BDSP);
-    pub static ref LA: PersonalTable8LA<'static> = PersonalTable8LA::new(PERSONAL_LA);
+    pub static ref SWSH: PersonalTable8SWSH<'static> =
+        PersonalTable8SWSH::new(resource_util::get_bin_resource("personal_swsh"));
+    pub static ref BDSP: PersonalTable8BDSP<'static> =
+        PersonalTable8BDSP::new(resource_util::get_bin_resource("personal_bdsp"));
+    pub static ref LA: PersonalTable8LA<'static> =
+        PersonalTable8LA::new(resource_util::get_bin_resource("personal_la"));
 }
 
-const PERSONAL_SV: &[u8] = include_bytes!("../../resources/byte/personal/personal_sv");
-
 lazy_static! {
-    pub static ref SV: PersonalTable9SV<'static> = PersonalTable9SV::new(PERSONAL_SV);
+    pub static ref SV: PersonalTable9SV<'static> =
+        PersonalTable9SV::new(resource_util::get_bin_resource("personal_sv"));
 }

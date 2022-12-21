@@ -72,6 +72,14 @@ fn reorder_moves<T: PersonalInfo>(pkm: &mut dyn Pkm<PersonalInfoOutput = T>) {
     }
 }
 
+fn is_display_7<T: PersonalInfo>(pkm: &dyn Pkm<PersonalInfoOutput = T>) -> bool {
+    match pkm.generation() {
+        i if i >= 7 => true,
+        i if i == 0 && pkm.context() == EntityContext::Gen9 => true,
+        _ => false,
+    }
+}
+
 pub trait Pkm:
     SpeciesForm + TrainerIDPKM + Generation + Shiny + LangNick + GameValueLimit + Nature
 {
@@ -395,8 +403,11 @@ pub trait Pkm:
         ((pid & 0xFFFF) as u16) ^ self.tid() ^ upper
     }
 
-    fn display_tid(&self) -> u32 {
-        if self.generation() >= 7 {
+    fn display_tid(&self) -> u32
+    where
+        Self: Sized,
+    {
+        if is_display_7(self) {
             self.trainer_id_7()
         } else {
             self.tid() as u32
@@ -407,15 +418,18 @@ pub trait Pkm:
     where
         Self: Sized,
     {
-        if self.generation() >= 7 {
+        if is_display_7(self) {
             self.set_trainer_id_7(tid)
         } else {
             self.set_tid(tid as u16)
         }
     }
 
-    fn display_sid(&self) -> u32 {
-        if self.generation() >= 7 {
+    fn display_sid(&self) -> u32
+    where
+        Self: Sized,
+    {
+        if is_display_7(self) {
             self.trainer_sid_7()
         } else {
             self.sid() as u32
@@ -426,7 +440,7 @@ pub trait Pkm:
     where
         Self: Sized,
     {
-        if self.generation() >= 7 {
+        if is_display_7(self) {
             self.set_trainer_sid_7(sid)
         } else {
             self.set_sid(sid as u16)

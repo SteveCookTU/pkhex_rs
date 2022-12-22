@@ -12,6 +12,7 @@ use crate::pkm::traits::form_argument::{
     FormArgument,
 };
 use crate::pkm::traits::metadata::SpeciesForm;
+use crate::pkm::traits::templates::ContestStatsReadOnly;
 use crate::pkm::traits::HyperTrain;
 pub use pk9::*;
 pub use pkm_trait::*;
@@ -34,6 +35,12 @@ impl PKM {
     }
 
     pub fn as_pk9(&self) -> Option<&PK9> {
+        match self {
+            PKM::PK9(pk9) => Some(pk9),
+        }
+    }
+
+    pub fn as_contest_stats_read_only(&self) -> Option<&(impl ContestStatsReadOnly + Pkm + Sized)> {
         match self {
             PKM::PK9(pk9) => Some(pk9),
         }

@@ -1,3 +1,4 @@
+mod check_result;
 mod fixed_ability_number;
 mod fixed_ball;
 mod individual_value_set;
@@ -8,6 +9,7 @@ mod shiny;
 mod shiny_potential;
 mod version;
 
+pub use check_result::*;
 pub use fixed_ability_number::*;
 pub use fixed_ball::*;
 pub use individual_value_set::*;

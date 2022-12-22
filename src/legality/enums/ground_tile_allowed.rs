@@ -6,16 +6,16 @@ use num_enum::{FromPrimitive, IntoPrimitive};
 pub enum GroundTileAllowed {
     #[num_enum(default)]
     Undefined = 0,
-    None = 1 << 00, // No animation for the tile
-    Sand = 1 << 01, // Obtainable only via HG/SS
-    Grass = 1 << 02,
-    Puddle = 1 << 03, // No encounters from this tile type
-    Rock = 1 << 04,
-    Cave = 1 << 05,
-    Snow = 1 << 06, // No encounters from this tile type
-    Water = 1 << 07,
-    Ice = 1 << 08, // No encounters from this tile type
-    Building = 1 << 09,
+    None = 1,      // No animation for the tile
+    Sand = 1 << 1, // Obtainable only via HG/SS
+    Grass = 1 << 2,
+    Puddle = 1 << 3, // No encounters from this tile type
+    Rock = 1 << 4,
+    Cave = 1 << 5,
+    Snow = 1 << 6, // No encounters from this tile type
+    Water = 1 << 7,
+    Ice = 1 << 8, // No encounters from this tile type
+    Building = 1 << 9,
     Marsh = 1 << 10,
     Bridge = 1 << 11, // No encounters from this tile type
     MaxDP = 1 << 12,  // Unspecific, catch-all for DP undefined tiles.

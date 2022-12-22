@@ -51,11 +51,25 @@ pub enum EvolutionType {
     LevelUpNatureLowKey = 47,   // Toxtricity
     TowerOfDarkness = 48,       // Urshifu
     TowerOfWaters = 49,         // Urshifu
-    UseItemFullMoon = 50,       // Ursaluna
-    UseAgileStyleMoves = 51,    // Wyrdeer
-    UseStrongStyleMoves = 52,   // Overqwil
-    RecoilDamageMale = 53,      // Basculegion-0
-    RecoilDamageFemale = 54,    // Basculegion-1
+
+    LevelUpWalkStepsWith = 50,
+    LevelUpUnionCircle = 51,    // Palafin
+    LevelUpInBattleEC100 = 52,  // Maushold-0
+    LevelUpInBattleECElse = 53, // Maushold-1
+    LevelUpCollect999 = 54,     // Gimmighoul formarg 999
+    LevelUpDefeatEquals = 55,   // Kingambit
+    LevelUpUseMoveSpecial = 56, // Annihilape
+    LevelUpKnowMoveECElse = 57, // Dudunsparce-0
+    LevelUpKnowMoveEC100 = 58,  // Dudunsparce-1
+
+    LevelUpRecoilDamageMale = 59,   // Basculegion-0
+    LevelUpRecoilDamageFemale = 60, // Basculegion-1
+
+    Hisui = 61,
+
+    UseItemFullMoon = 90,    // Ursaluna
+    UseMoveAgileStyle = 91,  // Wyrdeer
+    UseMoveStrongStyle = 92, // Overqwil
 }
 
 impl EvolutionType {
@@ -117,11 +131,22 @@ impl EvolutionType {
             EvolutionType::LevelUpNatureLowKey => true,
             EvolutionType::TowerOfDarkness => false,
             EvolutionType::TowerOfWaters => false,
+            EvolutionType::LevelUpWalkStepsWith => true,
+            EvolutionType::LevelUpUnionCircle => true,
+            EvolutionType::LevelUpInBattleEC100 => true,
+            EvolutionType::LevelUpInBattleECElse => true,
+            EvolutionType::LevelUpCollect999 => true,
+            EvolutionType::LevelUpDefeatEquals => true,
+            EvolutionType::LevelUpUseMoveSpecial => true,
+            EvolutionType::LevelUpKnowMoveECElse => true,
+            EvolutionType::LevelUpKnowMoveEC100 => true,
+            EvolutionType::LevelUpRecoilDamageMale => true,
+            EvolutionType::LevelUpRecoilDamageFemale => true,
+            EvolutionType::Hisui => false, // stubbed
+
             EvolutionType::UseItemFullMoon => false,
-            EvolutionType::UseAgileStyleMoves => false,
-            EvolutionType::UseStrongStyleMoves => false,
-            EvolutionType::RecoilDamageMale => false,
-            EvolutionType::RecoilDamageFemale => false,
+            EvolutionType::UseMoveAgileStyle => false,
+            EvolutionType::UseMoveStrongStyle => false,
         }
     }
 }

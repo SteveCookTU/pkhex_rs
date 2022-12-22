@@ -3,6 +3,7 @@ use num_enum::{FromPrimitive, IntoPrimitive};
 #[derive(Copy, Clone, Ord, PartialOrd, Eq, PartialEq, IntoPrimitive, FromPrimitive)]
 #[repr(u8)]
 pub enum CheckIdentifier {
+    #[num_enum(default)]
     CurrentMove,
 
     RelearnMove,

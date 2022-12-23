@@ -3,6 +3,12 @@ use crate::resource_util;
 use lazy_static::lazy_static;
 
 lazy_static! {
+    pub(crate) static ref LEVEL_UP_SWSH: Vec<LearnSet> = learn_set_reader::get_array_linker(
+        BinLinkerAccessor::new(resource_util::get_bin_resource("lvlmove_swsh.pkl"))
+    );
+}
+
+lazy_static! {
     pub(crate) static ref EGG_MOVES_SV: Vec<Vec<u16>> = egg_moves_9::get_array(
         BinLinkerAccessor::new(resource_util::get_bin_resource("eggmove_sv.pkl"))
     );

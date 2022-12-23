@@ -15,11 +15,11 @@ pub fn get_random_pid(
     form: u8,
     old_pid: u32,
 ) -> u32 {
-    if origin >= 24 {
+    if origin >= 24 || origin == 0 {
         return rnd.gen();
     }
 
-    let gt = personal_info::SV[species as usize].gender();
+    let gt = personal_info::B2W2[species as usize].gender();
     let g34 = origin <= 15;
     let abil_bit_val = if g34 {
         old_pid & 0x1

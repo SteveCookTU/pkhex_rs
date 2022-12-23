@@ -1,4 +1,5 @@
 pub mod enums;
+mod pk8;
 mod pk9;
 mod pkm_trait;
 pub mod shared;
@@ -14,6 +15,7 @@ use crate::pkm::traits::form_argument::{
 use crate::pkm::traits::metadata::SpeciesForm;
 use crate::pkm::traits::templates::ContestStatsReadOnly;
 use crate::pkm::traits::HyperTrain;
+pub use pk8::*;
 pub use pk9::*;
 pub use pkm_trait::*;
 

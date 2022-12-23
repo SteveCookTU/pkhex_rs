@@ -46,31 +46,19 @@ impl PK9 {
     const RECORD_LENGTH: usize = PK9::COUNT_RECORD / 8;
 
     pub fn new(data: &[u8]) -> Self {
+        let data = data.to_vec();
         let mut pk9 = Self {
-            data: data.to_vec(),
+            data: PK9::decrypt_party(data),
         };
         pk9.set_tera_type_override(MoveType::from(19));
+        pk9.set_affixed_ribbon(None);
         pk9
     }
 
-    pub fn fix_relearn(&mut self) {
-        loop {
-            if self.relearn_move_4() != 0 && self.relearn_move_3() == 0 {
-                self.set_relearn_move_3(self.relearn_move_4());
-                self.set_relearn_move_4(0);
-            }
-            if self.relearn_move_3() != 0 && self.relearn_move_2() == 0 {
-                self.set_relearn_move_2(self.relearn_move_3());
-                self.set_relearn_move_3(0);
-                continue;
-            }
-            if self.relearn_move_2() != 0 && self.relearn_move_1() == 0 {
-                self.set_relearn_move_1(self.relearn_move_2());
-                self.set_relearn_move_2(0);
-                continue;
-            }
-            break;
-        }
+    fn decrypt_party(mut data: Vec<u8>) -> Vec<u8> {
+        poke_crypto::decrypt_if_encrypted_9(&mut data);
+        data.resize(poke_crypto::SIZE_9PARTY, 0);
+        data
     }
 
     fn iv32(&self) -> u32 {
@@ -726,7 +714,7 @@ impl RibbonHasMark for PK9 {
         if self.data.default_read_le::<u16>(0x3A) & 0xFFE0 != 0 {
             return true;
         }
-        if self.data.default_read_le::<u16>(0x3A) != 0 {
+        if self.data.default_read_le::<u32>(0x40) != 0 {
             return true;
         }
         (self.data[0x44] & 3) != 0
@@ -1675,6 +1663,10 @@ impl Pkm for PK9 {
         &self.data
     }
 
+    fn data_mut(&mut self) -> &mut [u8] {
+        &mut self.data
+    }
+
     fn valid(&self) -> bool {
         self.sanity() == 0 && self.checksum_valid()
     }
@@ -2317,7 +2309,7 @@ impl Pkm for PK9 {
     }
 
     fn is_native(&self) -> bool {
-        self.swsh()
+        self.sv()
     }
 
     fn refresh_checksum(&mut self) {

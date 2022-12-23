@@ -36,11 +36,27 @@ fn shuffle_array(data: &[u8], sv: u32, block_size: usize) -> Vec<u8> {
     sdata
 }
 
+fn decrypt_array_8(ekm: &mut [u8]) -> Vec<u8> {
+    let pv = ekm.default_read_le::<u32>(0);
+    let sv = (pv >> 13) & 31;
+    crypt_pkm(ekm, pv, SIZE_8BLOCK);
+    shuffle_array(ekm, sv, SIZE_8BLOCK)
+}
+
 fn decrypt_array_9(ekm: &mut [u8]) -> Vec<u8> {
     let pv = ekm.default_read_le::<u32>(0);
     let sv = (pv >> 13) & 31;
     crypt_pkm(ekm, pv, SIZE_9BLOCK);
     shuffle_array(ekm, sv, SIZE_9BLOCK)
+}
+
+pub fn encrypt_array_8(pk: &[u8]) -> Vec<u8> {
+    let pv = pk.default_read_le::<u32>(0);
+    let sv = (pv >> 13) & 31;
+
+    let mut ekm = shuffle_array(pk, BLOCK_POSITION_INVERT[sv as usize] as u32, SIZE_8BLOCK);
+    crypt_pkm(&mut ekm, pv, SIZE_8BLOCK);
+    ekm
 }
 
 pub fn encrypt_array_9(pk: &[u8]) -> Vec<u8> {
@@ -70,6 +86,12 @@ pub fn crypt_array(data: &mut [u8], mut seed: u32) {
         i += 1;
         data[i] ^= (seed >> 24) as u8;
         i += 1;
+    }
+}
+
+pub fn decrypt_if_encrypted_8(pk: &mut Vec<u8>) {
+    if pk.default_read_le::<u16>(0x70) != 0 || pk.default_read_le::<u16>(0x110) != 0 {
+        *pk = decrypt_array_8(pk);
     }
 }
 

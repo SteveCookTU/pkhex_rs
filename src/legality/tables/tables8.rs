@@ -24,8 +24,8 @@ pub(crate) const MAX_MOVE_ID_8_R2: u16 = 826;
 pub(crate) const MAX_ITEM_ID_8_R2: u16 = 1607;
 pub(crate) const MAX_ABILITY_ID_8_R2: u16 = 267;
 
-pub(crate) const MAX_BALL_ID_8: u16 = 0x1A;
-pub(crate) const MAX_GAME_ID_8: u16 = 45;
+pub(crate) const MAX_BALL_ID_8: u8 = 0x1A;
+pub(crate) const MAX_GAME_ID_8: u8 = 45;
 
 pub(crate) const POUCH_REGULAR_SWSH: [u16; 546] = [
     45, 46, 47, 48, 49, 50, 51, 52, 53, 76, 77, 79, 80, 81, 82, 83, 84, 85, 107, 108, 109, 110,

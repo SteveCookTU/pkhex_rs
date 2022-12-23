@@ -94,6 +94,7 @@ pub trait Pkm:
     }
 
     fn data(&self) -> &[u8];
+    fn data_mut(&mut self) -> &mut [u8];
 
     fn encrypted_party_data(&mut self) -> Vec<u8> {
         self.encrypt()[..self.size_party()].to_vec()
@@ -1343,6 +1344,26 @@ pub trait Pkm:
     {
         let moves = self.moves();
         self.set_maximum_pp_current_moves(&moves);
+    }
+
+    fn fix_relearn(&mut self) {
+        loop {
+            if self.relearn_move_4() != 0 && self.relearn_move_3() == 0 {
+                self.set_relearn_move_3(self.relearn_move_4());
+                self.set_relearn_move_4(0);
+            }
+            if self.relearn_move_3() != 0 && self.relearn_move_2() == 0 {
+                self.set_relearn_move_2(self.relearn_move_3());
+                self.set_relearn_move_3(0);
+                continue;
+            }
+            if self.relearn_move_2() != 0 && self.relearn_move_1() == 0 {
+                self.set_relearn_move_1(self.relearn_move_2());
+                self.set_relearn_move_2(0);
+                continue;
+            }
+            break;
+        }
     }
 }
 
